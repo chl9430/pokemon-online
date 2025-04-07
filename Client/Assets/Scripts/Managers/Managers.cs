@@ -7,7 +7,10 @@ public class Managers : MonoBehaviour
     static Managers s_instance; // 유일성이 보장된다
     static Managers Instance { get { Init(); return s_instance; } } // 유일한 매니저를 갖고온다
 
-	#region Contents
+    #region Contents
+    NetworkManager _network = new NetworkManager();
+
+    public static NetworkManager Network { get { return Instance._network; } }
 	#endregion
 
 	#region Core
@@ -33,7 +36,7 @@ public class Managers : MonoBehaviour
 
     void Update()
     {
-
+        _network.Update();
     }
 
     static void Init()
@@ -50,6 +53,7 @@ public class Managers : MonoBehaviour
             DontDestroyOnLoad(go);
             s_instance = go.GetComponent<Managers>();
 
+            s_instance._network.Init();
             s_instance._data.Init();
             s_instance._pool.Init();
             s_instance._sound.Init();
