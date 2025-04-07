@@ -8,8 +8,10 @@ public class Managers : MonoBehaviour
     static Managers Instance { get { Init(); return s_instance; } } // 유일한 매니저를 갖고온다
 
     #region Contents
+    ObjectManager _obj = new ObjectManager();
     NetworkManager _network = new NetworkManager();
 
+    public static ObjectManager Object { get { return Instance._obj; } }
     public static NetworkManager Network { get { return Instance._network; } }
 	#endregion
 

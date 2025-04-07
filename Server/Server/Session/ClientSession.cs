@@ -12,6 +12,7 @@ namespace Server
 {
     public class ClientSession : PacketSession
     {
+        public Player MyPlayer { get; set; }
         public int SessionId { get; set; }
 
         public void Send(IMessage packet)
@@ -29,15 +30,32 @@ namespace Server
         public override void OnConnected(EndPoint endPoint)
         {
             Console.WriteLine($"OnConnected : {endPoint}");
+
+            MyPlayer = ObjectManager.Instance.Add<Player>();
+            {
+                MyPlayer.Info.Name = $"Player_{MyPlayer.Info.ObjectId}";
+                MyPlayer.Info.PosInfo.State = CreatureState.Idle;
+                MyPlayer.Info.PosInfo.MoveDir = MoveDir.Down;
+                MyPlayer.Info.PosInfo.PosX = 0;
+                MyPlayer.Info.PosInfo.PosY = 0;
+
+                MyPlayer.Session = this;
+            }
+
+            GameRoom room = RoomManager.Instance.Find(1);
+            room.Push(room.EnterGame, MyPlayer);
         }
 
         public override void OnRecvPacket(ArraySegment<byte> buffer)
         {
-            // PacketManager.Instance.OnRecvPacket(this, buffer);
+            PacketManager.Instance.OnRecvPacket(this, buffer);
         }
 
         public override void OnDisconnected(EndPoint endPoint)
         {
+            GameRoom room = RoomManager.Instance.Find(1);
+            room.Push(room.LeaveGame, MyPlayer.Info.ObjectId);
+
             SessionManager.Instance.Remove(this);
 
             Console.WriteLine($"OnDisconnected : {endPoint}");

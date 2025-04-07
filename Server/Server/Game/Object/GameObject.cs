@@ -19,9 +19,11 @@ namespace Server
 
         public GameRoom Room { get; set; }
         public ObjectInfo Info { get; set; } = new ObjectInfo();
+        public PositionInfo PosInfo { get; private set; } = new PositionInfo();
 
         public GameObject()
         {
+            Info.PosInfo = PosInfo;
         }
 
         public virtual void Update()

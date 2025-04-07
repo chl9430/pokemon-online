@@ -16,6 +16,8 @@ namespace Server
 
         int _counter = 0;
 
+        public Dictionary<int, Player> Players { get { return _players; } }
+
         public T Add<T>() where T : GameObject, new()
         {
             T gameObject = new T();

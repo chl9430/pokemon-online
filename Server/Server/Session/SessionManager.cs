@@ -15,6 +15,8 @@ namespace Server
         Dictionary<int, ClientSession> _sessions = new Dictionary<int, ClientSession>();
         object _lock = new object();
 
+        public Dictionary<int, ClientSession> Sessions { get { return _sessions; } }
+
         public ClientSession Generate()
         {
             lock (_lock)
