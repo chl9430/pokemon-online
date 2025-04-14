@@ -6,4 +6,14 @@ public class PlayerController : CreatureController
     {
         base.Init();
     }
+
+    protected override void UpdateController()
+    {
+        base.UpdateController();
+    }
+
+    protected virtual void CheckUpdatedFlag()
+    {
+
+    }
 }

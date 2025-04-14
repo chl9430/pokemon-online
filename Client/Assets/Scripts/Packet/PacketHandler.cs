@@ -22,6 +22,7 @@ public class PacketHandler
 
     public static void S_DespawnHandler(PacketSession session, IMessage packet)
     {
+        Debug.Log("S_DespawnHandler");
     }
 
     public static void S_MoveHandler(PacketSession session, IMessage packet)

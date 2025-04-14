@@ -19,9 +19,9 @@ enum MsgId {
 
 enum CreatureState {
   IDLE = 0;
-  MOVING = 1;
-  SKILL = 2;
-  DEAD = 3;
+  CHANGE_DIR = 1;
+  WALK = 2;
+  RUN = 3;
 }
 
 enum MoveDir {
