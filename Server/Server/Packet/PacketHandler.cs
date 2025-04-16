@@ -12,7 +12,20 @@ public class PacketHandler
 {
     public static void C_MoveHandler(PacketSession session, IMessage packet)
     {
+        C_Move movePacket = packet as C_Move;
+        ClientSession clientSession = session as ClientSession;
 
+        // Console.WriteLine($"MoveDir : {movePacket.PosInfo.MoveDir}, ({movePacket.PosInfo.PosX}, {movePacket.PosInfo.PosY}), {movePacket.PosInfo.State}, {movePacket.AnimRate}");
+
+        Player player = clientSession.MyPlayer;
+        if (player == null)
+            return;
+
+        GameRoom room = player.Room;
+        if (room == null)
+            return;
+
+        room.Push(room.HandleMove, player, movePacket);
     }
 
     public static void C_SkillHandler(PacketSession session, IMessage packet)

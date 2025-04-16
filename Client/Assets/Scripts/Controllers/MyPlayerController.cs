@@ -5,11 +5,7 @@ using UnityEngine;
 
 public class MyPlayerController : PlayerController
 {
-    [SerializeField] float moveTimer = 0f;
     float moveTimerLimit = 0.15f;
-
-    Vector3 initPos;
-    Vector3 dist;
 
     void LateUpdate()
     {
@@ -42,29 +38,76 @@ public class MyPlayerController : PlayerController
     {
         if (Input.GetKeyDown(KeyCode.W))
         {
-            Dir = MoveDir.Up;
+            if (Dir == MoveDir.Up)
+            {
+                State = CreatureState.Walk;
+                SetToNextPos();
+            }
+            else
+            {
+                Dir = MoveDir.Up;
+                C_Move movePacket = new C_Move();
+                movePacket.PosInfo = PosInfo;
+                Managers.Network.Send(movePacket);
+            }
         }
         else if (Input.GetKeyDown(KeyCode.S))
         {
-            Dir = MoveDir.Down;
+            if (Dir == MoveDir.Down)
+            {
+                State = CreatureState.Walk;
+                SetToNextPos();
+            }
+            else
+            {
+                Dir = MoveDir.Down;
+                C_Move movePacket = new C_Move();
+                movePacket.PosInfo = PosInfo;
+                Managers.Network.Send(movePacket);
+            }
         }
         else if (Input.GetKeyDown(KeyCode.A))
         {
-            Dir = MoveDir.Left;
+            if (Dir == MoveDir.Left)
+            {
+                State = CreatureState.Walk;
+                SetToNextPos();
+            }
+            else
+            {
+                Dir = MoveDir.Left;
+                C_Move movePacket = new C_Move();
+                movePacket.PosInfo = PosInfo;
+                Managers.Network.Send(movePacket);
+            }
         }
         else if (Input.GetKeyDown(KeyCode.D))
         {
-            Dir = MoveDir.Right;
+            if (Dir == MoveDir.Right)
+            {
+                State = CreatureState.Walk;
+                SetToNextPos();
+            }
+            else
+            {
+                Dir = MoveDir.Right;
+                C_Move movePacket = new C_Move();
+                movePacket.PosInfo = PosInfo;
+                Managers.Network.Send(movePacket);
+            }
         }
     }
 
     void ChangeToWalk()
     {
+        if (State == CreatureState.Walk)
+            return;
+
         if (Input.GetKey(KeyCode.W))
         {
             moveTimer += Time.deltaTime;
 
-            if (moveTimer > moveTimerLimit || LastDir == MoveDir.Up)
+            if (moveTimer > moveTimerLimit)
             {
                 moveTimer = 0;
                 State = CreatureState.Walk;
@@ -75,7 +118,7 @@ public class MyPlayerController : PlayerController
         {
             moveTimer += Time.deltaTime;
 
-            if (moveTimer > moveTimerLimit || LastDir == MoveDir.Down)
+            if (moveTimer > moveTimerLimit)
             {
                 moveTimer = 0;
                 State = CreatureState.Walk;
@@ -86,7 +129,7 @@ public class MyPlayerController : PlayerController
         {
             moveTimer += Time.deltaTime;
 
-            if (moveTimer > moveTimerLimit || LastDir == MoveDir.Left)
+            if (moveTimer > moveTimerLimit)
             {
                 moveTimer = 0;
                 State = CreatureState.Walk;
@@ -97,7 +140,7 @@ public class MyPlayerController : PlayerController
         {
             moveTimer += Time.deltaTime;
 
-            if (moveTimer > moveTimerLimit || LastDir == MoveDir.Right)
+            if (moveTimer > moveTimerLimit)
             {
                 moveTimer = 0;
                 State = CreatureState.Walk;
@@ -110,7 +153,7 @@ public class MyPlayerController : PlayerController
         }
     }
 
-    void MoveToNextPos()
+    protected override void MoveToNextPos()
     {
         float curAnimLength = _animator.GetCurrentAnimatorClipInfo(0)[0].clip.length;
 
@@ -157,6 +200,7 @@ public class MyPlayerController : PlayerController
             else
             {
                 State = CreatureState.Idle;
+                SendPosInfoPacket();
             }
         }
     }
@@ -184,16 +228,14 @@ public class MyPlayerController : PlayerController
         // 장애물 검사
         CellPos = destPos;
 
-        // CheckUpdatedFlag();
+        CheckUpdatedFlag();
     }
 
     protected override void CheckUpdatedFlag()
     {
         if (_updated)
         {
-            C_Move movePacket = new C_Move();
-            movePacket.PosInfo = PosInfo;
-            Managers.Network.Send(movePacket);
+            SendPosInfoPacket();
             _updated = false;
         }
     }

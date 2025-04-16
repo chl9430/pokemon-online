@@ -1,11 +1,14 @@
-﻿using Google.Protobuf.Protocol;
+﻿using Google.Protobuf;
+using Google.Protobuf.Protocol;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
+using System.Threading.Tasks.Dataflow;
 using System.Xml.Serialization;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Server
 {
@@ -42,16 +45,27 @@ namespace Server
                 S_EnterGame enterPacket = new S_EnterGame();
                 enterPacket.Player = player.Info;
                 player.Session.Send(enterPacket);
+
+                S_Spawn spawnPacket = new S_Spawn();
+                foreach (Player p in _players.Values)
+                {
+                    if (player != p)
+                        spawnPacket.Objects.Add(p.Info);
+                }
+
+                player.Session.Send(spawnPacket);
             }
 
             // 타인한테 정보 전송
-            S_Spawn spawnPacket = new S_Spawn();
-            spawnPacket.Objects.Add(gameObject.Info);
-
-            foreach(Player p in _players.Values)
             {
-                if (p.Id != gameObject.Id)
-                    p.Session.Send(spawnPacket);
+                S_Spawn spawnPacket = new S_Spawn();
+                spawnPacket.Objects.Add(gameObject.Info);
+
+                foreach (Player p in _players.Values)
+                {
+                    if (p.Id != gameObject.Id)
+                        p.Session.Send(spawnPacket);
+                }
             }
         }
 
@@ -80,6 +94,45 @@ namespace Server
             {
                 if (p.Id != objectId)
                     p.Session.Send(despawnPacket);
+            }
+        }
+
+        public void HandleMove(Player player, C_Move movePacket)
+        {
+            var a = ObjectManager.Instance.Players;
+
+            if (player == null)
+                return;
+
+            PositionInfo movePosInfo = movePacket.PosInfo;
+            ObjectInfo info = player.Info;
+
+            // 다른 좌표로 갈 수 있는지 체크
+
+            info.PosInfo.State = movePosInfo.State;
+            info.PosInfo.MoveDir = movePosInfo.MoveDir;
+
+            // 충돌
+            // _objects[y, x] = player as GameObject;
+
+            PositionInfo posInfo = player.PosInfo;
+            posInfo.PosX = movePosInfo.PosX;
+            posInfo.PosY = movePosInfo.PosY;
+
+            // 타인한테 정보 전송
+            S_Move resMovePacket = new S_Move();
+            resMovePacket.ObjectId = player.Info.ObjectId;
+            resMovePacket.PosInfo = movePacket.PosInfo;
+
+            Broadcast(player, resMovePacket);
+        }
+
+        public void Broadcast(Player player, IMessage packet)
+        {
+            foreach (Player p in _players.Values)
+            {
+                if (p.Id != player.Id)
+                    p.Session.Send(packet);
             }
         }
     }

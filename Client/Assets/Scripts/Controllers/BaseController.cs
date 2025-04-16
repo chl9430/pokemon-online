@@ -8,24 +8,11 @@ using UnityEngineInternal;
 public class BaseController : MonoBehaviour
 {
     PositionInfo _positionInfo = new PositionInfo();
-    MoveDir lastDir;
 
     protected bool _updated = false;
     protected Animator _animator;
     protected SpriteRenderer _sprite;
-    protected PositionInfo PosInfo
-    {
-        get { return _positionInfo; }
-        set
-        {
-            if (_positionInfo.Equals(value))
-                return;
 
-            CellPos = new Vector3Int(value.PosX, value.PosY, 0);
-            State = value.State;
-            Dir = value.MoveDir;
-        }
-    }
     protected Vector3Int CellPos
     {
         get { return new Vector3Int(PosInfo.PosX, PosInfo.PosY, 0); }
@@ -59,7 +46,7 @@ public class BaseController : MonoBehaviour
         get { return PosInfo.MoveDir; }
         set
         {
-            lastDir = Dir;
+            // lastDir = Dir;
             if (PosInfo.MoveDir == value)
                 return;
 
@@ -68,9 +55,22 @@ public class BaseController : MonoBehaviour
             _updated = true;
         }
     }
-    protected MoveDir LastDir { get { return lastDir; } }
+    // protected MoveDir LastDir { get { return lastDir; } }
 
     public int Id { get; set; }
+    public PositionInfo PosInfo
+    {
+        get { return _positionInfo; }
+        set
+        {
+            if (_positionInfo.Equals(value))
+                return;
+
+            CellPos = new Vector3Int(value.PosX, value.PosY, 0);
+            State = value.State;
+            Dir = value.MoveDir;
+        }
+    }
 
     void Start()
     {
@@ -139,5 +139,17 @@ public class BaseController : MonoBehaviour
                     break;
             }
         }
+    }
+
+    protected virtual void SendPosInfoPacket()
+    {
+        C_Move movePacket = new C_Move();
+        movePacket.PosInfo = PosInfo;
+        Managers.Network.Send(movePacket);
+    }
+
+    public void SyncPos()
+    {
+        transform.position = CellPos;
     }
 }
