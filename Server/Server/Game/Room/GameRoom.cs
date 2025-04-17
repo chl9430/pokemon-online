@@ -18,9 +18,11 @@ namespace Server
 
         Dictionary<int, Player> _players = new Dictionary<int, Player>();
 
+        public Map Map { get; private set; } = new Map();
+
         public void Init(int mapId)
         {
-
+            Map.LoadMap(mapId);
         }
 
         public void Update()
@@ -40,6 +42,8 @@ namespace Server
                 Player player = gameObject as Player;
                 _players.Add(gameObject.Id, player);
                 player.Room = this;
+
+                Map.ApplyMove(player, new Vector2Int(player.CellPos.x, player.CellPos.y));
 
                 // 본인한테 정보 전송
                 S_EnterGame enterPacket = new S_EnterGame();
@@ -79,6 +83,7 @@ namespace Server
                 if (_players.Remove(objectId, out player) == false)
                     return;
 
+                Map.ApplyLeave(player);
                 player.Room = null;
 
                 // 본인한테 정보 전송
@@ -108,12 +113,15 @@ namespace Server
             ObjectInfo info = player.Info;
 
             // 다른 좌표로 갈 수 있는지 체크
+            if (movePosInfo.PosX != info.PosInfo.PosX || movePosInfo.PosY != info.PosInfo.PosY)
+            {
+                if (Map.CanGo(new Vector2Int(movePosInfo.PosX, movePosInfo.PosY)) == false)
+                    return;
+            }
 
             info.PosInfo.State = movePosInfo.State;
             info.PosInfo.MoveDir = movePosInfo.MoveDir;
-
-            // 충돌
-            // _objects[y, x] = player as GameObject;
+            Map.ApplyMove(player, new Vector2Int(movePosInfo.PosX, movePosInfo.PosY));
 
             PositionInfo posInfo = player.PosInfo;
             posInfo.PosX = movePosInfo.PosX;

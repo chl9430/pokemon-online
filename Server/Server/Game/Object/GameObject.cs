@@ -30,5 +30,19 @@ namespace Server
         {
 
         }
+
+        public Vector2Int CellPos
+        {
+            get
+            {
+                return new Vector2Int(PosInfo.PosX, PosInfo.PosY);
+            }
+
+            set
+            {
+                PosInfo.PosX = value.x;
+                PosInfo.PosY = value.y;
+            }
+        }
     }
 }

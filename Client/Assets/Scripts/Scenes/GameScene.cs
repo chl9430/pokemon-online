@@ -10,7 +10,9 @@ public class GameScene : BaseScene
 
         SceneType = Define.Scene.Game;
 
-        Screen.SetResolution(640, 480, false);
+        Managers.Map.LoadMap(1);
+
+        Screen.SetResolution(1280, 720, false);
         //Managers.UI.ShowSceneUI<UI_Inven>();
         //Dictionary<int, Data.Stat> dict = Managers.Data.StatDict;
         //gameObject.GetOrAddComponent<CursorController>();

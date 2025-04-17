@@ -13,7 +13,21 @@ public class BaseController : MonoBehaviour
     protected Animator _animator;
     protected SpriteRenderer _sprite;
 
-    protected Vector3Int CellPos
+    public int Id { get; set; }
+    public PositionInfo PosInfo
+    {
+        get { return _positionInfo; }
+        set
+        {
+            if (_positionInfo.Equals(value))
+                return;
+
+            CellPos = new Vector3Int(value.PosX, value.PosY, 0);
+            State = value.State;
+            Dir = value.MoveDir;
+        }
+    }
+    public Vector3Int CellPos
     {
         get { return new Vector3Int(PosInfo.PosX, PosInfo.PosY, 0); }
 
@@ -27,7 +41,7 @@ public class BaseController : MonoBehaviour
             _updated = true;
         }
     }
-    protected CreatureState State
+    public CreatureState State
     {
         get { return PosInfo.State; }
 
@@ -41,7 +55,7 @@ public class BaseController : MonoBehaviour
             _updated = true;
         }
     }
-    protected MoveDir Dir
+    public MoveDir Dir
     {
         get { return PosInfo.MoveDir; }
         set
@@ -53,22 +67,6 @@ public class BaseController : MonoBehaviour
             PosInfo.MoveDir = value;
             UpdateAnimation();
             _updated = true;
-        }
-    }
-    // protected MoveDir LastDir { get { return lastDir; } }
-
-    public int Id { get; set; }
-    public PositionInfo PosInfo
-    {
-        get { return _positionInfo; }
-        set
-        {
-            if (_positionInfo.Equals(value))
-                return;
-
-            CellPos = new Vector3Int(value.PosX, value.PosY, 0);
-            State = value.State;
-            Dir = value.MoveDir;
         }
     }
 
@@ -86,6 +84,8 @@ public class BaseController : MonoBehaviour
     {
         _animator = GetComponent<Animator>();
         _sprite = GetComponent<SpriteRenderer>();
+        Vector3 pos = Managers.Map.CurrentGrid.CellToWorld(CellPos) + new Vector3(0.5f, 0.5f);
+        transform.position = pos;
 
         UpdateAnimation();
     }
@@ -150,6 +150,7 @@ public class BaseController : MonoBehaviour
 
     public void SyncPos()
     {
-        transform.position = CellPos;
+        Vector3 destPos = Managers.Map.CurrentGrid.CellToWorld(CellPos) + new Vector3(0.5f, 0.5f);
+        transform.position = destPos;
     }
 }

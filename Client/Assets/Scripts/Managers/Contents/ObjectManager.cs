@@ -27,6 +27,7 @@ public class ObjectManager
                 MyPlayer = go.GetComponent<MyPlayerController>();
                 MyPlayer.Id = info.ObjectId;
                 MyPlayer.PosInfo = info.PosInfo;
+                MyPlayer.SyncPos();
             }
             else
             {
@@ -56,6 +57,21 @@ public class ObjectManager
         GameObject go = null;
         _objects.TryGetValue(id, out go);
         return go;
+    }
+
+    public GameObject FindCreature(Vector3Int cellPos)
+    {
+        foreach (GameObject obj in _objects.Values)
+        {
+            CreatureController cc = obj.GetComponent<CreatureController>();
+            if (cc == null)
+                continue;
+
+            if (cc.CellPos == cellPos)
+                return obj;
+        }
+
+        return null;
     }
 
     public void Clear()

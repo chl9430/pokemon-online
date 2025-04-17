@@ -6,7 +6,7 @@ public class PlayerController : CreatureController
 {
     protected float moveTimer = 0f;
     protected Vector3 initPos;
-    protected Vector3 dist;
+    protected Vector3 destPos;
 
     public float MoveTimer
     {
@@ -59,7 +59,7 @@ public class PlayerController : CreatureController
         if (moveTimer == 0)
         {
             initPos = transform.position;
-            dist = CellPos - transform.position;
+            destPos = Managers.Map.CurrentGrid.CellToWorld(CellPos) + new Vector3(0.5f, 0.5f);
         }
 
         moveTimer += Time.deltaTime;
@@ -69,12 +69,12 @@ public class PlayerController : CreatureController
         if (t > 1)
             t = 1;
 
-        transform.position = initPos + dist * t;
+        transform.position = initPos + ((destPos - initPos) * t);
 
         if (moveTimer > curAnimLength)
         {
             moveTimer = 0f;
-            transform.position = CellPos;
+            transform.position = destPos;
         }
     }
 
