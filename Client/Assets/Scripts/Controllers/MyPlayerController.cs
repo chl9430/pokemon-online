@@ -21,9 +21,13 @@ public class MyPlayerController : PlayerController
             case CreatureState.Idle:
                 ChangeDir();
                 ChangeToWalk();
+                ToggleMenu(true);
                 break;
             case CreatureState.Walk:
                 MoveToNextPos();
+                break;
+            case CreatureState.WatchMenu:
+                ToggleMenu(false);
                 break;
         }
     }
@@ -150,6 +154,25 @@ public class MyPlayerController : PlayerController
         else
         {
             moveTimer = 0;
+        }
+    }
+
+    void ToggleMenu(bool toggle)
+    {
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            BaseScene scene = Managers.Scene.CurrentScene;
+
+            if (toggle)
+            {
+                ((GameScene)scene).ToggleGameMenu(toggle);
+                State = CreatureState.WatchMenu;
+            }
+            else
+            {
+                ((GameScene)scene).ToggleGameMenu(toggle);
+                State = CreatureState.Idle;
+            }
         }
     }
 

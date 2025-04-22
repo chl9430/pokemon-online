@@ -47,14 +47,14 @@ namespace Google.Protobuf.Protocol {
             "ZBgBIAEoBSqmAQoFTXNnSWQSEAoMU19FTlRFUl9HQU1FEAASEAoMU19MRUFW",
             "RV9HQU1FEAESCwoHU19TUEFXThACEg0KCVNfREVTUEFXThADEgoKBkNfTU9W",
             "RRAEEgoKBlNfTU9WRRAFEgsKB0NfU0tJTEwQBhILCgdTX1NLSUxMEAcSDwoL",
-            "U19DSEFOR0VfSFAQCBIJCgVTX0RJRRAJEg8KC0NfRVhJVF9HQU1FEAoqPAoN",
+            "U19DSEFOR0VfSFAQCBIJCgVTX0RJRRAJEg8KC0NfRVhJVF9HQU1FEAoqTAoN",
             "Q3JlYXR1cmVTdGF0ZRIICgRJRExFEAASDgoKQ0hBTkdFX0RJUhABEggKBFdB",
-            "TEsQAhIHCgNSVU4QAyowCgdNb3ZlRGlyEgYKAlVQEAASCAoERE9XThABEggK",
-            "BExFRlQQAhIJCgVSSUdIVBADKkMKDkdhbWVPYmplY3RUeXBlEggKBE5PTkUQ",
-            "ABIKCgZQTEFZRVIQARILCgdNT05TVEVSEAISDgoKUFJPSkVDVElMRRADKkEK",
-            "CVNraWxsVHlwZRIOCgpTS0lMTF9OT05FEAASDgoKU0tJTExfQVVUTxABEhQK",
-            "EFNLSUxMX1BST0pFQ1RJTEUQAkIbqgIYR29vZ2xlLlByb3RvYnVmLlByb3Rv",
-            "Y29sYgZwcm90bzM="));
+            "TEsQAhIHCgNSVU4QAxIOCgpXQVRDSF9NRU5VEAQqMAoHTW92ZURpchIGCgJV",
+            "UBAAEggKBERPV04QARIICgRMRUZUEAISCQoFUklHSFQQAypDCg5HYW1lT2Jq",
+            "ZWN0VHlwZRIICgROT05FEAASCgoGUExBWUVSEAESCwoHTU9OU1RFUhACEg4K",
+            "ClBST0pFQ1RJTEUQAypBCglTa2lsbFR5cGUSDgoKU0tJTExfTk9ORRAAEg4K",
+            "ClNLSUxMX0FVVE8QARIUChBTS0lMTF9QUk9KRUNUSUxFEAJCG6oCGEdvb2ds",
+            "ZS5Qcm90b2J1Zi5Qcm90b2NvbGIGcHJvdG8z"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Google.Protobuf.Protocol.MsgId), typeof(global::Google.Protobuf.Protocol.CreatureState), typeof(global::Google.Protobuf.Protocol.MoveDir), typeof(global::Google.Protobuf.Protocol.GameObjectType), typeof(global::Google.Protobuf.Protocol.SkillType), }, null, new pbr::GeneratedClrTypeInfo[] {
@@ -98,6 +98,7 @@ namespace Google.Protobuf.Protocol {
     [pbr::OriginalName("CHANGE_DIR")] ChangeDir = 1,
     [pbr::OriginalName("WALK")] Walk = 2,
     [pbr::OriginalName("RUN")] Run = 3,
+    [pbr::OriginalName("WATCH_MENU")] WatchMenu = 4,
   }
 
   public enum MoveDir {

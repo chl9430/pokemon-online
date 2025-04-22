@@ -22,6 +22,7 @@ enum CreatureState {
   CHANGE_DIR = 1;
   WALK = 2;
   RUN = 3;
+  WATCH_MENU = 4;
 }
 
 enum MoveDir {

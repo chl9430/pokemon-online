@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class GameScene : BaseScene
 {
+    [SerializeField] GameObject _gameMenu;
+
     protected override void Init()
     {
         base.Init();
@@ -13,6 +15,10 @@ public class GameScene : BaseScene
         Managers.Map.LoadMap(1);
 
         Screen.SetResolution(1280, 720, false);
+
+        _gameMenu = Managers.Resource.Instantiate("UI/GameMenu");
+        _gameMenu.SetActive(false);
+
         //Managers.UI.ShowSceneUI<UI_Inven>();
         //Dictionary<int, Data.Stat> dict = Managers.Data.StatDict;
         //gameObject.GetOrAddComponent<CursorController>();
@@ -24,6 +30,11 @@ public class GameScene : BaseScene
         //GameObject go = new GameObject { name = "SpawningPool" };
         //SpawningPool pool = go.GetOrAddComponent<SpawningPool>();
         //pool.SetKeepMonsterCount(2);
+    }
+
+    public void ToggleGameMenu(bool toggle)
+    {
+        _gameMenu.gameObject.SetActive(toggle);
     }
 
     public override void Clear()
