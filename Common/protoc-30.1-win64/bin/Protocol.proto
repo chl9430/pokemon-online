@@ -14,7 +14,9 @@ enum MsgId {
   S_SKILL = 7;
   S_CHANGE_HP = 8;
   S_DIE = 9;
-  C_EXIT_GAME = 10;
+  C_ADD_POKEMON = 10;
+  S_ADD_POKEMON = 11;
+  C_EXIT_GAME = 12;
 }
 
 enum CreatureState {
@@ -35,7 +37,7 @@ enum MoveDir {
 enum GameObjectType {
   NONE = 0;
   PLAYER = 1;
-  MONSTER = 2;
+  POKEMON = 2;
   PROJECTILE = 3;
 }
 
@@ -69,6 +71,20 @@ message S_Move {
   PositionInfo posInfo = 2;
 }
 
+message C_AddPokemon {
+	string nickName = 1;
+	string pokemonName = 2;
+	int32 ownerId = 3;
+	int32 level = 4;
+	int32 hp = 5;
+	int32 exp = 6;
+}
+
+message S_AddPokemon {
+	int32 ownerId = 1;
+	PokemonInfo pokemonInfo = 2;
+}
+
 message C_Skill {
   SkillInfo info = 1;
 }
@@ -88,7 +104,6 @@ message S_Die {
   int32 attackerId = 2;
 }
 
-
 message C_ExitGame {
 	int32 objectId = 1;
 }
@@ -97,23 +112,35 @@ message ObjectInfo {
   int32 objectId = 1;
   string name = 2;
   PositionInfo posInfo = 3;
-  StatInfo statInfo = 4;
 }
 
 message PositionInfo {
-  CreatureState state = 1;
-  MoveDir moveDir = 2;
-  int32 posX = 3;
-  int32 posY = 4;
+	CreatureState state = 1;
+	MoveDir moveDir = 2;
+	int32 posX = 3;
+	int32 posY = 4;
 }
 
-message StatInfo {
-  int32 level = 1;
-  int32 hp = 2;
-  int32 maxHp = 3;
-  int32 attack = 4;
-  float speed = 5;
-  int32 totalExp = 6;
+message PokemonFinalStatInfo {
+	string pokemonName = 1;
+	int32 maxHp = 2;
+	int32 attack = 3;
+	int32 defense = 4;
+	int32 specialAttack = 5;
+	int32 specialDefense = 6;
+	int32 speed = 7;
+}
+
+message PokemonInfo {
+	string nickName = 1;
+	string pokemonName = 2;
+	int32 level = 3;
+	int32 hp = 4;
+	int32 exp = 5;
+	int32 MaxExp = 6;
+	int32 order = 7;
+	PokemonFinalStatInfo statInfo = 8;
+	ObjectInfo objInfo = 9;
 }
 
 message SkillInfo {

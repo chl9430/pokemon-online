@@ -26,6 +26,9 @@ namespace Server
 
         static void Main(string[] args)
         {
+            ConfigManager.LoadConfig();
+            DataManager.LoadData();
+
             GameRoom room = RoomManager.Instance.Add(1);
             TickRoom(room, 50);
 

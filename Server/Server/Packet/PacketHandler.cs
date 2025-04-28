@@ -33,6 +33,52 @@ public class PacketHandler
 
     }
 
+    public static void C_AddPokemonHandler(PacketSession session, IMessage packet)
+    {
+        C_AddPokemon clientPokemonPacket = packet as C_AddPokemon;
+        ClientSession clientSession = session as ClientSession;
+
+        Console.WriteLine(
+            $"=====================\n" +
+            $"Please add this pokemon!\n" +
+            $"{clientPokemonPacket.NickName}({clientPokemonPacket.PokemonName})\n" +
+            $"Owner : {clientPokemonPacket.OwnerId}\n" +
+            $"Level : {clientPokemonPacket.Level}\n" +
+            $"Hp : {clientPokemonPacket.Hp}\n" +
+            $"Exp : {clientPokemonPacket.Exp}\n" +
+            $"=====================\n"
+            );
+
+        Player player = ObjectManager.Instance.Find(clientPokemonPacket.OwnerId);
+        // PriorityQueue<Pokemon> pokemons = player.Pokemons;
+
+        Pokemon pokemon = new Pokemon(clientPokemonPacket.NickName, clientPokemonPacket.PokemonName, clientPokemonPacket.Level, clientPokemonPacket.Hp, player);
+
+        // 서버에 저장
+        player.PushPokemon(pokemon);
+
+        // 클라이언트에 전송
+        S_AddPokemon serverPokemonPacket = new S_AddPokemon();
+
+        PokemonInfo info = new PokemonInfo()
+        {
+            NickName = pokemon.NickName,
+            PokemonName = pokemon.FinalStatInfo.PokemonName,
+            Level = pokemon.Level,
+            Hp = pokemon.Hp,
+            Exp = pokemon.Exp,
+            MaxExp = pokemon.MaxExp,
+            Order = pokemon.Order,
+            StatInfo = pokemon.FinalStatInfo,
+            ObjInfo = pokemon.Owner.Info,
+        };
+
+        serverPokemonPacket.PokemonInfo = info;
+        serverPokemonPacket.OwnerId = player.Id;
+
+        player.Session.Send(serverPokemonPacket);
+    }
+
     public static void C_ExitGameHandler(PacketSession session, IMessage packet)
     {
         C_ExitGame exitPacket = packet as C_ExitGame;

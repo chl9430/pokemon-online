@@ -46,6 +46,9 @@ class PacketManager
 
         _onRecv.Add((ushort)MsgId.SDie, MakePacket<S_Die>);
         _handler.Add((ushort)MsgId.SDie, PacketHandler.S_DieHandler);
+
+        _onRecv.Add((ushort)MsgId.SAddPokemon, MakePacket<S_AddPokemon>);
+        _handler.Add((ushort)MsgId.SAddPokemon, PacketHandler.S_AddPokemonHandler);
     }
 
     public void OnRecvPacket(PacketSession session, ArraySegment<byte> buffer)

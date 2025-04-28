@@ -1,6 +1,8 @@
-﻿namespace ServerCore
+﻿using System.Collections;
+
+namespace ServerCore
 {
-    public class PriorityQueue<T> where T : IComparable<T>
+    public class PriorityQueue<T> : IEnumerable<T> where T : IComparable<T>
     {
         List<T> _heap = new List<T>();
 
@@ -78,6 +80,19 @@
             if (_heap.Count == 0)
                 return default(T);
             return _heap[0];
+        }
+
+        public IEnumerator<T> GetEnumerator()
+        {
+            foreach (var item in _heap)
+            {
+                yield return item;
+            }
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
         }
     }
 }

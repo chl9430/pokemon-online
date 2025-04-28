@@ -71,4 +71,22 @@ public class PacketHandler
     {
 
     }
+
+    public static void S_AddPokemonHandler(PacketSession session, IMessage packet)
+    {
+        S_AddPokemon serverPokemonPacket = packet as S_AddPokemon;
+        PokemonInfo pokemonInfo = serverPokemonPacket.PokemonInfo;
+
+        GameObject player = Managers.Object.FindById(serverPokemonPacket.OwnerId);
+        if (player == null)
+            return;
+
+        PokemonList pokemonList = player.GetComponent<PokemonList>();
+        if (pokemonList == null)
+            return;
+
+        Pokemon pokemon = new Pokemon(pokemonInfo.NickName, pokemonInfo.Level, pokemonInfo.Hp, pokemonInfo.Order, player, serverPokemonPacket.PokemonInfo.StatInfo);
+
+        pokemonList.Pokemons.Push(pokemon);
+    }
 }

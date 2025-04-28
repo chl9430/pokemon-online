@@ -30,6 +30,21 @@ public class MyPlayerController : PlayerController
                 ToggleMenu(false);
                 break;
         }
+
+        //if (Input.GetKeyDown(KeyCode.L))
+        //{
+        //    C_AddPokemon addPacket = new C_AddPokemon()
+        //    {
+        //        NickName = "PIKAO",
+        //        PokemonName = "Pikachu",
+        //        OwnerId = Id,
+        //        Level = 5,
+        //        Hp = 1,
+        //        Exp = 0,
+        //    };
+
+        //    Managers.Network.Send(addPacket);
+        //}
     }
 
     protected override void Init()
