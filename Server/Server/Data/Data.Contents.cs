@@ -4,9 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-public struct PokemonBaseStatInfo
+public struct PokemonSummaryDictData
 {
+    public int dictionaryNum;
     public string pokemonName;
+    public string type1;
+    public string type2;
     public int maxHp;
     public int attack;
     public int defense;
@@ -17,18 +20,18 @@ public struct PokemonBaseStatInfo
 
 namespace Server
 {
-    #region PokemonBaseStat
+    #region PokemonSummary
     [Serializable]
-    public class PokemonStatData : ILoader<string, PokemonBaseStatInfo>
+    public class PokemonSummaryData : ILoader<string, PokemonSummaryDictData>
     {
-        public List<PokemonBaseStatInfo> pokemonBaseStats = new List<PokemonBaseStatInfo>();
+        public List<PokemonSummaryDictData> pokemonSummaries = new List<PokemonSummaryDictData>();
 
-        public Dictionary<string, PokemonBaseStatInfo> MakeDict()
+        public Dictionary<string, PokemonSummaryDictData> MakeDict()
         {
-            Dictionary<string, PokemonBaseStatInfo> dict = new Dictionary<string, PokemonBaseStatInfo>();
-            foreach (PokemonBaseStatInfo stat in pokemonBaseStats)
+            Dictionary<string, PokemonSummaryDictData> dict = new Dictionary<string, PokemonSummaryDictData>();
+            foreach (PokemonSummaryDictData summary in pokemonSummaries)
             {
-                dict.Add(stat.pokemonName, stat);
+                dict.Add(summary.pokemonName, summary);
             }
             return dict;
         }

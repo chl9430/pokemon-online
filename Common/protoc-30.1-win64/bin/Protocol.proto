@@ -72,26 +72,18 @@ message S_Move {
 }
 
 message C_AddPokemon {
-	string nickName = 1;
-	string pokemonName = 2;
-	int32 ownerId = 3;
-	int32 level = 4;
-	int32 hp = 5;
-	int32 exp = 6;
+	string pokemonName = 1;
+	string nickName = 2;
+	int32 level = 3;
+    PokemonGender gender = 4;
+	string ownerName = 5;
+    int32 ownerId = 6;
+    PokemonNature nature = 7;
+    int32 hp = 8;
 }
 
 message S_AddPokemon {
-	int32 ownerId = 1;
-	PokemonInfo pokemonInfo = 2;
-}
-
-message C_Skill {
-  SkillInfo info = 1;
-}
-
-message S_Skill {
-  int32 objectId = 1;
-  SkillInfo info = 2;
+    PokemonSummary summary = 1;
 }
 
 message S_ChangeHp {
@@ -121,28 +113,94 @@ message PositionInfo {
 	int32 posY = 4;
 }
 
-message PokemonFinalStatInfo {
-	string pokemonName = 1;
+message PokemonSummary
+{
+    PokemonInfo info = 1;
+    PokemonSkill skill = 2;
+    PokemonBattleMove battleMove = 3;
+}
+
+message PokemonInfo
+{
+    int32 dictionaryNum = 1;
+    string nickName = 2;
+    string pokemonName = 3;
+    // Item ball;
+    int32 level = 4;
+    PokemonGender gender = 5;
+
+    string ownerName = 6;
+    int32 ownerId = 7;
+    PokemonType type1 = 8;
+    PokemonType type2 = 9;
+
+    // Ability ability;
+
+    PokemonNature nature = 10;
+    int32 metLevel = 11;
+    // string metMapName;
+}
+
+message PokemonSkill
+{
+    // Item holdItem;
+
+    // Item ribbon;
+
+    PokemonStat stat = 1;
+
+    int32 totalExp = 2;
+    int32 remainLevelExp = 3;
+}
+
+message PokemonBattleMove
+{
+    //Move _move1;
+    //Move _move2;
+    //Move _move3;
+    //Move _move4;
+}
+
+enum PokemonGender
+{
+    MALE = 0;
+    FEMALE = 1;
+    NEUTRAL = 2;
+}
+
+enum PokemonType
+{
+    NORMAL = 0;
+    FIRE = 1;
+    WATER = 2;
+    ELECTR = 3;
+    GRASS = 4;
+    TYPE_NONE = 99;
+}
+
+enum PokemonNature
+{
+    HARDY = 0;
+    ADAMANT = 2;
+    BOLD = 5;
+    DOCILE = 6;
+    IMPISH = 7;
+    MODEST = 10;
+    BASHFUL = 12;
+    CALM = 15;
+    CAREFUL = 17;
+    QUIRKY = 18;
+    TIMID = 20;
+    JOLLY = 22;
+    SERIOUS = 24;
+}
+
+message PokemonStat {
+	int32 hp = 1;
 	int32 maxHp = 2;
 	int32 attack = 3;
 	int32 defense = 4;
 	int32 specialAttack = 5;
 	int32 specialDefense = 6;
 	int32 speed = 7;
-}
-
-message PokemonInfo {
-	string nickName = 1;
-	string pokemonName = 2;
-	int32 level = 3;
-	int32 hp = 4;
-	int32 exp = 5;
-	int32 MaxExp = 6;
-	int32 order = 7;
-	PokemonFinalStatInfo statInfo = 8;
-	ObjectInfo objInfo = 9;
-}
-
-message SkillInfo {
-  int32 skillId = 1;
 }

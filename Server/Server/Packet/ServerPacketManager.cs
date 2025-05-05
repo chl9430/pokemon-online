@@ -26,9 +26,6 @@ class PacketManager
         _onRecv.Add((ushort)MsgId.CMove, MakePacket<C_Move>);
         _handler.Add((ushort)MsgId.CMove, PacketHandler.C_MoveHandler);
 
-        _onRecv.Add((ushort)MsgId.CSkill, MakePacket<C_Skill>);
-        _handler.Add((ushort)MsgId.CSkill, PacketHandler.C_SkillHandler);
-
         _onRecv.Add((ushort)MsgId.CAddPokemon, MakePacket<C_AddPokemon>);
         _handler.Add((ushort)MsgId.CAddPokemon, PacketHandler.C_AddPokemonHandler);
 

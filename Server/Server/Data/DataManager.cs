@@ -14,11 +14,11 @@ namespace Server
 
     public class DataManager
     {
-        public static Dictionary<string, PokemonBaseStatInfo> PokemonStatDict { get; private set; } = new Dictionary<string, PokemonBaseStatInfo>();
+        public static Dictionary<string, PokemonSummaryDictData> PokemonSummaryDict { get; private set; } = new Dictionary<string, PokemonSummaryDictData>();
 
         public static void LoadData()
         {
-            PokemonStatDict = LoadJson<PokemonStatData, string, PokemonBaseStatInfo>("PokemonBaseStatData").MakeDict();
+            PokemonSummaryDict = LoadJson<PokemonSummaryData, string, PokemonSummaryDictData>("PokemonSummaryData").MakeDict();
         }
 
         static Loader LoadJson<Loader, Key, Value>(string path) where Loader : ILoader<Key,Value>

@@ -57,11 +57,6 @@ public class PacketHandler
         bc.PosInfo = movePacket.PosInfo;
     }
 
-    public static void S_SkillHandler(PacketSession session, IMessage packet)
-    {
-
-    }
-
     public static void S_ChangeHpHandler(PacketSession session, IMessage packet)
     {
 
@@ -75,9 +70,9 @@ public class PacketHandler
     public static void S_AddPokemonHandler(PacketSession session, IMessage packet)
     {
         S_AddPokemon serverPokemonPacket = packet as S_AddPokemon;
-        PokemonInfo pokemonInfo = serverPokemonPacket.PokemonInfo;
+        PokemonSummary summary = serverPokemonPacket.Summary;
 
-        GameObject player = Managers.Object.FindById(serverPokemonPacket.OwnerId);
+        GameObject player = Managers.Object.FindById(summary.Info.OwnerId);
         if (player == null)
             return;
 
@@ -85,7 +80,7 @@ public class PacketHandler
         if (pokemonList == null)
             return;
 
-        Pokemon pokemon = new Pokemon(pokemonInfo.NickName, pokemonInfo.Level, pokemonInfo.Hp, pokemonInfo.Order, player, serverPokemonPacket.PokemonInfo.StatInfo);
+        Pokemon pokemon = new Pokemon(summary);
 
         pokemonList.Pokemons.Push(pokemon);
     }

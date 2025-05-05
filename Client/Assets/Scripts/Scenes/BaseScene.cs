@@ -13,8 +13,12 @@ public abstract class BaseScene : MonoBehaviour
 	{
 		Init();
 	}
+    void Start()
+    {
+        Managers.Scene.CurrentScene.ScreenChanger.FadeInScene();
+    }
 
-	protected virtual void Init()
+    protected virtual void Init()
     {
         Object obj = GameObject.FindFirstObjectByType(typeof(EventSystem));
         if (obj == null)

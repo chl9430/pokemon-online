@@ -10,7 +10,8 @@ public class Define
         Login,
         Lobby,
         Game,
-        PokemonList
+        PokemonList,
+        PokemonSummary
     }
 
     public enum Sound
