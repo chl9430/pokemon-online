@@ -33,7 +33,8 @@ namespace Server
 
             MyPlayer = ObjectManager.Instance.Add<Player>();
             {
-                MyPlayer.Info.Name = $"Player_{MyPlayer.Info.ObjectId}";
+                MyPlayer.Info.Name = $"Player_CHRIS({MyPlayer.Info.ObjectId})";
+                MyPlayer.Info.Gender = PlayerGender.PlayerMale;
                 MyPlayer.Info.PosInfo.State = CreatureState.Idle;
                 MyPlayer.Info.PosInfo.MoveDir = MoveDir.Down;
                 MyPlayer.Info.PosInfo.PosX = 0;
@@ -41,7 +42,91 @@ namespace Server
 
                 MyPlayer.Session = this;
             }
+            /*
+            {
+                PokemonInfo info = new PokemonInfo()
+                {
+                    DictionaryNum = 35,
+                    NickName = "MESSI",
+                    PokemonName = "Charmander",
+                    Level = 10,
+                    Gender = PokemonGender.Male,
+                };
+                PokemonSkill skill = new PokemonSkill()
+                {
+                    Stat = new PokemonStat()
+                    {
+                        Hp = 10,
+                        MaxHp = 100,
+                        Attack = 50,
+                        Defense = 40,
+                        SpecialAttack = 70,
+                        SpecialDefense = 40,
+                        Speed = 60
+                    }
+                };
+                PokemonBattleMove battleMove = new PokemonBattleMove()
+                {
+                };
+                Pokemon pokemon = new Pokemon(info, skill, battleMove);
 
+                PokemonInfo info1 = new PokemonInfo()
+                {
+                    DictionaryNum = 35,
+                    NickName = "PEDRO",
+                    PokemonName = "Pikachu",
+                    Level = 10,
+                    Gender = PokemonGender.Male,
+                };
+                PokemonSkill skill1 = new PokemonSkill()
+                {
+                    Stat = new PokemonStat()
+                    {
+                        Hp = 10,
+                        MaxHp = 100,
+                        Attack = 50,
+                        Defense = 40,
+                        SpecialAttack = 70,
+                        SpecialDefense = 40,
+                        Speed = 60
+                    }
+                };
+                PokemonBattleMove battleMove1 = new PokemonBattleMove()
+                {
+                };
+                Pokemon pokemon1 = new Pokemon(info1, skill1, battleMove1);
+
+                PokemonInfo info2 = new PokemonInfo()
+                {
+                    DictionaryNum = 35,
+                    NickName = "VILLA",
+                    PokemonName = "Squirtle",
+                    Level = 10,
+                    Gender = PokemonGender.Male,
+                };
+                PokemonSkill skill2 = new PokemonSkill()
+                {
+                    Stat = new PokemonStat()
+                    {
+                        Hp = 10,
+                        MaxHp = 100,
+                        Attack = 50,
+                        Defense = 40,
+                        SpecialAttack = 70,
+                        SpecialDefense = 40,
+                        Speed = 60
+                    }
+                };
+                PokemonBattleMove battleMove2 = new PokemonBattleMove()
+                {
+                };
+                Pokemon pokemon2 = new Pokemon(info2, skill2, battleMove2);
+
+                MyPlayer.AddPokemon(pokemon);
+                MyPlayer.AddPokemon(pokemon1);
+                MyPlayer.AddPokemon(pokemon2);
+            }
+            */
             GameRoom room = RoomManager.Instance.Find(1);
             room.Push(room.EnterGame, MyPlayer);
         }

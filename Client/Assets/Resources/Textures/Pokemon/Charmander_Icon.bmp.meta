@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 60975adad71f7a347a952c18e0e7ffb6
+guid: a9dcc1bfce6e2ac4c98b31f3896de5a9
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 6819916085671781459
-    second: Button_Selected_0
+      213: -7068587632436528966
+    second: Charmander_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -100,13 +100,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Button_Selected_0
+      name: Charmander_0
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 52
-        height: 16
+        width: 21
+        height: 18
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -115,8 +115,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 3546074eb8535ae50800000000000000
-      internalID: 6819916085671781459
+      spriteID: ab8b6e0dff457ed90800000000000000
+      internalID: -7068587632436528966
       vertices: []
       indices: 
       edges: []
@@ -135,7 +135,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Button_Selected_0: 6819916085671781459
+      Charmander_0: -7068587632436528966
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

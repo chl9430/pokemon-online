@@ -1,4 +1,5 @@
 using Google.Protobuf.Protocol;
+using NUnit.Framework.Constraints;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
@@ -7,14 +8,17 @@ using UnityEngine;
 public enum PokemonListSceneState
 {
     NON_SELECTED = 0,
-    SELECTED = 1
+    SELECTED = 1,
+    CHOOSE_POKEMON_TO_SWITCH = 2,
+    SWITCHING_POKEMON = 3,
+    FINISING_SWITCHING_POKEMON = 4,
+    FINISING_MOVING_POKEMON = 5,
 }
 
 public class PokemonListUI : Action_UI
 {
-    int selectedIdx;
+    public int switchPokemonIdx;
     PokemonListSceneState sceneState;
-    BaseScene scene;
 
     List<ImageButton> _btns;
     List<Pokemon> _pokemons;
@@ -36,7 +40,7 @@ public class PokemonListUI : Action_UI
     {
         scene = Managers.Scene.CurrentScene;
         _btns = new List<ImageButton>();
-
+        /*
         {
             _pokemons = new List<Pokemon>();
 
@@ -140,6 +144,9 @@ public class PokemonListUI : Action_UI
             _pokemons.Add(pokemon1);
             _pokemons.Add(pokemon2);
         }
+        */
+
+        _pokemons = Managers.Object._pokemons;
 
         FillButtonList();
 
@@ -154,7 +161,21 @@ public class PokemonListUI : Action_UI
                 ChooseAction();
                 break;
             case PokemonListSceneState.SELECTED:
-                ((PokemonListScene)scene).PokemonListSelectMenu.ChooseAction();
+                ((PokemonListScene)scene).SelectBoxUI.ChooseAction();
+                break;
+            case PokemonListSceneState.CHOOSE_POKEMON_TO_SWITCH:
+                ChoosePokemonToSwitch();
+                break;
+            case PokemonListSceneState.SWITCHING_POKEMON:
+                ((PokemonCard)_btns[switchPokemonIdx]).MoveCard(3f);
+                ((PokemonCard)_btns[selectedIdx]).MoveCard(3f);
+                break;
+            case PokemonListSceneState.FINISING_SWITCHING_POKEMON:
+                SwitchPokemon();
+                break;
+            case PokemonListSceneState.FINISING_MOVING_POKEMON:
+                ((PokemonCard)_btns[switchPokemonIdx]).MoveBackCard(3f);
+                ((PokemonCard)_btns[selectedIdx]).MoveBackCard(3f);
                 break;
         }
     }
@@ -178,7 +199,9 @@ public class PokemonListUI : Action_UI
                 card.transform.SetParent(subPokemonCardZone[queueIdx - 1]);
             }
 
-            Texture2D image = Managers.Resource.Load<Texture2D>($"Textures/Pokemon/{pokemon.PokemonSummary.Info.PokemonName}");
+            card.PokemonListUI = this;
+
+            Texture2D image = Managers.Resource.Load<Texture2D>($"Textures/Pokemon/{pokemon.PokemonSummary.Info.PokemonName}_Icon");
 
             RectTransform rt = card.GetComponent<RectTransform>();
             rt.offsetMin = Vector2.zero;
@@ -230,13 +253,118 @@ public class PokemonListUI : Action_UI
             if (selectedIdx != _btns.Count - 1)
             {
                 _selectedPokemon = _pokemons[selectedIdx];
+                switchPokemonIdx = selectedIdx;
                 sceneState = PokemonListSceneState.SELECTED;
-                ((PokemonListScene)scene).TogglePokemonListSelectMenu(true);
+                ((PokemonListScene)scene).ToggleSelectBoxUI(true);
             }
             else
             {
                 Managers.Scene.CurrentScene.ScreenChanger.ChangeAndFadeOutScene(Define.Scene.Game);
             }
         }
+    }
+
+    public void ChoosePokemonToSwitch()
+    {
+        if (Input.GetKeyDown(KeyCode.DownArrow))
+        {
+            _btns[selectedIdx].ToggleSelected(false);
+            selectedIdx++;
+
+            if (selectedIdx == _btns.Count - 1)
+            {
+                selectedIdx = _btns.Count - 2;
+            }
+            _btns[selectedIdx].ToggleSelected(true);
+            _btns[switchPokemonIdx].ToggleSelected(true);
+        }
+        else if (Input.GetKeyDown(KeyCode.UpArrow))
+        {
+            _btns[selectedIdx].ToggleSelected(false);
+            selectedIdx--;
+
+            if (selectedIdx < 0)
+            {
+                selectedIdx = 0;
+            }
+            _btns[selectedIdx].ToggleSelected(true);
+            _btns[switchPokemonIdx].ToggleSelected(true);
+        }
+        else if (Input.GetKeyDown(KeyCode.D))
+        {
+            if (selectedIdx == switchPokemonIdx)
+            {
+                sceneState = PokemonListSceneState.NON_SELECTED;
+                return;
+            }
+
+            C_SwitchPokemon switchPacket = new C_SwitchPokemon();
+            switchPacket.OwnerId = Managers.Object.myPlayerObjInfo.ObjectId;
+            switchPacket.PokemonFromIdx = switchPokemonIdx;
+            switchPacket.PokemonToIdx = selectedIdx;
+
+            Managers.Network.Send(switchPacket);
+
+            int switchPokemonCardDir = 1;
+            int selectedPokemonCardDir = 1;
+
+            if (switchPokemonIdx == 0)
+                switchPokemonCardDir = -1;
+            if (selectedIdx == 0)
+                selectedPokemonCardDir = -1;
+
+            ((PokemonCard)_btns[switchPokemonIdx]).SetOldAndNewPos(switchPokemonCardDir);
+            ((PokemonCard)_btns[selectedIdx]).SetOldAndNewPos(selectedPokemonCardDir);
+            sceneState = PokemonListSceneState.SWITCHING_POKEMON;
+        }
+        else if (Input.GetKeyDown(KeyCode.S))
+        {
+            sceneState = PokemonListSceneState.NON_SELECTED;
+            ((PokemonCard)_btns[switchPokemonIdx]).ToggleSelected(false);
+            ((PokemonCard)_btns[selectedIdx]).ToggleSelected(true);
+        }
+    }
+
+    void SwitchPokemon()
+    {
+        Texture2D fromImg = Managers.Resource.Load<Texture2D>($"Textures/Pokemon/{_pokemons[switchPokemonIdx].PokemonSummary.Info.PokemonName}");
+        Texture2D Toimg = Managers.Resource.Load<Texture2D>($"Textures/Pokemon/{_pokemons[selectedIdx].PokemonSummary.Info.PokemonName}");
+
+        ((PokemonCard)_btns[switchPokemonIdx]).ApplyImage(Toimg);
+        ((PokemonCard)_btns[switchPokemonIdx]).ApplyPokemonInfo(_pokemons[selectedIdx].PokemonSummary.Info.NickName,
+                _pokemons[selectedIdx].PokemonSummary.Skill.Stat.Hp,
+                _pokemons[selectedIdx].PokemonSummary.Skill.Stat.MaxHp,
+                _pokemons[selectedIdx].PokemonSummary.Info.Level);
+
+        ((PokemonCard)_btns[selectedIdx]).ApplyImage(fromImg);
+        ((PokemonCard)_btns[selectedIdx]).ApplyPokemonInfo(_pokemons[switchPokemonIdx].PokemonSummary.Info.NickName,
+                _pokemons[switchPokemonIdx].PokemonSummary.Skill.Stat.Hp,
+                _pokemons[switchPokemonIdx].PokemonSummary.Skill.Stat.MaxHp,
+                _pokemons[switchPokemonIdx].PokemonSummary.Info.Level);
+
+        int switchPokemonCardDir = -1;
+        int selectedPokemonCardDir = -1;
+
+        if (switchPokemonIdx == 0)
+            switchPokemonCardDir = 1;
+        if (selectedIdx == 0)
+            selectedPokemonCardDir = 1;
+
+        ((PokemonCard)_btns[switchPokemonIdx]).SetOldAndNewPos(switchPokemonCardDir);
+        ((PokemonCard)_btns[selectedIdx]).SetOldAndNewPos(selectedPokemonCardDir);
+
+        sceneState = PokemonListSceneState.FINISING_MOVING_POKEMON;
+        ((PokemonCard)_btns[switchPokemonIdx]).ToggleSelected(false);
+
+        // 리스트 수정
+        Pokemon pokemon = _pokemons[switchPokemonIdx];
+
+        _pokemons[switchPokemonIdx] = _pokemons[selectedIdx];
+        _pokemons[selectedIdx] = pokemon;
+    }
+
+    public Pokemon GetSelectedPokemon()
+    {
+        return _pokemons[selectedIdx];
     }
 }

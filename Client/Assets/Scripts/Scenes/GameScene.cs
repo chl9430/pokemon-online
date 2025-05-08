@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using Google.Protobuf.Protocol;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -16,6 +17,13 @@ public class GameScene : BaseScene
 
         Screen.SetResolution(1280, 720, false);
 
+        if (Managers.Object.MyPlayer == null && Managers.Object.myPlayerObjInfo != null)
+        {
+            C_ReturnGame returnPacket = new C_ReturnGame();
+            returnPacket.PlayerId = Managers.Object.myPlayerObjInfo.ObjectId;
+            Managers.Network.Send(returnPacket);
+        }
+
         //Managers.UI.ShowSceneUI<UI_Inven>();
         //Dictionary<int, Data.Stat> dict = Managers.Data.StatDict;
         //gameObject.GetOrAddComponent<CursorController>();
@@ -31,7 +39,7 @@ public class GameScene : BaseScene
 
     public override void Clear()
     {
-
+        Managers.Object.Clear();
     }
 
     public void ToggleGameMenu(bool toggle)

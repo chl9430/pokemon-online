@@ -2,12 +2,16 @@ using Google.Protobuf;
 using Google.Protobuf.Protocol;
 using ServerCore;
 using UnityEngine;
+using UnityEngine.Diagnostics;
 
 public class PacketHandler
 {
     public static void S_EnterGameHandler(PacketSession session, IMessage packet)
     {
         S_EnterGame enterGamePacket = packet as S_EnterGame;
+
+        Debug.Log($"S_EnterGame : {enterGamePacket.Player}");
+
         Managers.Object.Add(enterGamePacket.Player, myPlayer: true);
     }
 
@@ -19,6 +23,9 @@ public class PacketHandler
     public static void S_SpawnHandler(PacketSession session, IMessage packet)
     {
         S_Spawn spawnPacket = packet as S_Spawn;
+
+        Debug.Log($"S_Spawn : {spawnPacket.Objects.Count}");
+
         foreach (ObjectInfo obj in spawnPacket.Objects)
         {
             Managers.Object.Add(obj, myPlayer: false);
@@ -72,16 +79,24 @@ public class PacketHandler
         S_AddPokemon serverPokemonPacket = packet as S_AddPokemon;
         PokemonSummary summary = serverPokemonPacket.Summary;
 
+        Debug.Log($"S_AddPokemon : {serverPokemonPacket.Summary}");
+
         GameObject player = Managers.Object.FindById(summary.Info.OwnerId);
         if (player == null)
             return;
 
-        PokemonList pokemonList = player.GetComponent<PokemonList>();
-        if (pokemonList == null)
-            return;
-
         Pokemon pokemon = new Pokemon(summary);
 
-        pokemonList.Pokemons.Push(pokemon);
+        Managers.Object._pokemons.Add(pokemon);
+    }
+
+    public static void S_AccessPokemonSummaryHandler(PacketSession session, IMessage packet)
+    {
+        S_AccessPokemonSummary s_AccessPacket = packet as S_AccessPokemonSummary;
+
+        Debug.Log($"S_AccessPokemonSummary : {s_AccessPacket.PkmSummary}");
+
+        PokemonSummaryScene scene = Managers.Scene.CurrentScene as PokemonSummaryScene;
+        scene.UpdateData(s_AccessPacket);
     }
 }

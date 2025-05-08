@@ -10,13 +10,15 @@ enum MsgId {
   S_DESPAWN = 3;
   C_MOVE = 4;
   S_MOVE = 5;
-  C_SKILL = 6;
-  S_SKILL = 7;
-  S_CHANGE_HP = 8;
-  S_DIE = 9;
-  C_ADD_POKEMON = 10;
-  S_ADD_POKEMON = 11;
-  C_EXIT_GAME = 12;
+  S_CHANGE_HP = 6;
+  S_DIE = 7;
+  C_ADD_POKEMON = 8;
+  S_ADD_POKEMON = 9;
+  C_SWITCH_POKEMON = 10;
+  C_EXIT_GAME = 11;
+  C_RETURN_GAME = 12;
+  C_ACCESS_POKEMON_SUMMARY = 13;
+  S_ACCESS_POKEMON_SUMMARY = 14;
 }
 
 enum CreatureState {
@@ -41,34 +43,32 @@ enum GameObjectType {
   PROJECTILE = 3;
 }
 
-enum SkillType {
-  SKILL_NONE = 0;
-  SKILL_AUTO = 1;
-  SKILL_PROJECTILE = 2;
-}
-
 message S_EnterGame {
   ObjectInfo player = 1;
+}
+
+message C_ReturnGame {
+    int32 playerId = 1;
 }
 
 message S_LeaveGame {
 }
 
 message S_Spawn {
-  repeated ObjectInfo objects = 1;
+    repeated ObjectInfo objects = 1;
 }
 
 message S_Despawn {
-  repeated int32 objectIds = 1;
+    repeated int32 objectIds = 1;
 }
 
 message C_Move {
-  PositionInfo posInfo = 1;
+    PositionInfo posInfo = 1;
 }
 
 message S_Move {
-  int32 objectId = 1;
-  PositionInfo posInfo = 2;
+    int32 objectId = 1;
+    PositionInfo posInfo = 2;
 }
 
 message C_AddPokemon {
@@ -86,14 +86,31 @@ message S_AddPokemon {
     PokemonSummary summary = 1;
 }
 
+message C_AccessPokemonSummary
+{
+    int32 playerId = 1;
+    int32 pkmDicNum = 2;
+}
+
+message S_AccessPokemonSummary
+{
+    PokemonSummary pkmSummary = 1;
+}
+
+message C_SwitchPokemon {
+    int32 ownerId = 1;
+    int32 pokemonFromIdx = 2;
+    int32 pokemonToIdx = 3;
+}
+
 message S_ChangeHp {
-  int32 objectId = 1;
-  int32 hp = 2;
+    int32 objectId = 1;
+    int32 hp = 2;
 }
 
 message S_Die {
-  int32 objectId = 1;
-  int32 attackerId = 2;
+    int32 objectId = 1;
+    int32 attackerId = 2;
 }
 
 message C_ExitGame {
@@ -103,7 +120,8 @@ message C_ExitGame {
 message ObjectInfo {
   int32 objectId = 1;
   string name = 2;
-  PositionInfo posInfo = 3;
+  PlayerGender gender = 3;
+  PositionInfo posInfo = 4;
 }
 
 message PositionInfo {
@@ -159,6 +177,12 @@ message PokemonBattleMove
     //Move _move2;
     //Move _move3;
     //Move _move4;
+}
+
+enum PlayerGender
+{
+    PLAYER_MALE = 0;
+    PLAYER_FEMALE = 1;
 }
 
 enum PokemonGender

@@ -3,9 +3,6 @@ using UnityEngine;
 
 public class GameMenuUI : Action_UI
 {
-    int selectedIdx;
-    BaseScene scene;
-
     [SerializeField] ArrowButton[] _btns;
 
     void Start()

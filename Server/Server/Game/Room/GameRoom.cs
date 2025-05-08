@@ -18,6 +18,8 @@ namespace Server
 
         Dictionary<int, Player> _players = new Dictionary<int, Player>();
 
+        public Dictionary<int, Player> Players { get { return _players; } }
+
         public Map Map { get; private set; } = new Map();
 
         public void Init(int mapId)

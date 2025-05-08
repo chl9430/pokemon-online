@@ -9,10 +9,19 @@ using UnityEngine;
 public class NetworkManager
 {
     ServerSession _session = new ServerSession();
+    IMessage _packet;
 
     public void Send(IMessage packet)
     {
         _session.Send(packet);
+    }
+
+    public void SendSavedPacket()
+    {
+        if (_packet != null)
+            _session.Send(_packet);
+
+        _packet = null;
     }
 
     public void Init()
@@ -39,5 +48,10 @@ public class NetworkManager
             if (handler != null)
                 handler.Invoke(_session, packet.Message);
         }
+    }
+
+    public void SavePacket(IMessage packet)
+    {
+        _packet = packet;
     }
 }

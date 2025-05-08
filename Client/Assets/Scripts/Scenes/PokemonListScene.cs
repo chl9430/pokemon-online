@@ -2,11 +2,11 @@ using UnityEngine;
 
 public class PokemonListScene : BaseScene
 {
-    [SerializeField] PokemonListSelectMenu _pokemonListSelectMenu;
+    [SerializeField] SelectBoxUI _selectBoxUI;
 
-    public PokemonListSelectMenu PokemonListSelectMenu
+    public SelectBoxUI SelectBoxUI
     {
-        get { return _pokemonListSelectMenu; }
+        get { return _selectBoxUI; }
     }
 
     protected override void Init()
@@ -20,8 +20,8 @@ public class PokemonListScene : BaseScene
     {
     }
 
-    public void TogglePokemonListSelectMenu(bool toggle)
+    public void ToggleSelectBoxUI(bool toggle)
     {
-        _pokemonListSelectMenu.gameObject.SetActive(toggle);
+        _selectBoxUI.gameObject.SetActive(toggle);
     }
 }

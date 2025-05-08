@@ -35,11 +35,14 @@ public class PacketHandler
 
         Console.WriteLine(
             $"=====================\n" +
-            $"Please add this pokemon!\n" +
+            $"C_AddPokemon\n" +
+            $"Player({clientPokemonPacket.OwnerId}) got a pokemon!\n" +
             $"{clientPokemonPacket.NickName}({clientPokemonPacket.PokemonName})\n" +
-            $"Owner : {clientPokemonPacket.OwnerId}\n" +
+            $"Owner : {clientPokemonPacket.OwnerName}({clientPokemonPacket.OwnerId})\n" +
             $"Level : {clientPokemonPacket.Level}\n" +
-            $"Hp : {clientPokemonPacket.Hp}\n" +
+            $"Gender : {clientPokemonPacket.Gender}\n" +
+            $"RemainHp : {clientPokemonPacket.Hp}\n" +
+            $"Nature : {clientPokemonPacket.Nature}\n" +
             $"=====================\n"
             );
 
@@ -84,7 +87,7 @@ public class PacketHandler
             {
                 Stat = new PokemonStat()
                 {
-                    Hp = clientPokemonPacket.Hp,
+                    Hp = clientPokemonPacket.Hp > ((int)(summaryDictData.maxHp * rate)) ? ((int)(summaryDictData.maxHp * rate)) : clientPokemonPacket.Hp,
                     MaxHp = (int)(summaryDictData.maxHp * rate),
                     Attack = (int)(summaryDictData.attack * rate),
                     Defense = (int)(summaryDictData.defense * rate),
@@ -114,7 +117,7 @@ public class PacketHandler
         Pokemon pokemon = new Pokemon(info, skill, battleMove);
 
         // 서버에 저장
-        player.PushPokemon(pokemon);
+        player.AddPokemon(pokemon);
 
         // 클라이언트에 전송
         S_AddPokemon serverPokemonPacket = new S_AddPokemon();
@@ -124,14 +127,101 @@ public class PacketHandler
         player.Session.Send(serverPokemonPacket);
     }
 
+    public static void C_SwitchPokemonHandler(PacketSession session, IMessage packet)
+    {
+        C_SwitchPokemon switchPokemonPacket = packet as C_SwitchPokemon;
+        ClientSession clientSession = session as ClientSession;
+
+        Console.WriteLine($"" +
+            $"=====================\n" +
+            $"C_SwitchPokemon\n" +
+            $"Player({switchPokemonPacket.OwnerId}) wants to switch pokemon order!\n" +
+            $"Pokemon({switchPokemonPacket.PokemonFromIdx}) is going to {switchPokemonPacket.PokemonToIdx}\n" +
+            $"=====================\n"
+            );
+
+        Player player = ObjectManager.Instance.Find(switchPokemonPacket.OwnerId);
+
+        player.SwitchPokemonOrder(switchPokemonPacket.PokemonFromIdx, switchPokemonPacket.PokemonToIdx);
+    }
+
     public static void C_ExitGameHandler(PacketSession session, IMessage packet)
     {
         C_ExitGame exitPacket = packet as C_ExitGame;
         ClientSession clientSession = session as ClientSession;
 
+        Console.WriteLine($"" +
+            $"=====================\n" +
+            $"C_ExitGame\n" +
+            $"Player(${exitPacket.ObjectId}) has exited from game!\n" +
+            $"=====================\n"
+            );
+
         ObjectManager.Instance.Remove(exitPacket.ObjectId);
         clientSession.Disconnect();
+    }
 
-        Console.WriteLine($"{exitPacket.ObjectId} has gone!");
+    public static void C_ReturnGameHandler(PacketSession session, IMessage packet)
+    {
+        C_ReturnGame returnGamePacket = packet as C_ReturnGame;
+        ClientSession clientSession = session as ClientSession;
+
+        Console.WriteLine($"" +
+            $"=====================\n" +
+            $"C_ReturnGame\n" +
+            $"Player(${returnGamePacket.PlayerId}) returns to game!\n" +
+            $"=====================\n"
+            );
+
+        Player player = ObjectManager.Instance.Find(returnGamePacket.PlayerId);
+        var _players = player.Room.Players;
+
+        S_EnterGame enterPacket = new S_EnterGame();
+        enterPacket.Player = player.Info;
+        player.Session.Send(enterPacket);
+
+        S_Spawn spawnPacket = new S_Spawn();
+        foreach (Player p in _players.Values)
+        {
+            if (player != p)
+                spawnPacket.Objects.Add(p.Info);
+        }
+        player.Session.Send(spawnPacket);
+    }
+
+    public static void C_AccessPokemonSummaryHandler(PacketSession session, IMessage packet)
+    {
+        C_AccessPokemonSummary c_AccessPacket = packet as C_AccessPokemonSummary;
+        
+        ClientSession clientSession = session as ClientSession;
+
+        Console.WriteLine($"" +
+            $"=====================\n" +
+            $"C_AccessPokemonSummary\n" +
+            $"Player(${c_AccessPacket.PlayerId}) requests PokemonSummary!\n" +
+            $"Please find (DictNum : {c_AccessPacket.PkmDicNum}) summary!\n" +
+            $"=====================\n"
+            );
+
+        Player player = ObjectManager.Instance.Find(c_AccessPacket.PlayerId);
+
+        List<Pokemon> pokemons = player.Pokemons;
+
+        Pokemon pokemon = null;
+        for (int i = 0; i < pokemons.Count; i++)
+        {
+            PokemonSummary summary = pokemons[i].PokemonSummary;
+
+            if (c_AccessPacket.PkmDicNum == summary.Info.DictionaryNum)
+            {
+                pokemon = pokemons[i];
+                break;
+            }
+        }
+
+        S_AccessPokemonSummary s_AccessPacket = new S_AccessPokemonSummary();
+        s_AccessPacket.PkmSummary = pokemon.PokemonSummary;
+
+        player.Session.Send(s_AccessPacket);
     }
 }

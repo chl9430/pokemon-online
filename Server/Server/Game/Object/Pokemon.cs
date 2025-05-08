@@ -10,12 +10,14 @@ using System.Threading.Tasks;
 
 namespace Server
 {
-    public class Pokemon : GameObject, IComparable<Pokemon>
+    public class Pokemon : GameObject
     {
-        int _order;
         PokemonSummary _pokemonSummary;
 
-        public int Order { set { _order = value; } }
+        public PokemonSummary PokemonSummary
+        {
+            get { return _pokemonSummary; }
+        }
 
         public Pokemon(PokemonInfo info, PokemonSkill skill, PokemonBattleMove battleMove)
         {
@@ -28,12 +30,7 @@ namespace Server
                 BattleMove = battleMove
             };
 
-            _order = 0;
-        }
-
-        public int CompareTo(Pokemon other)
-        {
-            return _order.CompareTo(other._order);
+            _pokemonSummary = summary;
         }
     }
 }

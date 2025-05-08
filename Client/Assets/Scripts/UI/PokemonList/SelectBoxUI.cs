@@ -1,12 +1,8 @@
-using System.Collections.Generic;
-using System.Linq;
+using Google.Protobuf.Protocol;
 using UnityEngine;
 
-public class PokemonListSelectMenu : MonoBehaviour
+public class SelectBoxUI : Action_UI
 {
-    int selectedIdx;
-    BaseScene scene;
-
     [SerializeField] PokemonListUI _pokemonListUI;
     [SerializeField] ArrowButton[] _btns;
 
@@ -44,17 +40,27 @@ public class PokemonListSelectMenu : MonoBehaviour
         {
             if (selectedIdx == 0)
             {
+                Pokemon pokemon = _pokemonListUI.GetSelectedPokemon();
+
+                C_AccessPokemonSummary accessPacket = new C_AccessPokemonSummary();
+                accessPacket.PlayerId = Managers.Object.MyPlayer.Id;
+                accessPacket.PkmDicNum = pokemon.PokemonSummary.Info.DictionaryNum;
+
+                Managers.Network.SavePacket(accessPacket);
+
                 Managers.Scene.CurrentScene.ScreenChanger.ChangeAndFadeOutScene(Define.Scene.PokemonSummary);
             }
             else if (selectedIdx == 1)
-            { 
+            {
+                ((PokemonListScene)scene).ToggleSelectBoxUI(false);
+                _pokemonListUI.SceneState = PokemonListSceneState.CHOOSE_POKEMON_TO_SWITCH;
             }
             else if (selectedIdx == 2)
             {
             }
             else if (selectedIdx == 3)
             {
-                ((PokemonListScene)scene).TogglePokemonListSelectMenu(false);
+                ((PokemonListScene)scene).ToggleSelectBoxUI(false);
                 _pokemonListUI.SceneState = PokemonListSceneState.NON_SELECTED;
             }
         }

@@ -38,9 +38,6 @@ class PacketManager
         _onRecv.Add((ushort)MsgId.SMove, MakePacket<S_Move>);
         _handler.Add((ushort)MsgId.SMove, PacketHandler.S_MoveHandler);
 
-        _onRecv.Add((ushort)MsgId.SSkill, MakePacket<S_Skill>);
-        _handler.Add((ushort)MsgId.SSkill, PacketHandler.S_SkillHandler);
-
         _onRecv.Add((ushort)MsgId.SChangeHp, MakePacket<S_ChangeHp>);
         _handler.Add((ushort)MsgId.SChangeHp, PacketHandler.S_ChangeHpHandler);
 
@@ -49,6 +46,9 @@ class PacketManager
 
         _onRecv.Add((ushort)MsgId.SAddPokemon, MakePacket<S_AddPokemon>);
         _handler.Add((ushort)MsgId.SAddPokemon, PacketHandler.S_AddPokemonHandler);
+
+        _onRecv.Add((ushort)MsgId.SAccessPokemonSummary, MakePacket<S_AccessPokemonSummary>);
+        _handler.Add((ushort)MsgId.SAccessPokemonSummary, PacketHandler.S_AccessPokemonSummaryHandler);
     }
 
     public void OnRecvPacket(PacketSession session, ArraySegment<byte> buffer)
