@@ -38,6 +38,9 @@ class PacketManager
         _onRecv.Add((ushort)MsgId.SMove, MakePacket<S_Move>);
         _handler.Add((ushort)MsgId.SMove, PacketHandler.S_MoveHandler);
 
+        _onRecv.Add((ushort)MsgId.SCreatePlayer, MakePacket<S_CreatePlayer>);
+        _handler.Add((ushort)MsgId.SCreatePlayer, PacketHandler.S_CreatePlayerHandler);
+
         _onRecv.Add((ushort)MsgId.SChangeHp, MakePacket<S_ChangeHp>);
         _handler.Add((ushort)MsgId.SChangeHp, PacketHandler.S_ChangeHpHandler);
 

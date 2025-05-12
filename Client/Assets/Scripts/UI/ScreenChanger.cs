@@ -33,6 +33,7 @@ public class ScreenChanger : MonoBehaviour
 
         color.a = 0;
         fadeImage.color = color;
+        Managers.Scene.CurrentScene.AfterFadeInAction();
     }
 
     private IEnumerator FadeOut(Define.Scene type)

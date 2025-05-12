@@ -31,20 +31,46 @@ public class MyPlayerController : PlayerController
                 break;
         }
 
-        //if (Input.GetKeyDown(KeyCode.L))
-        //{
-        //    C_AddPokemon addPacket = new C_AddPokemon()
-        //    {
-        //        NickName = "PIKAO",
-        //        PokemonName = "Pikachu",
-        //        OwnerId = Id,
-        //        Level = 5,
-        //        Hp = 1,
-        //        Exp = 0,
-        //    };
+        if (Input.GetKeyDown(KeyCode.L))
+        {
+            C_AddPokemon addPacket = new C_AddPokemon()
+            {
+                PokemonName = "Pikachu",
+                NickName = "PIKAO",
+                Level = 5,
+                Gender = PokemonGender.Male,
+                OwnerName = "CHRIS",
+                OwnerId = Id,
+                Nature = PokemonNature.Serious,
+                Hp = 1,
+            };
+            C_AddPokemon addPacket2 = new C_AddPokemon()
+            {
+                PokemonName = "Charmander",
+                NickName = "CHAO",
+                Level = 1,
+                Gender = PokemonGender.Female,
+                OwnerName = "CHRIS",
+                OwnerId = Id,
+                Nature = PokemonNature.Timid,
+                Hp = 21,
+            };
+            C_AddPokemon addPacket3 = new C_AddPokemon()
+            {
+                PokemonName = "Squirtle",
+                NickName = "SKIRT",
+                Level = 3,
+                Gender = PokemonGender.Male,
+                OwnerName = "CHRIS",
+                OwnerId = Id,
+                Nature = PokemonNature.Bashful,
+                Hp = 3,
+            };
 
-        //    Managers.Network.Send(addPacket);
-        //}
+            Managers.Network.Send(addPacket);
+            Managers.Network.Send(addPacket2);
+            Managers.Network.Send(addPacket3);
+        }
     }
 
     protected override void Init()

@@ -31,17 +31,6 @@ namespace Server
         {
             Console.WriteLine($"OnConnected : {endPoint}");
 
-            MyPlayer = ObjectManager.Instance.Add<Player>();
-            {
-                MyPlayer.Info.Name = $"Player_CHRIS({MyPlayer.Info.ObjectId})";
-                MyPlayer.Info.Gender = PlayerGender.PlayerMale;
-                MyPlayer.Info.PosInfo.State = CreatureState.Idle;
-                MyPlayer.Info.PosInfo.MoveDir = MoveDir.Down;
-                MyPlayer.Info.PosInfo.PosX = 0;
-                MyPlayer.Info.PosInfo.PosY = 0;
-
-                MyPlayer.Session = this;
-            }
             /*
             {
                 PokemonInfo info = new PokemonInfo()
@@ -127,6 +116,7 @@ namespace Server
                 MyPlayer.AddPokemon(pokemon2);
             }
             */
+
             GameRoom room = RoomManager.Instance.Find(1);
             room.Push(room.EnterGame, MyPlayer);
         }

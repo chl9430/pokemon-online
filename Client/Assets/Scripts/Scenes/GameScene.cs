@@ -24,6 +24,8 @@ public class GameScene : BaseScene
             Managers.Network.Send(returnPacket);
         }
 
+        Managers.Network.SendSavedPacket();
+
         //Managers.UI.ShowSceneUI<UI_Inven>();
         //Dictionary<int, Data.Stat> dict = Managers.Data.StatDict;
         //gameObject.GetOrAddComponent<CursorController>();

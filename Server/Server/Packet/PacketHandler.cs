@@ -28,6 +28,39 @@ public class PacketHandler
         room.Push(room.HandleMove, player, movePacket);
     }
 
+    public static void C_CreatePlayerHandler(PacketSession session, IMessage packet)
+    {
+        C_CreatePlayer playerPacket = packet as C_CreatePlayer;
+        ClientSession clientSession = session as ClientSession;
+
+        Console.WriteLine(
+            $"=====================\n" +
+            $"C_CreatePlayer\n" +
+            $"Please make new player!\n" +
+            $"Name : {playerPacket.Name}, Gender : {playerPacket.Gender}\n" +
+            $"=====================\n"
+            );
+
+        Player player = ObjectManager.Instance.Add<Player>();
+        {
+            player.Info.Name = $"{playerPacket.Name}({player.Info.ObjectId})";
+            player.Info.Gender = playerPacket.Gender;
+            player.Info.PosInfo.State = CreatureState.Idle;
+            player.Info.PosInfo.MoveDir = MoveDir.Down;
+            player.Info.PosInfo.PosX = 0;
+            player.Info.PosInfo.PosY = 0;
+
+            player.Session = clientSession;
+        }
+
+        clientSession.MyPlayer = player;
+
+        S_CreatePlayer s_playerPacket = new S_CreatePlayer();
+        s_playerPacket.Player = player.Info;
+
+        player.Session.Send(s_playerPacket);
+    }
+
     public static void C_AddPokemonHandler(PacketSession session, IMessage packet)
     {
         C_AddPokemon clientPokemonPacket = packet as C_AddPokemon;

@@ -11,8 +11,6 @@ public class PacketHandler
         S_EnterGame enterGamePacket = packet as S_EnterGame;
 
         Debug.Log($"S_EnterGame : {enterGamePacket.Player}");
-
-        Managers.Object.Add(enterGamePacket.Player, myPlayer: true);
     }
 
     public static void S_LeaveGameHandler(PacketSession session, IMessage packet)
@@ -62,6 +60,15 @@ public class PacketHandler
         }
 
         bc.PosInfo = movePacket.PosInfo;
+    }
+
+    public static void S_CreatePlayerHandler(PacketSession session, IMessage packet)
+    {
+        S_CreatePlayer playerPacket = packet as S_CreatePlayer;
+
+        Debug.Log($"S_CreatePlayer : {playerPacket.Player}");
+
+        Managers.Object.Add(playerPacket.Player, myPlayer: true);
     }
 
     public static void S_ChangeHpHandler(PacketSession session, IMessage packet)

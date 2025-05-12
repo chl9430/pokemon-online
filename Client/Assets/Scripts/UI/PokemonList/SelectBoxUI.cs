@@ -12,7 +12,7 @@ public class SelectBoxUI : Action_UI
         _btns[selectedIdx].ToggleArrow(true);
     }
 
-    public void ChooseAction()
+    public override void ChooseAction()
     {
         if (Input.GetKeyDown(KeyCode.DownArrow))
         {

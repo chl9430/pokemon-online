@@ -5,8 +5,8 @@ using UnityEngine.EventSystems;
 
 public abstract class BaseScene : MonoBehaviour
 {
-    [SerializeField] ScreenChanger screenChanger;
-    public ScreenChanger ScreenChanger {  get { return screenChanger; } }
+    ScreenChanger screenChanger;
+    public ScreenChanger ScreenChanger { get { return screenChanger; } set { screenChanger = value; } }
     public Define.Scene SceneType { get; protected set; } = Define.Scene.Unknown;
 
 	void Awake()
@@ -25,6 +25,20 @@ public abstract class BaseScene : MonoBehaviour
             Managers.Resource.Instantiate("UI/EventSystem").name = "@EventSystem";
 
         screenChanger = Managers.Resource.Instantiate("UI/ScreenChanger").GetComponent<ScreenChanger>();
+    }
+    
+    public virtual void AfterFadeInAction()
+    {
+    }
+
+    public virtual void DoNextAction()
+    {
+
+    }
+
+    public virtual void DoNextActionWithValue(object value)
+    {
+
     }
 
     public abstract void Clear();

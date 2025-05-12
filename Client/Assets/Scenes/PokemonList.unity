@@ -1574,8 +1574,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3b956de59645d584894d7511f6f317cc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  screenChanger: {fileID: 0}
-  _pokemonListUI: {fileID: 539225064}
   _selectBoxUI: {fileID: 1359825697}
 --- !u!1 &1285830406
 GameObject:
