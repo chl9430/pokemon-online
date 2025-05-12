@@ -32,7 +32,7 @@ namespace Server
             Flush();
         }
 
-        public void EnterGame(GameObject gameObject)
+        public void EnterRoom(GameObject gameObject)
         {
             if (gameObject == null)
                 return;
@@ -48,7 +48,7 @@ namespace Server
                 Map.ApplyMove(player, new Vector2Int(player.CellPos.x, player.CellPos.y));
 
                 // 본인한테 정보 전송
-                S_EnterGame enterPacket = new S_EnterGame();
+                S_EnterRoom enterPacket = new S_EnterRoom();
                 enterPacket.Player = player.Info;
                 player.Session.Send(enterPacket);
 
@@ -75,7 +75,7 @@ namespace Server
             }
         }
 
-        public void LeaveGame(int objectId)
+        public void LeaveRoom(int objectId)
         {
             GameObjectType type = ObjectManager.GetObjectTypeById(objectId);
 
@@ -89,7 +89,7 @@ namespace Server
                 player.Room = null;
 
                 // 본인한테 정보 전송
-                S_LeaveGame leavePacket = new S_LeaveGame();
+                S_LeaveRoom leavePacket = new S_LeaveRoom();
                 player.Session.Send(leavePacket);
             }
 

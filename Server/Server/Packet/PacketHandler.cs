@@ -55,10 +55,8 @@ public class PacketHandler
 
         clientSession.MyPlayer = player;
 
-        S_CreatePlayer s_playerPacket = new S_CreatePlayer();
-        s_playerPacket.Player = player.Info;
-
-        player.Session.Send(s_playerPacket);
+        GameRoom room = RoomManager.Instance.Find(1);
+        room.Push(room.EnterRoom, player);
     }
 
     public static void C_AddPokemonHandler(PacketSession session, IMessage packet)
@@ -209,7 +207,7 @@ public class PacketHandler
         Player player = ObjectManager.Instance.Find(returnGamePacket.PlayerId);
         var _players = player.Room.Players;
 
-        S_EnterGame enterPacket = new S_EnterGame();
+        S_EnterRoom enterPacket = new S_EnterRoom();
         enterPacket.Player = player.Info;
         player.Session.Send(enterPacket);
 

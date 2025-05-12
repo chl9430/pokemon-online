@@ -10,12 +10,23 @@ public class PacketHandler
     {
         S_EnterGame enterGamePacket = packet as S_EnterGame;
 
-        Debug.Log($"S_EnterGame : {enterGamePacket.Player}");
+        Debug.Log($"S_EnterGame : ");
     }
 
-    public static void S_LeaveGameHandler(PacketSession session, IMessage packet)
+    public static void S_EnterRoomHandler(PacketSession session, IMessage packet)
     {
-        S_LeaveGame enterGamePacket = packet as S_LeaveGame;
+        S_EnterRoom enterRoomPacket = packet as S_EnterRoom;
+
+        Debug.Log($"S_EnterRoom : {enterRoomPacket.Player}");
+
+        Managers.Object.Add(enterRoomPacket.Player, myPlayer: true);
+    }
+
+    public static void S_LeaveRoomHandler(PacketSession session, IMessage packet)
+    {
+        S_LeaveRoom leaveRoomPacket = packet as S_LeaveRoom;
+
+        Debug.Log($"S_LeaveRoom : ");
     }
 
     public static void S_SpawnHandler(PacketSession session, IMessage packet)
@@ -60,25 +71,6 @@ public class PacketHandler
         }
 
         bc.PosInfo = movePacket.PosInfo;
-    }
-
-    public static void S_CreatePlayerHandler(PacketSession session, IMessage packet)
-    {
-        S_CreatePlayer playerPacket = packet as S_CreatePlayer;
-
-        Debug.Log($"S_CreatePlayer : {playerPacket.Player}");
-
-        Managers.Object.Add(playerPacket.Player, myPlayer: true);
-    }
-
-    public static void S_ChangeHpHandler(PacketSession session, IMessage packet)
-    {
-
-    }
-
-    public static void S_DieHandler(PacketSession session, IMessage packet)
-    {
-
     }
 
     public static void S_AddPokemonHandler(PacketSession session, IMessage packet)

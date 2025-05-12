@@ -26,8 +26,11 @@ class PacketManager
         _onRecv.Add((ushort)MsgId.SEnterGame, MakePacket<S_EnterGame>);
         _handler.Add((ushort)MsgId.SEnterGame, PacketHandler.S_EnterGameHandler);
 
-        _onRecv.Add((ushort)MsgId.SLeaveGame, MakePacket<S_LeaveGame>);
-        _handler.Add((ushort)MsgId.SLeaveGame, PacketHandler.S_LeaveGameHandler);
+        _onRecv.Add((ushort)MsgId.SEnterRoom, MakePacket<S_EnterRoom>);
+        _handler.Add((ushort)MsgId.SEnterRoom, PacketHandler.S_EnterRoomHandler);
+
+        _onRecv.Add((ushort)MsgId.SLeaveRoom, MakePacket<S_LeaveRoom>);
+        _handler.Add((ushort)MsgId.SLeaveRoom, PacketHandler.S_LeaveRoomHandler);
 
         _onRecv.Add((ushort)MsgId.SSpawn, MakePacket<S_Spawn>);
         _handler.Add((ushort)MsgId.SSpawn, PacketHandler.S_SpawnHandler);
@@ -37,15 +40,6 @@ class PacketManager
 
         _onRecv.Add((ushort)MsgId.SMove, MakePacket<S_Move>);
         _handler.Add((ushort)MsgId.SMove, PacketHandler.S_MoveHandler);
-
-        _onRecv.Add((ushort)MsgId.SCreatePlayer, MakePacket<S_CreatePlayer>);
-        _handler.Add((ushort)MsgId.SCreatePlayer, PacketHandler.S_CreatePlayerHandler);
-
-        _onRecv.Add((ushort)MsgId.SChangeHp, MakePacket<S_ChangeHp>);
-        _handler.Add((ushort)MsgId.SChangeHp, PacketHandler.S_ChangeHpHandler);
-
-        _onRecv.Add((ushort)MsgId.SDie, MakePacket<S_Die>);
-        _handler.Add((ushort)MsgId.SDie, PacketHandler.S_DieHandler);
 
         _onRecv.Add((ushort)MsgId.SAddPokemon, MakePacket<S_AddPokemon>);
         _handler.Add((ushort)MsgId.SAddPokemon, PacketHandler.S_AddPokemonHandler);

@@ -40,7 +40,13 @@ public class ObjectManager
             }
             else
             {
-                GameObject go = Managers.Resource.Instantiate("Creature/Player");
+                GameObject go = null;
+
+                if (info.Gender == PlayerGender.PlayerMale)
+                    go = Managers.Resource.Instantiate("Creature/PlayerMale");
+                else if (info.Gender == PlayerGender.PlayerFemale)
+                    go = Managers.Resource.Instantiate("Creature/PlayerFemale");
+
                 go.name = info.Name;
                 _objects.Add(info.ObjectId, go);
 

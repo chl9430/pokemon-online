@@ -23,6 +23,12 @@ class PacketManager
 
     public void Register()
     {
+        _onRecv.Add((ushort)MsgId.CExitGame, MakePacket<C_ExitGame>);
+        _handler.Add((ushort)MsgId.CExitGame, PacketHandler.C_ExitGameHandler);
+
+        _onRecv.Add((ushort)MsgId.CReturnGame, MakePacket<C_ReturnGame>);
+        _handler.Add((ushort)MsgId.CReturnGame, PacketHandler.C_ReturnGameHandler);
+
         _onRecv.Add((ushort)MsgId.CMove, MakePacket<C_Move>);
         _handler.Add((ushort)MsgId.CMove, PacketHandler.C_MoveHandler);
 
@@ -34,12 +40,6 @@ class PacketManager
 
         _onRecv.Add((ushort)MsgId.CSwitchPokemon, MakePacket<C_SwitchPokemon>);
         _handler.Add((ushort)MsgId.CSwitchPokemon, PacketHandler.C_SwitchPokemonHandler);
-
-        _onRecv.Add((ushort)MsgId.CExitGame, MakePacket<C_ExitGame>);
-        _handler.Add((ushort)MsgId.CExitGame, PacketHandler.C_ExitGameHandler);
-
-        _onRecv.Add((ushort)MsgId.CReturnGame, MakePacket<C_ReturnGame>);
-        _handler.Add((ushort)MsgId.CReturnGame, PacketHandler.C_ReturnGameHandler);
 
         _onRecv.Add((ushort)MsgId.CAccessPokemonSummary, MakePacket<C_AccessPokemonSummary>);
         _handler.Add((ushort)MsgId.CAccessPokemonSummary, PacketHandler.C_AccessPokemonSummaryHandler);

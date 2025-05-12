@@ -116,9 +116,6 @@ namespace Server
                 MyPlayer.AddPokemon(pokemon2);
             }
             */
-
-            GameRoom room = RoomManager.Instance.Find(1);
-            room.Push(room.EnterGame, MyPlayer);
         }
 
         public override void OnRecvPacket(ArraySegment<byte> buffer)
@@ -129,7 +126,7 @@ namespace Server
         public override void OnDisconnected(EndPoint endPoint)
         {
             GameRoom room = RoomManager.Instance.Find(1);
-            room.Push(room.LeaveGame, MyPlayer.Info.ObjectId);
+            room.Push(room.LeaveRoom, MyPlayer.Info.ObjectId);
 
             SessionManager.Instance.Remove(this);
 

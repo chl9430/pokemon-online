@@ -327,8 +327,8 @@ public class PokemonListUI : Action_UI
 
     void SwitchPokemon()
     {
-        Texture2D fromImg = Managers.Resource.Load<Texture2D>($"Textures/Pokemon/{_pokemons[switchPokemonIdx].PokemonSummary.Info.PokemonName}");
-        Texture2D Toimg = Managers.Resource.Load<Texture2D>($"Textures/Pokemon/{_pokemons[selectedIdx].PokemonSummary.Info.PokemonName}");
+        Texture2D fromImg = Managers.Resource.Load<Texture2D>($"Textures/Pokemon/{_pokemons[switchPokemonIdx].PokemonSummary.Info.PokemonName}_Icon");
+        Texture2D Toimg = Managers.Resource.Load<Texture2D>($"Textures/Pokemon/{_pokemons[selectedIdx].PokemonSummary.Info.PokemonName}_Icon");
 
         ((PokemonCard)_btns[switchPokemonIdx]).ApplyImage(Toimg);
         ((PokemonCard)_btns[switchPokemonIdx]).ApplyPokemonInfo(_pokemons[selectedIdx].PokemonSummary.Info.NickName,
