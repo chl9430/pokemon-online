@@ -66,29 +66,30 @@ namespace Google.Protobuf.Protocol {
             "CgoCaHAYASABKAUSDQoFbWF4SHAYAiABKAUSDgoGYXR0YWNrGAMgASgFEg8K",
             "B2RlZmVuc2UYBCABKAUSFQoNc3BlY2lhbEF0dGFjaxgFIAEoBRIWCg5zcGVj",
             "aWFsRGVmZW5zZRgGIAEoBRINCgVzcGVlZBgHIAEoBSqiAgoFTXNnSWQSEAoM",
-            "U19FTlRFUl9HQU1FEAASDwoLQ19FWElUX0dBTUUQDRIQCgxTX0VOVEVSX1JP",
-            "T00QARIQCgxTX0xFQVZFX1JPT00QERIRCg1DX1JFVFVSTl9HQU1FEA4SCwoH",
-            "U19TUEFXThACEg0KCVNfREVTUEFXThADEgoKBkNfTU9WRRAEEgoKBlNfTU9W",
-            "RRAFEhMKD0NfQ1JFQVRFX1BMQVlFUhAGEhEKDUNfQUREX1BPS0VNT04QChIR",
+            "U19FTlRFUl9HQU1FEAASDwoLQ19FWElUX0dBTUUQARIQCgxTX0VOVEVSX1JP",
+            "T00QAhIQCgxTX0xFQVZFX1JPT00QAxIRCg1DX1JFVFVSTl9HQU1FEAQSCwoH",
+            "U19TUEFXThAFEg0KCVNfREVTUEFXThAGEgoKBkNfTU9WRRAHEgoKBlNfTU9W",
+            "RRAIEhMKD0NfQ1JFQVRFX1BMQVlFUhAJEhEKDUNfQUREX1BPS0VNT04QChIR",
             "Cg1TX0FERF9QT0tFTU9OEAsSFAoQQ19TV0lUQ0hfUE9LRU1PThAMEhwKGENf",
-            "QUNDRVNTX1BPS0VNT05fU1VNTUFSWRAPEhwKGFNfQUNDRVNTX1BPS0VNT05f",
-            "U1VNTUFSWRAQKkwKDUNyZWF0dXJlU3RhdGUSCAoESURMRRAAEg4KCkNIQU5H",
-            "RV9ESVIQARIICgRXQUxLEAISBwoDUlVOEAMSDgoKV0FUQ0hfTUVOVRAEKjAK",
-            "B01vdmVEaXISBgoCVVAQABIICgRET1dOEAESCAoETEVGVBACEgkKBVJJR0hU",
-            "EAMqQwoOR2FtZU9iamVjdFR5cGUSCAoETk9ORRAAEgoKBlBMQVlFUhABEgsK",
-            "B1BPS0VNT04QAhIOCgpQUk9KRUNUSUxFEAMqMgoMUGxheWVyR2VuZGVyEg8K",
-            "C1BMQVlFUl9NQUxFEAASEQoNUExBWUVSX0ZFTUFMRRABKjIKDVBva2Vtb25H",
-            "ZW5kZXISCAoETUFMRRAAEgoKBkZFTUFMRRABEgsKB05FVVRSQUwQAipUCgtQ",
-            "b2tlbW9uVHlwZRIKCgZOT1JNQUwQABIICgRGSVJFEAESCQoFV0FURVIQAhIK",
-            "CgZFTEVDVFIQAxIJCgVHUkFTUxAEEg0KCVRZUEVfTk9ORRBjKqgBCg1Qb2tl",
-            "bW9uTmF0dXJlEgkKBUhBUkRZEAASCwoHQURBTUFOVBACEggKBEJPTEQQBRIK",
-            "CgZET0NJTEUQBhIKCgZJTVBJU0gQBxIKCgZNT0RFU1QQChILCgdCQVNIRlVM",
-            "EAwSCAoEQ0FMTRAPEgsKB0NBUkVGVUwQERIKCgZRVUlSS1kQEhIJCgVUSU1J",
-            "RBAUEgkKBUpPTExZEBYSCwoHU0VSSU9VUxAYQhuqAhhHb29nbGUuUHJvdG9i",
-            "dWYuUHJvdG9jb2xiBnByb3RvMw=="));
+            "QUNDRVNTX1BPS0VNT05fU1VNTUFSWRANEhwKGFNfQUNDRVNTX1BPS0VNT05f",
+            "U1VNTUFSWRAOKlcKDUNyZWF0dXJlU3RhdGUSCAoESURMRRAAEg4KCkNIQU5H",
+            "RV9ESVIQARIICgRXQUxLEAISBwoDUlVOEAMSDgoKV0FUQ0hfTUVOVRAEEgkK",
+            "BUZJR0hUEAUqMAoHTW92ZURpchIGCgJVUBAAEggKBERPV04QARIICgRMRUZU",
+            "EAISCQoFUklHSFQQAypDCg5HYW1lT2JqZWN0VHlwZRIICgROT05FEAASCgoG",
+            "UExBWUVSEAESCwoHUE9LRU1PThACEg4KClBST0pFQ1RJTEUQAyoyCgxQbGF5",
+            "ZXJHZW5kZXISDwoLUExBWUVSX01BTEUQABIRCg1QTEFZRVJfRkVNQUxFEAEq",
+            "MgoNUG9rZW1vbkdlbmRlchIICgRNQUxFEAASCgoGRkVNQUxFEAESCwoHTkVV",
+            "VFJBTBACKlQKC1Bva2Vtb25UeXBlEgoKBk5PUk1BTBAAEggKBEZJUkUQARIJ",
+            "CgVXQVRFUhACEgoKBkVMRUNUUhADEgkKBUdSQVNTEAQSDQoJVFlQRV9OT05F",
+            "EGMqqAEKDVBva2Vtb25OYXR1cmUSCQoFSEFSRFkQABILCgdBREFNQU5UEAIS",
+            "CAoEQk9MRBAFEgoKBkRPQ0lMRRAGEgoKBklNUElTSBAHEgoKBk1PREVTVBAK",
+            "EgsKB0JBU0hGVUwQDBIICgRDQUxNEA8SCwoHQ0FSRUZVTBAREgoKBlFVSVJL",
+            "WRASEgkKBVRJTUlEEBQSCQoFSk9MTFkQFhILCgdTRVJJT1VTEBgqNAoMTW92",
+            "ZUNhdGVnb3J5EgwKCFBIWVNJQ0FMEAASCwoHU1BFQ0lBTBABEgkKBU9USEVS",
+            "EAJCG6oCGEdvb2dsZS5Qcm90b2J1Zi5Qcm90b2NvbGIGcHJvdG8z"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
-          new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Google.Protobuf.Protocol.MsgId), typeof(global::Google.Protobuf.Protocol.CreatureState), typeof(global::Google.Protobuf.Protocol.MoveDir), typeof(global::Google.Protobuf.Protocol.GameObjectType), typeof(global::Google.Protobuf.Protocol.PlayerGender), typeof(global::Google.Protobuf.Protocol.PokemonGender), typeof(global::Google.Protobuf.Protocol.PokemonType), typeof(global::Google.Protobuf.Protocol.PokemonNature), }, null, new pbr::GeneratedClrTypeInfo[] {
+          new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Google.Protobuf.Protocol.MsgId), typeof(global::Google.Protobuf.Protocol.CreatureState), typeof(global::Google.Protobuf.Protocol.MoveDir), typeof(global::Google.Protobuf.Protocol.GameObjectType), typeof(global::Google.Protobuf.Protocol.PlayerGender), typeof(global::Google.Protobuf.Protocol.PokemonGender), typeof(global::Google.Protobuf.Protocol.PokemonType), typeof(global::Google.Protobuf.Protocol.PokemonNature), typeof(global::Google.Protobuf.Protocol.MoveCategory), }, null, new pbr::GeneratedClrTypeInfo[] {
             new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Protocol.S_EnterGame), global::Google.Protobuf.Protocol.S_EnterGame.Parser, null, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Protocol.C_ExitGame), global::Google.Protobuf.Protocol.C_ExitGame.Parser, new[]{ "ObjectId" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Protocol.S_EnterRoom), global::Google.Protobuf.Protocol.S_EnterRoom.Parser, new[]{ "Player" }, null, null, null, null),
@@ -119,20 +120,20 @@ namespace Google.Protobuf.Protocol {
   #region Enums
   public enum MsgId {
     [pbr::OriginalName("S_ENTER_GAME")] SEnterGame = 0,
-    [pbr::OriginalName("C_EXIT_GAME")] CExitGame = 13,
-    [pbr::OriginalName("S_ENTER_ROOM")] SEnterRoom = 1,
-    [pbr::OriginalName("S_LEAVE_ROOM")] SLeaveRoom = 17,
-    [pbr::OriginalName("C_RETURN_GAME")] CReturnGame = 14,
-    [pbr::OriginalName("S_SPAWN")] SSpawn = 2,
-    [pbr::OriginalName("S_DESPAWN")] SDespawn = 3,
-    [pbr::OriginalName("C_MOVE")] CMove = 4,
-    [pbr::OriginalName("S_MOVE")] SMove = 5,
-    [pbr::OriginalName("C_CREATE_PLAYER")] CCreatePlayer = 6,
+    [pbr::OriginalName("C_EXIT_GAME")] CExitGame = 1,
+    [pbr::OriginalName("S_ENTER_ROOM")] SEnterRoom = 2,
+    [pbr::OriginalName("S_LEAVE_ROOM")] SLeaveRoom = 3,
+    [pbr::OriginalName("C_RETURN_GAME")] CReturnGame = 4,
+    [pbr::OriginalName("S_SPAWN")] SSpawn = 5,
+    [pbr::OriginalName("S_DESPAWN")] SDespawn = 6,
+    [pbr::OriginalName("C_MOVE")] CMove = 7,
+    [pbr::OriginalName("S_MOVE")] SMove = 8,
+    [pbr::OriginalName("C_CREATE_PLAYER")] CCreatePlayer = 9,
     [pbr::OriginalName("C_ADD_POKEMON")] CAddPokemon = 10,
     [pbr::OriginalName("S_ADD_POKEMON")] SAddPokemon = 11,
     [pbr::OriginalName("C_SWITCH_POKEMON")] CSwitchPokemon = 12,
-    [pbr::OriginalName("C_ACCESS_POKEMON_SUMMARY")] CAccessPokemonSummary = 15,
-    [pbr::OriginalName("S_ACCESS_POKEMON_SUMMARY")] SAccessPokemonSummary = 16,
+    [pbr::OriginalName("C_ACCESS_POKEMON_SUMMARY")] CAccessPokemonSummary = 13,
+    [pbr::OriginalName("S_ACCESS_POKEMON_SUMMARY")] SAccessPokemonSummary = 14,
   }
 
   public enum CreatureState {
@@ -141,6 +142,7 @@ namespace Google.Protobuf.Protocol {
     [pbr::OriginalName("WALK")] Walk = 2,
     [pbr::OriginalName("RUN")] Run = 3,
     [pbr::OriginalName("WATCH_MENU")] WatchMenu = 4,
+    [pbr::OriginalName("FIGHT")] Fight = 5,
   }
 
   public enum MoveDir {
@@ -191,6 +193,12 @@ namespace Google.Protobuf.Protocol {
     [pbr::OriginalName("TIMID")] Timid = 20,
     [pbr::OriginalName("JOLLY")] Jolly = 22,
     [pbr::OriginalName("SERIOUS")] Serious = 24,
+  }
+
+  public enum MoveCategory {
+    [pbr::OriginalName("PHYSICAL")] Physical = 0,
+    [pbr::OriginalName("SPECIAL")] Special = 1,
+    [pbr::OriginalName("OTHER")] Other = 2,
   }
 
   #endregion

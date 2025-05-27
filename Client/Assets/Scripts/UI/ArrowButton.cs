@@ -1,15 +1,23 @@
+using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class ArrowButton : MonoBehaviour
 {
-    [SerializeField] string _btnData;
-    [SerializeField] GameObject _arrow;
+    object _btnData;
+    [SerializeField] Image _arrow;
+    [SerializeField] TextMeshProUGUI _tmp;
 
-    public string BtnData
+    public object BtnData
     {
         get
         {
             return _btnData;
+        }
+
+        set
+        {
+            _btnData = value;
         }
     }
 
@@ -17,11 +25,16 @@ public class ArrowButton : MonoBehaviour
     {
         if (isSelected)
         {
-            _arrow.SetActive(true);
+            _arrow.gameObject.SetActive(true);
         }
         else
         {
-            _arrow.SetActive(false);
+            _arrow.gameObject.SetActive(false);
         }
+    }
+
+    public void SetButtonName(string btnName)
+    {
+        _tmp.text = btnName;
     }
 }

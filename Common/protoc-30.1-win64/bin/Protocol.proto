@@ -27,6 +27,7 @@ enum CreatureState {
   WALK = 2;
   RUN = 3;
   WATCH_MENU = 4;
+  FIGHT = 5;
 }
 
 enum MoveDir {
@@ -219,6 +220,13 @@ enum PokemonNature
     TIMID = 20;
     JOLLY = 22;
     SERIOUS = 24;
+}
+
+enum MoveCategory
+{
+    PHYSICAL = 0;
+    SPECIAL = 1;
+    OTHER = 2;
 }
 
 message PokemonStat {

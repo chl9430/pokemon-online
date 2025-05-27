@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class GameScene : BaseScene
 {
-    [SerializeField] GameMenuUI _gameMenu;
+    GameMenuUI _gameMenu;
 
     protected override void Init()
     {
@@ -14,6 +14,10 @@ public class GameScene : BaseScene
         SceneType = Define.Scene.Game;
 
         Managers.Map.LoadMap(1);
+
+        _gameMenu = Managers.Resource.Instantiate("UI/GameScene/GameMenuUI").GetComponent<GameMenuUI>();
+
+        _gameMenu.transform.SetParent(_ui.transform);
 
         Screen.SetResolution(1280, 720, false);
 
@@ -39,9 +43,12 @@ public class GameScene : BaseScene
         //pool.SetKeepMonsterCount(2);
     }
 
+    public override void DoNextAction(object value = null)
+    {
+    }
+
     public override void Clear()
     {
-        Managers.Object.Clear();
     }
 
     public void ToggleGameMenu(bool toggle)

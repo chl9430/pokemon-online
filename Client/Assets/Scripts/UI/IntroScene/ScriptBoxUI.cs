@@ -18,6 +18,8 @@ public class ScriptBoxUI : MonoBehaviour
     ScriptBoxUIState _uiState = ScriptBoxUIState.NONE;
     int _curScriptIdx;
     string _sentence;
+    bool _autoSkip;
+    float _autoSkipTime;
     List<string> _scripts;
     BaseScene _scene;
 
@@ -28,6 +30,8 @@ public class ScriptBoxUI : MonoBehaviour
     void Start()
     {
         _scene = Managers.Scene.CurrentScene;
+        _tmp.text = "";
+        _nextBtn.SetActive(false);
     }
 
     void Update()
@@ -38,16 +42,35 @@ public class ScriptBoxUI : MonoBehaviour
                 ShowFullSentence();
                 break;
             case ScriptBoxUIState.WAITING_NEXT_SENTENCE:
-                ShowNextSentence();
+                WaitToTheNextSentence();
                 break;
         }
     }
 
-    public void ShowText()
+    public void SetScriptWihtoutTyping(string script)
+    {
+        _tmp.text = script;
+    }
+
+    public void BeginScriptTyping(List<string> scripts, bool autoSkip = false, float autoSkipTime = 1f)
+    {
+        _uiState = ScriptBoxUIState.TEXT_TYPING;
+        _scripts = scripts;
+        _autoSkipTime = autoSkipTime;
+        _autoSkip = autoSkip;
+        _sentence = _scripts[_curScriptIdx];
+        _tmp.text = ""; // 이전 텍스트 초기화
+
+        StopAllCoroutines();
+        StartCoroutine(TypeText());
+    }
+
+    void TypingNextScript()
     {
         _uiState = ScriptBoxUIState.TEXT_TYPING;
         _sentence = _scripts[_curScriptIdx];
         _tmp.text = ""; // 이전 텍스트 초기화
+
         StopAllCoroutines();
         StartCoroutine(TypeText());
     }
@@ -60,13 +83,16 @@ public class ScriptBoxUI : MonoBehaviour
             _tmp.text += _sentence[i];
             yield return new WaitForSeconds(_typeSpeed);
         }
-        _nextBtn.SetActive(true);
+
+        if (!_autoSkip)
+            _nextBtn.SetActive(true);
+
         _uiState = ScriptBoxUIState.WAITING_NEXT_SENTENCE;
     }
 
     void ShowFullSentence()
     {
-        if (Input.GetKeyDown(KeyCode.D))
+        if (Input.GetKeyDown(KeyCode.D) && !_autoSkip)
         {
             StopAllCoroutines();
             _tmp.text = _sentence;
@@ -75,29 +101,40 @@ public class ScriptBoxUI : MonoBehaviour
         }
     }
 
-    void ShowNextSentence()
+    void WaitToTheNextSentence()
     {
-        if (Input.GetKeyDown(KeyCode.D))
+        if (_autoSkip)
         {
-            _nextBtn.SetActive(false);
-            _tmp.text = _sentence;
-            _uiState = ScriptBoxUIState.TEXT_TYPING;
-            _curScriptIdx++;
-
-            if (_curScriptIdx == _scripts.Count)
-            {
-                _curScriptIdx = 0;
-                _scene.DoNextAction();
-                _uiState = ScriptBoxUIState.NONE;
-                return;
-            }
-
-            ShowText();
+            StartCoroutine(ShowNextSentence());
+        }
+        else if (Input.GetKeyDown(KeyCode.D))
+        {
+            StartCoroutine(ShowNextSentence());
         }
     }
 
-    public void SetScript(List<string> scripts)
+    IEnumerator ShowNextSentence()
     {
-        _scripts = scripts;
+        _nextBtn.SetActive(false);
+        _tmp.text = _sentence;
+        _uiState = ScriptBoxUIState.TEXT_TYPING;
+        _curScriptIdx++;
+
+        if (_curScriptIdx == _scripts.Count)
+        {
+            _curScriptIdx = 0;
+
+            if (_autoSkip)
+                yield return new WaitForSeconds(_autoSkipTime);
+
+            _scene.DoNextAction();
+            _uiState = ScriptBoxUIState.NONE;
+            yield break;
+        }
+
+        if (_autoSkip)
+            yield return new WaitForSeconds(_autoSkipTime);
+
+        TypingNextScript();
     }
 }

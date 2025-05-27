@@ -1,5 +1,6 @@
 using Google.Protobuf.Protocol;
 using NUnit.Framework.Constraints;
+using System.Collections;
 using System.Collections.Generic;
 using System.Xml;
 using TMPro;
@@ -37,7 +38,7 @@ public class IntroScene : BaseScene
     [SerializeField] TMP_InputField _inputField;
     [SerializeField] FadeInOutUI _profFIOImg;
     [SerializeField] FadeInOutUI _genderFIOZone;
-    [SerializeField] HorizontalSelectBoxUI _genderHSelectBox;
+    // [SerializeField] HorizontalSelectBoxUI _genderHSelectBox;
     [SerializeField] FadeInOutUI _maleImgBtn;
     [SerializeField] FadeInOutUI _femaleImgBtn;
 
@@ -79,11 +80,10 @@ public class IntroScene : BaseScene
     public override void AfterFadeInAction()
     {
         scriptBox.gameObject.SetActive(true);
-        scriptBox.SetScript(_scripts[_curScriptIdx]);
-        scriptBox.ShowText();
+        scriptBox.BeginScriptTyping(_scripts[_curScriptIdx]);
     }
 
-    public override void DoNextAction()
+    public override void DoNextAction(object value = null)
     {
         switch (_sceneState)
         {
@@ -94,7 +94,7 @@ public class IntroScene : BaseScene
                     Vector2 minDestPos = new Vector2(rt.anchorMin.x - 0.25f, rt.anchorMin.y);
                     Vector2 maxDestPos = new Vector2(rt.anchorMax.x - 0.25f, rt.anchorMax.y);
 
-                    _profAndImgZone.SetOldAndDestPos(minDestPos, maxDestPos);
+                    _profAndImgZone.SetOldAndDestPos(minDestPos, maxDestPos, MoveableUIState.MOVING, 1f);
                     _sceneState = IntroSceneState.MOVING_PROF_IMG;
                 }
                 break;
@@ -116,15 +116,14 @@ public class IntroScene : BaseScene
                     Vector2 minDestPos = new Vector2(rt.anchorMin.x + 0.25f, rt.anchorMin.y);
                     Vector2 maxDestPos = new Vector2(rt.anchorMax.x + 0.25f, rt.anchorMax.y);
 
-                    _profAndImgZone.SetOldAndDestPos(minDestPos, maxDestPos);
+                    _profAndImgZone.SetOldAndDestPos(minDestPos, maxDestPos, MoveableUIState.MOVING, 1f);
                     _sceneState = IntroSceneState.MOVING_BACK_PROF_IMG;
                 }
                 break;
             case IntroSceneState.MOVING_BACK_PROF_IMG:
                 {
                     _curScriptIdx++;
-                    scriptBox.SetScript(_scripts[_curScriptIdx]);
-                    scriptBox.ShowText();
+                    scriptBox.BeginScriptTyping(_scripts[_curScriptIdx]);
                     _sceneState = IntroSceneState.ASKING_GENDER;
                 }
                 break;
@@ -142,7 +141,7 @@ public class IntroScene : BaseScene
                     Vector2 minDestPos = new Vector2(rt.anchorMin.x - 0.5f, rt.anchorMin.y);
                     Vector2 maxDestPos = new Vector2(rt.anchorMax.x - 0.5f, rt.anchorMax.y);
 
-                    _profAndImgZone.SetOldAndDestPos(minDestPos, maxDestPos);
+                    _profAndImgZone.SetOldAndDestPos(minDestPos, maxDestPos, MoveableUIState.MOVING, 1f);
                     _sceneState = IntroSceneState.MOVING_GENDER_UI;
                 }
                 break;
@@ -154,7 +153,7 @@ public class IntroScene : BaseScene
                 break;
             case IntroSceneState.FADING_IN_GENDER_UI:
                 {
-                    _genderHSelectBox.UIState = HorizontalSelectBoxUIState.SELECTING;
+                    // _genderHSelectBox.UIState = HorizontalSelectBoxUIState.SELECTING;
                     _sceneState = IntroSceneState.ENTERING_GENDER;
                 }
                 break;
@@ -168,7 +167,7 @@ public class IntroScene : BaseScene
                         Vector2 minDestPos = new Vector2(rt.anchorMin.x + 0.5f, rt.anchorMin.y);
                         Vector2 maxDestPos = new Vector2(rt.anchorMax.x + 0.5f, rt.anchorMax.y);
 
-                        ui.SetOldAndDestPos(minDestPos, maxDestPos);
+                        ui.SetOldAndDestPos(minDestPos, maxDestPos, MoveableUIState.MOVING, 1f);
                     }
                     else if (_playerGender == PlayerGender.PlayerFemale)
                     {
@@ -178,7 +177,7 @@ public class IntroScene : BaseScene
                         Vector2 minDestPos = new Vector2(rt.anchorMin.x - 0.5f, rt.anchorMin.y);
                         Vector2 maxDestPos = new Vector2(rt.anchorMax.x - 0.5f, rt.anchorMax.y);
 
-                        ui.SetOldAndDestPos(minDestPos, maxDestPos);
+                        ui.SetOldAndDestPos(minDestPos, maxDestPos, MoveableUIState.MOVING, 1f);
                     }
 
                     _sceneState = IntroSceneState.MOVING_SELECTED_GENDER;
@@ -187,8 +186,7 @@ public class IntroScene : BaseScene
             case IntroSceneState.MOVING_SELECTED_GENDER:
                 {
                     _curScriptIdx++;
-                    scriptBox.SetScript(_scripts[_curScriptIdx]);
-                    scriptBox.ShowText();
+                    scriptBox.BeginScriptTyping(_scripts[_curScriptIdx]);
                     _sceneState = IntroSceneState.LAST_TALKING;
                 }
                 break;
@@ -206,47 +204,47 @@ public class IntroScene : BaseScene
         }
     }
 
-    public override void DoNextActionWithValue(object value)
-    {
-        switch (_sceneState)
-        {
-            case IntroSceneState.ENTERING_NAME:
-                {
-                    _playerName = (string)value;
-                    _inputField.interactable = false;
-                    _nameFIOInputField.ChangeUIAlpha(0f);
+    //public override void DoNextActionWithValue(object value)
+    //{
+    //    switch (_sceneState)
+    //    {
+    //        case IntroSceneState.ENTERING_NAME:
+    //            {
+    //                _playerName = (string)value;
+    //                _inputField.interactable = false;
+    //                _nameFIOInputField.ChangeUIAlpha(0f);
 
-                    _sceneState = IntroSceneState.FADING_OUT_NAME_UI;
+    //                _sceneState = IntroSceneState.FADING_OUT_NAME_UI;
 
-                    string textToAdd = $"{_scripts[_curScriptIdx + 1][0]} {_playerName}!";
-                    _scripts[_curScriptIdx + 1][0] = textToAdd;
-                }
-                break;
-            case IntroSceneState.ENTERING_GENDER:
-                {
-                    if ((string)value == "Male")
-                        _playerGender = PlayerGender.PlayerMale;
-                    else if ((string)value == "Female")
-                        _playerGender = PlayerGender.PlayerFemale;
+    //                string textToAdd = $"{_scripts[_curScriptIdx + 1][0]} {_playerName}!";
+    //                _scripts[_curScriptIdx + 1][0] = textToAdd;
+    //            }
+    //            break;
+    //        case IntroSceneState.ENTERING_GENDER:
+    //            {
+    //                if ((string)value == "Male")
+    //                    _playerGender = PlayerGender.PlayerMale;
+    //                else if ((string)value == "Female")
+    //                    _playerGender = PlayerGender.PlayerFemale;
 
-                    if (_playerGender == PlayerGender.PlayerMale)
-                    {
-                        _femaleImgBtn.ChangeUIAlpha(0f);
-                    }
-                    else if (_playerGender == PlayerGender.PlayerFemale)
-                    {
-                        _maleImgBtn.ChangeUIAlpha(0f);
-                    }
+    //                if (_playerGender == PlayerGender.PlayerMale)
+    //                {
+    //                    _femaleImgBtn.ChangeUIAlpha(0f);
+    //                }
+    //                else if (_playerGender == PlayerGender.PlayerFemale)
+    //                {
+    //                    _maleImgBtn.ChangeUIAlpha(0f);
+    //                }
 
-                    _genderHSelectBox.HideAllArrow();
-                    _sceneState = IntroSceneState.FADING_OUT_UNSELECTED_GENDER;
+    //                _genderHSelectBox.HideAllArrow();
+    //                _sceneState = IntroSceneState.FADING_OUT_UNSELECTED_GENDER;
 
-                    string textToAdd = $"{_scripts[_curScriptIdx + 1][0]}{(string)value}!";
-                    _scripts[_curScriptIdx + 1][0] = textToAdd;
-                }
-                break;
-        }
-    }
+    //                string textToAdd = $"{_scripts[_curScriptIdx + 1][0]}{(string)value}!";
+    //                _scripts[_curScriptIdx + 1][0] = textToAdd;
+    //            }
+    //            break;
+    //    }
+    //}
 
     public override void Clear()
     {

@@ -11,7 +11,8 @@ public class Define
         Lobby,
         Game,
         PokemonList,
-        PokemonSummary
+        PokemonSummary,
+        Battle
     }
 
     public enum Sound

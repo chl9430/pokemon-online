@@ -139,6 +139,26 @@ public class BaseController : MonoBehaviour
                     break;
             }
         }
+        else
+        {
+            switch (Dir)
+            {
+                case MoveDir.Up:
+                    _animator.Play("IDLE_UP");
+                    break;
+                case MoveDir.Down:
+                    _animator.Play("IDLE_DOWN");
+                    break;
+                case MoveDir.Left:
+                    _sprite.flipX = false;
+                    _animator.Play("IDLE_LEFT");
+                    break;
+                case MoveDir.Right:
+                    _sprite.flipX = true;
+                    _animator.Play("IDLE_LEFT");
+                    break;
+            }
+        }
     }
 
     protected virtual void SendPosInfoPacket()

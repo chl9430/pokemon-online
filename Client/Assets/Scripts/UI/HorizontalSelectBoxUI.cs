@@ -69,7 +69,7 @@ public class HorizontalSelectBoxUI : Action_UI
             if (scene == null)
                 scene = Managers.Scene.CurrentScene;
 
-            scene.DoNextActionWithValue(_btns[selectedIdx].BtnData);
+            // scene.DoNextActionWithValue(_btns[selectedIdx].BtnData);
         }
     }
 

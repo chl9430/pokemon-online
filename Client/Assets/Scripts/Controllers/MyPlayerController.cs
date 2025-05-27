@@ -1,10 +1,11 @@
 using Google.Protobuf.Protocol;
-using System;
-using System.Collections;
 using UnityEngine;
+using UnityEngine.Tilemaps;
 
 public class MyPlayerController : PlayerController
 {
+    public PokemonAppearanceTile pkmAppearTile;
+
     float moveTimerLimit = 0.15f;
 
     void LateUpdate()
@@ -28,6 +29,9 @@ public class MyPlayerController : PlayerController
                 break;
             case CreatureState.WatchMenu:
                 ToggleMenu(false);
+                break;
+            case CreatureState.Fight:
+
                 break;
         }
 
@@ -240,6 +244,13 @@ public class MyPlayerController : PlayerController
         {
             moveTimer = 0f;
             transform.position = destPos;
+
+            // 몬스터 스폰
+            if (pkmAppearTile != null)
+            {
+                if (pkmAppearTile.AppearPokemon())
+                    return;
+            }
 
             if (Input.GetKey(KeyCode.W))
             {

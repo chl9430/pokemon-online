@@ -1,12 +1,32 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.Playables;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class ScreenChanger : MonoBehaviour
 {
-    public Image fadeImage; // 페이드 이미지를 드래그하여 할당
+    BaseScene _scene;
+    PlayableDirector _director;
+
+    public Image fadeImage;
     public float fadeDuration = 1f;
+
+    void Start()
+    {
+        _director = GetComponent<PlayableDirector>();
+        
+        if (_director != null)
+            _director.stopped += OnTimelineStopped;
+
+        _scene = Managers.Scene.CurrentScene;
+    }
+
+    public void OnTimelineStopped(PlayableDirector aDirector)
+    {
+        Debug.Log("배틀 씬으로 이동");
+        _scene.DoNextActionWithTimeline();
+    }
 
     public void FadeInScene()
     {
