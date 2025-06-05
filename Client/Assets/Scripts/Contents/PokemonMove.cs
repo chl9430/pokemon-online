@@ -33,6 +33,6 @@ public class PokemonMove
         _moveType = moveType;
         _moveCategory = moveCategory;
 
-        _hitEffectImg = Managers.Resource.Load<Texture2D>("Textures/Effect/Hit");
+        _hitEffectImg = Managers.Resource.Load<Texture2D>($"Textures/Effect/Physical_Hit_{_moveType.ToString()}");
     }
 }

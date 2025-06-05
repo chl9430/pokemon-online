@@ -35,6 +35,7 @@ public class MyPlayerController : PlayerController
                 break;
         }
 
+        // 테스트 코드
         if (Input.GetKeyDown(KeyCode.L))
         {
             C_AddPokemon addPacket = new C_AddPokemon()
@@ -43,8 +44,7 @@ public class MyPlayerController : PlayerController
                 NickName = "PIKAO",
                 Level = 5,
                 Gender = PokemonGender.Male,
-                OwnerName = "CHRIS",
-                OwnerId = Id,
+                PlayerInfo = MakeObjectInfo(),
                 Nature = PokemonNature.Serious,
                 Hp = 1,
             };
@@ -54,8 +54,7 @@ public class MyPlayerController : PlayerController
                 NickName = "CHAO",
                 Level = 1,
                 Gender = PokemonGender.Female,
-                OwnerName = "CHRIS",
-                OwnerId = Id,
+                PlayerInfo = MakeObjectInfo(),
                 Nature = PokemonNature.Timid,
                 Hp = 21,
             };
@@ -65,8 +64,7 @@ public class MyPlayerController : PlayerController
                 NickName = "SKIRT",
                 Level = 3,
                 Gender = PokemonGender.Male,
-                OwnerName = "CHRIS",
-                OwnerId = Id,
+                PlayerInfo = MakeObjectInfo(),
                 Nature = PokemonNature.Bashful,
                 Hp = 3,
             };

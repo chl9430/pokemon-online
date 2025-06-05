@@ -24,7 +24,6 @@ public class ScreenChanger : MonoBehaviour
 
     public void OnTimelineStopped(PlayableDirector aDirector)
     {
-        Debug.Log("배틀 씬으로 이동");
         _scene.DoNextActionWithTimeline();
     }
 

@@ -19,7 +19,7 @@ public class PokemonSummaryScene : BaseScene
     {
     }
 
-    public void UpdateData(IMessage packet)
+    public override void UpdateData(IMessage packet)
     {
         S_AccessPokemonSummary accessPacket = packet as S_AccessPokemonSummary;
         summaryUI.FillPokemonSummary(accessPacket.PkmSummary);

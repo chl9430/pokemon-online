@@ -5,7 +5,6 @@ using UnityEngine;
 public class ObjectManager
 {
     public MyPlayerController MyPlayer { get; set; }
-    public ObjectInfo myPlayerObjInfo { get; set; }
     public List<Pokemon> _pokemons = new List<Pokemon>();
     Dictionary<int, GameObject> _objects = new Dictionary<int, GameObject>();
 
@@ -33,7 +32,8 @@ public class ObjectManager
                 _objects.Add(info.ObjectId, go);
 
                 MyPlayer = go.GetComponent<MyPlayerController>();
-                myPlayerObjInfo = info;
+                MyPlayer.PlayerName = info.Name;
+                MyPlayer.PlayerGender = info.Gender;
                 MyPlayer.Id = info.ObjectId;
                 MyPlayer.PosInfo = info.PosInfo;
                 MyPlayer.SyncPos();

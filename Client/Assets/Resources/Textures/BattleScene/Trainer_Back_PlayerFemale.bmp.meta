@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 64412c4efd42e9d4d9e894174172b11b
+guid: aee2e5aaff231954590b2e6fedf6e294
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 3308576497471285030
-    second: HIt_0
+      213: -7009633405733224373
+    second: Trainer_Back_Female_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -37,7 +37,7 @@ TextureImporter:
   maxTextureSize: 2048
   textureSettings:
     serializedVersion: 2
-    filterMode: 1
+    filterMode: 0
     aniso: 1
     mipBias: 0
     wrapU: 1
@@ -100,13 +100,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: HIt_0
+      name: Trainer_Back_Female_0
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 32
-        height: 32
+        width: 48
+        height: 48
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -115,8 +115,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 6276bfb7bcc6aed20800000000000000
-      internalID: 3308576497471285030
+      spriteID: b404f8d5e87c8be90800000000000000
+      internalID: -7009633405733224373
       vertices: []
       indices: 
       edges: []
@@ -134,7 +134,8 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      Trainer_Back_Female_0: -7009633405733224373
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

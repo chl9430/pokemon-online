@@ -1,19 +1,10 @@
 fileFormatVersion: 2
-guid: 8936a330002b1bb458a6b2cb4fd2f247
+guid: 91d0604806138f14984b10ea82af91e4
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -3384701045929001157
-    second: BattleScene_May_0
-  - first:
-      213: 6150642947615041088
-    second: BattleScene_May_1
-  - first:
-      213: 4271892512579308301
-    second: BattleScene_May_2
-  - first:
-      213: -48965468826796128
-    second: BattleScene_May_3
+      213: 8560541992946442368
+    second: Physical_HIt_Water_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -109,13 +100,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: BattleScene_May_0
+      name: Physical_HIt_Water_0
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 49
-        height: 48
+        width: 32
+        height: 32
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -124,74 +115,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: b3f3286e4502701d0800000000000000
-      internalID: -3384701045929001157
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: BattleScene_May_1
-      rect:
-        serializedVersion: 2
-        x: 55
-        y: 0
-        width: 57
-        height: 48
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 0462bd06c297b5550800000000000000
-      internalID: 6150642947615041088
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: BattleScene_May_2
-      rect:
-        serializedVersion: 2
-        x: 124
-        y: 0
-        width: 44
-        height: 48
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: d0bc0f25b9fc84b30800000000000000
-      internalID: 4271892512579308301
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: BattleScene_May_3
-      rect:
-        serializedVersion: 2
-        x: 181
-        y: 16
-        width: 30
-        height: 26
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 0af71506a2a025ff0800000000000000
-      internalID: -48965468826796128
+      spriteID: 080236e36972dc670800000000000000
+      internalID: 8560541992946442368
       vertices: []
       indices: 
       edges: []
@@ -210,10 +135,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      BattleScene_May_0: -3384701045929001157
-      BattleScene_May_1: 6150642947615041088
-      BattleScene_May_2: 4271892512579308301
-      BattleScene_May_3: -48965468826796128
+      Physical_HIt_Water_0: 8560541992946442368
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

@@ -18,7 +18,7 @@ public class InputFieldExtractor : MonoBehaviour
         if (_inputField != null)
         {
             string inputText = _inputField.text;
-            // _scene.DoNextActionWithValue(inputText);
+            _scene.DoNextAction(inputText);
         }
         else
         {

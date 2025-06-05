@@ -19,6 +19,14 @@ public class GridSelectBox : MonoBehaviour
     [SerializeField] int _row;
     [SerializeField] int _col;
 
+    public GridSelectBoxState UIState
+    {
+        set
+        {
+            _uiState = value;
+        }
+    }
+
     public ArrowButton[,] BtnGrid
     {
         get
@@ -29,7 +37,7 @@ public class GridSelectBox : MonoBehaviour
 
     void Awake()
     {
-        _btnGrid = new ArrowButton[_col, _row];
+        _btnGrid = new ArrowButton[_row, _col];
     }
 
     void Start()
@@ -44,7 +52,7 @@ public class GridSelectBox : MonoBehaviour
     void FillButtonGrid()
     {
         if (_btnGrid == null)
-            _btnGrid = new ArrowButton[_col, _row];
+            _btnGrid = new ArrowButton[_row, _col];
 
         ArrowButton[] _btns = gameObject.GetComponentsInChildren<ArrowButton>();
 
@@ -64,7 +72,7 @@ public class GridSelectBox : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.LeftArrow))
         {
-            if (_y == 0)
+            if (_y == 0 || _btnGrid[_x, (_y - 1)].BtnData == null)
                 return;
 
             _btnGrid[_x, _y].ToggleArrow(false);
@@ -76,7 +84,7 @@ public class GridSelectBox : MonoBehaviour
         }
         else if (Input.GetKeyDown(KeyCode.RightArrow))
         {
-            if (_y == _col - 1)
+            if (_y == _col - 1 || _btnGrid[_x, (_y + 1)].BtnData == null)
                 return;
 
             _btnGrid[_x, _y].ToggleArrow(false);
@@ -88,7 +96,7 @@ public class GridSelectBox : MonoBehaviour
         }
         else if (Input.GetKeyDown(KeyCode.DownArrow))
         {
-            if (_x == _row - 1)
+            if (_x == _row - 1 || _btnGrid[(_x + 1), _y].BtnData == null)
                 return;
 
             _btnGrid[_x, _y].ToggleArrow(false);
@@ -100,7 +108,7 @@ public class GridSelectBox : MonoBehaviour
         }
         else if (Input.GetKeyDown(KeyCode.UpArrow))
         {
-            if (_x == 0)
+            if (_x == 0 || _btnGrid[(_x - 1), _y].BtnData == null)
                 return;
 
             _btnGrid[_x, _y].ToggleArrow(false);
@@ -139,6 +147,9 @@ public class GridSelectBox : MonoBehaviour
         {
             for (int j = 0; j < _btnGrid.GetLength(1); j++)
             {
+                if (i * _btnGrid.GetLength(0) + j >= names.Count)
+                    return;
+
                 _btnGrid[i, j].SetButtonName(names[i * _btnGrid.GetLength(0) + j]);
             }
         }
@@ -153,9 +164,20 @@ public class GridSelectBox : MonoBehaviour
         {
             for (int j = 0; j < _btnGrid.GetLength(1); j++)
             {
+                if (i * _btnGrid.GetLength(0) + j >= datas.Count)
+                    return;
+
                 _btnGrid[i, j].BtnData = datas[i * _btnGrid.GetLength(0) + j];
             }
         }
+    }
+
+    public void ChangeGrid(int row, int col)
+    {
+        _row = row;
+        _col = col;
+
+        FillButtonGrid();
     }
 
     public void ChangeUIState(GridSelectBoxState state, bool isActive)
@@ -172,5 +194,16 @@ public class GridSelectBox : MonoBehaviour
             gameObject.SetActive(true);
         else
             gameObject.SetActive(false);
+    }
+
+    public void HideAllArow()
+    {
+        for (int i = 0; i < _btnGrid.GetLength(0); i++)
+        {
+            for (int j = 0; j < _btnGrid.GetLength(1); j++)
+            {
+                _btnGrid[i, j].ToggleArrow(false);
+            }
+        }
     }
 }

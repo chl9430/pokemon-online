@@ -17,7 +17,7 @@ public class BattleArea : MonoBehaviour
     [SerializeField] GaugeUI _expGauge;
     [SerializeField] MoveableUI _pokemonUI;
 
-    public Pokemon Pokemon { get { return _pokemon; } }
+    public Pokemon Pokemon { get { return _pokemon; } set { _pokemon = value; } }
 
     void LoadComponent()
     {
@@ -34,8 +34,20 @@ public class BattleArea : MonoBehaviour
         if (_hpGauge == null)
             _hpGauge = Util.FindChild<GaugeUI>(gameObject, "HPGauge", true);
         if (_pokemonUI == null)
-            _pokemonUI = Util.FindChild<MoveableUI>(gameObject, "PokemonUI", true);
+            _pokemonUI = Util.FindChild<MoveableUI>(gameObject, "PokemonMoveableUI", true);
     }
+
+    public void FillTrainerImage(PlayerGender gender)
+    {
+        LoadComponent();
+
+        Texture2D image = Managers.Resource.Load<Texture2D>($"Textures/BattleScene/Trainer_Back_{gender.ToString()}");
+
+        _pokemonImage.sprite = Sprite.Create(image, new Rect(0, 0, image.width, image.height), Vector2.one * 0.5f);
+        _pokemonImage.SetNativeSize();
+    }
+
+
 
     public void FillPokemonInfo(Pokemon pokemon, bool isMyPokemon)
     {
@@ -67,7 +79,7 @@ public class BattleArea : MonoBehaviour
         _hpGauge.SetGauge(summary.Skill.Stat.Hp, summary.Skill.Stat.MaxHp);
 
         if (_expGauge != null)
-            _expGauge.SetGauge(pokemon.CurLevelEXP, summary.Skill.RemainLevelExp);
+            _expGauge.SetGauge(pokemon.PokemonSkill.CurExp, summary.Skill.RemainLevelExp);
     }
 
     public void ChangePokemonHP(int destHP)
@@ -75,11 +87,9 @@ public class BattleArea : MonoBehaviour
         _hpGauge.ChangeGauge(destHP, 0.01f);
     }
 
-    public void ChangePokemonEXP(int exp)
+    public void ChangePokemonEXP(int destExp)
     {
-        int destEXP = Pokemon.CurLevelEXP + exp;
-
-        _expGauge.ChangeGauge(destEXP, 0.01f);
+        _expGauge.ChangeGauge(destExp, 0.01f);
     }
 
     public void AttackMovePokemonUI()

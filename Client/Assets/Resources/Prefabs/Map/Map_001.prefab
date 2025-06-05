@@ -3910,7 +3910,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _appearanceRate: 40
-  _appearPkms: 000000000200000001000000
+  _LocationNum: 1
   _pkmAppearEffect: {fileID: 8586777432521838279, guid: c98ebdb2eee21254bb76ee3dee20a154, type: 3}
 --- !u!19719996 &1940327495851186129
 TilemapCollider2D:

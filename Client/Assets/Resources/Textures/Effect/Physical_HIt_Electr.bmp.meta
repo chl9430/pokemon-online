@@ -1,19 +1,10 @@
 fileFormatVersion: 2
-guid: 5482c4690102e5f468afde4aea7cb3b4
+guid: 720ba64d900dbee4bb3aa11fa6227984
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 4163066687076979337
-    second: BattleScene_Brendan_0
-  - first:
-      213: -5474531305224080868
-    second: BattleScene_Brendan_1
-  - first:
-      213: -126233041765487093
-    second: BattleScene_Brendan_2
-  - first:
-      213: -4454574613341353056
-    second: BattleScene_Brendan_3
+      213: 1770316542006006136
+    second: Physical_HIt_Electr_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -109,13 +100,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: BattleScene_Brendan_0
+      name: Physical_HIt_Electr_0
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 49
-        height: 52
+        width: 32
+        height: 32
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -124,74 +115,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 9825c73581f26c930800000000000000
-      internalID: 4163066687076979337
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: BattleScene_Brendan_1
-      rect:
-        serializedVersion: 2
-        x: 49
-        y: 0
-        width: 66
-        height: 52
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: c12fc5088ce8604b0800000000000000
-      internalID: -5474531305224080868
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: BattleScene_Brendan_2
-      rect:
-        serializedVersion: 2
-        x: 114
-        y: 0
-        width: 40
-        height: 51
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: b0ea6a2a7b78f3ef0800000000000000
-      internalID: -126233041765487093
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: BattleScene_Brendan_3
-      rect:
-        serializedVersion: 2
-        x: 161
-        y: 0
-        width: 65
-        height: 50
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 0abc0529dfb2e22c0800000000000000
-      internalID: -4454574613341353056
+      spriteID: 8711442f38d619810800000000000000
+      internalID: 1770316542006006136
       vertices: []
       indices: 
       edges: []
@@ -210,10 +135,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      BattleScene_Brendan_0: 4163066687076979337
-      BattleScene_Brendan_1: -5474531305224080868
-      BattleScene_Brendan_2: -126233041765487093
-      BattleScene_Brendan_3: -4454574613341353056
+      Physical_HIt_Electr_0: 1770316542006006136
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

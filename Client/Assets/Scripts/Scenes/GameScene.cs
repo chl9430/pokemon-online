@@ -1,10 +1,12 @@
-﻿using Google.Protobuf.Protocol;
+﻿using Google.Protobuf;
+using Google.Protobuf.Protocol;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class GameScene : BaseScene
 {
+    IMessage _packet;
     GameMenuUI _gameMenu;
 
     protected override void Init()
@@ -21,12 +23,12 @@ public class GameScene : BaseScene
 
         Screen.SetResolution(1280, 720, false);
 
-        if (Managers.Object.MyPlayer == null && Managers.Object.myPlayerObjInfo != null)
-        {
-            C_ReturnGame returnPacket = new C_ReturnGame();
-            returnPacket.PlayerId = Managers.Object.myPlayerObjInfo.ObjectId;
-            Managers.Network.Send(returnPacket);
-        }
+        //if (Managers.Object.MyPlayer == null && Managers.Object.myPlayerObjInfo != null)
+        //{
+        //    C_ReturnGame returnPacket = new C_ReturnGame();
+        //    returnPacket.PlayerId = Managers.Object.myPlayerObjInfo.ObjectId;
+        //    Managers.Network.Send(returnPacket);
+        //}
 
         Managers.Network.SendSavedPacket();
 
@@ -41,6 +43,19 @@ public class GameScene : BaseScene
         //GameObject go = new GameObject { name = "SpawningPool" };
         //SpawningPool pool = go.GetOrAddComponent<SpawningPool>();
         //pool.SetKeepMonsterCount(2);
+    }
+
+    public override void RegisterPacket(IMessage packet)
+    {
+        _packet = packet;
+    }
+
+    public override void DoNextActionWithTimeline()
+    {
+        Managers.Network.SavePacket(_packet);
+
+        // 씬 변경
+        Managers.Scene.CurrentScene.ScreenChanger.ChangeAndFadeOutScene(Define.Scene.Battle);
     }
 
     public override void DoNextAction(object value = null)

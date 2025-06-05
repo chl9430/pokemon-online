@@ -19,6 +19,17 @@ enum MsgId {
   C_SWITCH_POKEMON = 12;
   C_ACCESS_POKEMON_SUMMARY = 13;
   S_ACCESS_POKEMON_SUMMARY = 14;
+  C_MEET_WILD_POKEMON = 15;
+  C_USE_POKEMON_MOVE = 16;
+  S_USE_POKEMON_MOVE = 17;
+  C_CHANGE_POKEMON_HP = 18;
+  S_CHANGE_POKEMON_HP = 19;
+  C_GET_ENEMY_POKEMON_EXP = 20;
+  S_GET_ENEMY_POKEMON_EXP = 21;
+  C_CHANGE_POKEMON_EXP = 22;
+  S_CHANGE_POKEMON_EXP = 23;
+  C_CHANGE_POKEMON_LEVEL = 24;
+  S_CHANGE_POKEMON_LEVEL = 25;
 }
 
 enum CreatureState {
@@ -85,14 +96,13 @@ message C_CreatePlayer {
 }
 
 message C_AddPokemon {
-	string pokemonName = 1;
-	string nickName = 2;
-	int32 level = 3;
-    PokemonGender gender = 4;
-	string ownerName = 5;
-    int32 ownerId = 6;
-    PokemonNature nature = 7;
-    int32 hp = 8;
+    ObjectInfo playerInfo = 1;
+	string pokemonName = 2;
+	string nickName = 3;
+	int32 level = 4;
+    PokemonGender gender = 5;
+    PokemonNature nature = 6;
+    int32 hp = 7;
 }
 
 message S_AddPokemon {
@@ -113,10 +123,85 @@ message C_AccessPokemonSummary
 
 message S_AccessPokemonSummary
 {
-    PokemonSummary pkmSummary = 1;
+    ObjectInfo playerInfo = 1;
+    PokemonSummary pkmSummary = 2;
 }
 
+message C_MeetWildPokemon
+{
+    ObjectInfo playerInfo = 1;
+    int32 locationNum = 2;
+}
 
+message C_UsePokemonMove
+{
+    int32 playerId = 1;
+    int32 pokemonOrder = 2;
+    int32 moveOrder = 3;
+    int32 usedPP = 4;
+}
+
+message S_UsePokemonMove
+{
+    int32 remainedPP = 1;
+}
+
+message C_ChangePokemonHp
+{
+    MoveCategory moveCategory = 1;
+    PokemonInfo attackPKMInfo = 2;
+    PokemonInfo defensePKMInfo = 3;
+    PokemonStat attackPKMStat = 4;
+    PokemonStat defensePKMStat = 5;
+    int32 movePower = 6;
+    int32 playerId = 7;
+    int32 pokemonOrder = 8;
+}
+
+message S_ChangePokemonHp
+{
+    int32 remainedHP = 1;
+}
+
+message C_GetEnemyPokemonExp
+{
+    int32 playerId = 1;
+    PokemonInfo enemyPokemonInfo = 2;
+}
+
+message S_GetEnemyPokemonExp
+{
+    int32 exp = 1;
+}
+
+message C_ChangePokemonExp
+{
+    int32 playerId = 1;
+    int32 pokemonOrder = 2;
+    int32 exp = 3;
+}
+
+message S_ChangePokemonExp
+{
+    int32 pokemonTotalExp = 1;
+    int32 pokemonRemainLevelExp = 2;
+    int32 pokemonCurExp = 3;
+}
+
+message C_ChangePokemonLevel
+{
+    int32 playerId = 1;
+    int32 pokemonOrder = 2;
+}
+
+message S_ChangePokemonLevel
+{
+    int32 pokemonLevel = 1;
+    PokemonStat pokemonStat = 2;
+    LevelUpStatusDiff statDiff = 3;
+    int32 pokemonRemainLevelExp = 4;
+    int32 pokemonCurExp = 5;
+}
 
 
 
@@ -138,7 +223,7 @@ message PokemonSummary
 {
     PokemonInfo info = 1;
     PokemonSkill skill = 2;
-    PokemonBattleMove battleMove = 3;
+    repeated PokemonBattleMove battleMoves = 3;
 }
 
 message PokemonInfo
@@ -172,14 +257,28 @@ message PokemonSkill
 
     int32 totalExp = 2;
     int32 remainLevelExp = 3;
+    int32 curExp = 4;
 }
 
 message PokemonBattleMove
 {
-    //Move _move1;
-    //Move _move2;
-    //Move _move3;
-    //Move _move4;
+    string moveName = 1;
+    int32 movePower = 2;
+    int32 moveAccuracy = 3;
+    int32 curPP = 4;
+    int32 maxPP = 5;
+    MoveCategory moveCategory = 6;
+    PokemonType moveType = 7;
+}
+
+message LevelUpStatusDiff
+{
+    int32 MaxHP = 1;
+    int32 Attack = 2;
+    int32 Defense = 3;
+    int32 SpecialAttack = 4;
+    int32 SpecialDefense = 5;
+    int32 Speed = 6;
 }
 
 enum PlayerGender

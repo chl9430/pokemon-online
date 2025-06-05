@@ -299,7 +299,7 @@ public class PokemonListUI : Action_UI
             }
 
             C_SwitchPokemon switchPacket = new C_SwitchPokemon();
-            switchPacket.OwnerId = Managers.Object.myPlayerObjInfo.ObjectId;
+            // switchPacket.OwnerId = Managers.Object.myPlayerObjInfo.ObjectId;
             switchPacket.PokemonFromIdx = switchPokemonIdx;
             switchPacket.PokemonToIdx = selectedIdx;
 

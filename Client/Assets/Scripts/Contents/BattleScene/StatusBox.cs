@@ -50,16 +50,16 @@ public class StatusBox : MonoBehaviour
         }
     }
 
-    public void SetStatusDiffRate(LevelUpStatusRate rate)
+    public void SetStatusDiffRate(LevelUpStatusDiff diff)
     {
         _uiState = StatusBoxState.SHOWING_RATE;
 
-        maxHPText.text = "+" + rate.MaxHP.ToString();
-        attackText.text = "+" + rate.Attack.ToString();
-        defenseText.text = "+" + rate.Defense.ToString();
-        specialAttackText.text = "+" + rate.SpecialAttack.ToString();
-        specialDefenseText.text = "+" + rate.SpecialDefense.ToString();
-        speedText.text = "+" + rate.Speed.ToString();
+        maxHPText.text = "+" + diff.MaxHP.ToString();
+        attackText.text = "+" + diff.Attack.ToString();
+        defenseText.text = "+" + diff.Defense.ToString();
+        specialAttackText.text = "+" + diff.SpecialAttack.ToString();
+        specialDefenseText.text = "+" + diff.SpecialDefense.ToString();
+        speedText.text = "+" + diff.Speed.ToString();
     }
 
     public void ShowFinalStat(PokemonStat stat)

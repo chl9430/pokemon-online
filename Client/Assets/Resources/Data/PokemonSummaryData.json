@@ -1,72 +1,232 @@
 {
-    //"pokemonBaseStats": [
-    //    {
-    //        "pokemonName": "Pikachu",
-    //        "maxHp": "35",
-    //        "attack": "55",
-    //        "defense": "40",
-    //        "specialAttack": "50",
-    //        "specialDefense": "50",
-    //        "speed": "90"
-    //    }
-    //],
     "pokemonSummaries": [
         {
             "dictionaryNum": "25",
             "pokemonName": "Pikachu",
             "type1": "Electr",
             "type2": "TypeNone",
+            "genderRatio": [
+                {
+                    "gender": "Male",
+                    "ratio": "50"
+                },
+                {
+                    "gender": "Female",
+                    "ratio": "50"
+                }
+            ],
             //"ability":  ""
             "maxHp": "35",
             "attack": "55",
             "defense": "40",
             "specialAttack": "50",
             "specialDefense": "50",
-            "speed": "90"
-            //"moves": [
-            //    {
-            //        "learnLevel": "1",
-            //        "moveName": "Tackle"
-            //    }
-            //]
+            "speed": "90",
+            "moves": [
+                {
+                    "learnLevel": "1",
+                    "moveName": "Quick Attack"
+                },
+                {
+                    "learnLevel": "1",
+                    "moveName": "Thundershock"
+                },
+                {
+                    "learnLevel": "5",
+                    "moveName": "Thunderbolt"
+                },
+                {
+                    "learnLevel": "10",
+                    "moveName": "Quick Attack"
+                },
+                {
+                    "learnLevel": "13",
+                    "moveName": "Thundershock"
+                },
+                {
+                    "learnLevel": "18",
+                    "moveName": "Thunderbolt"
+                },
+                {
+                    "learnLevel": "21",
+                    "moveName": "Quick Attack"
+                },
+                {
+                    "learnLevel": "26",
+                    "moveName": "Thundershock"
+                }
+            ]
+        },
+        {
+            "dictionaryNum": "1",
+            "pokemonName": "Bulbasaur",
+            "type1": "Grass",
+            "type2": "TypeNone",
+            "genderRatio": [
+                {
+                    "gender": "Male",
+                    "ratio": "87.5"
+                },
+                {
+                    "gender": "Female",
+                    "ratio": "12.5"
+                }
+            ],
+            //"ability":  ""
+            "maxHp": "45",
+            "attack": "49",
+            "defense": "49",
+            "specialAttack": "65",
+            "specialDefense": "65",
+            "speed": "45",
+            "moves": [
+                {
+                    "learnLevel": "1",
+                    "moveName": "Tackle"
+                },
+                {
+                    "learnLevel": "3",
+                    "moveName": "Vine Whip"
+                },
+                {
+                    "learnLevel": "7",
+                    "moveName": "Razor Leaf"
+                },
+                {
+                    "learnLevel": "9",
+                    "moveName": "Tackle"
+                },
+                {
+                    "learnLevel": "13",
+                    "moveName": "Vine Whip"
+                },
+                {
+                    "learnLevel": "13",
+                    "moveName": "Razor Leaf"
+                },
+                {
+                    "learnLevel": "15",
+                    "moveName": "Tackle"
+                },
+                {
+                    "learnLevel": "19",
+                    "moveName": "Vine Whip"
+                }
+            ]
         },
         {
             "dictionaryNum": "4",
             "pokemonName": "Charmander",
             "type1": "Fire",
             "type2": "TypeNone",
+            "genderRatio": [
+                {
+                    "gender": "Male",
+                    "ratio": "87.5"
+                },
+                {
+                    "gender": "Female",
+                    "ratio": "12.5"
+                }
+            ],
             //"ability":  ""
             "maxHp": "39",
             "attack": "52",
             "defense": "43",
             "specialAttack": "60",
             "specialDefense": "50",
-            "speed": "65"
-            //"moves": [
-            //    {
-            //        "learnLevel": "1",
-            //        "moveName": "Tackle"
-            //    }
-            //]
+            "speed": "65",
+            "moves": [
+                {
+                    "learnLevel": "1",
+                    "moveName": "Scratch"
+                },
+                {
+                    "learnLevel": "1",
+                    "moveName": "Ember"
+                },
+                {
+                    "learnLevel": "7",
+                    "moveName": "Fire Fang"
+                },
+                {
+                    "learnLevel": "10",
+                    "moveName": "Scratch"
+                },
+                {
+                    "learnLevel": "16",
+                    "moveName": "Ember"
+                },
+                {
+                    "learnLevel": "19",
+                    "moveName": "Fire Fang"
+                },
+                {
+                    "learnLevel": "25",
+                    "moveName": "Scratch"
+                },
+                {
+                    "learnLevel": "28",
+                    "moveName": "Ember"
+                }
+            ]
         },
         {
             "dictionaryNum": "7",
             "pokemonName": "Squirtle",
             "type1": "Water",
             "type2": "TypeNone",
+            "genderRatio": [
+                {
+                    "gender": "Male",
+                    "ratio": "87.5"
+                },
+                {
+                    "gender": "Female",
+                    "ratio": "12.5"
+                }
+            ],
             //"ability":  ""
             "maxHp": "44",
             "attack": "48",
             "defense": "65",
             "specialAttack": "50",
             "specialDefense": "64",
-            "speed": "43"
-            //"moves": [
-            //    {
-            //        "learnLevel": "1",
-            //        "moveName": "Tackle"
-            //    }
-            //]
+            "speed": "43",
+            "moves": [
+                {
+                    "learnLevel": "1",
+                    "moveName": "Tackle"
+                },
+                {
+                    "learnLevel": "4",
+                    "moveName": "Bubble"
+                },
+                {
+                    "learnLevel": "7",
+                    "moveName": "Water Gun"
+                },
+                {
+                    "learnLevel": "10",
+                    "moveName": "Tackle"
+                },
+                {
+                    "learnLevel": "13",
+                    "moveName": "Bubble"
+                },
+                {
+                    "learnLevel": "16",
+                    "moveName": "Water Gun"
+                },
+                {
+                    "learnLevel": "9",
+                    "moveName": "Tackle"
+                },
+                {
+                    "learnLevel": "22",
+                    "moveName": "Bubble"
+                }
+            ]
         }
     ]
 } 

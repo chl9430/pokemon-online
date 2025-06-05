@@ -3,17 +3,10 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
-public enum AppearPokemon
-{
-    PIKACHU = 0,
-    ASB = 1,
-    WER = 2,
-}
-
 public class PokemonAppearanceTile : MonoBehaviour
 {
     [SerializeField] int _appearanceRate;
-    [SerializeField] List<AppearPokemon> _appearPkms;
+    [SerializeField] int _LocationNum;
     [SerializeField] GameObject _pkmAppearEffect;
 
     Tilemap _tilemap;
@@ -23,24 +16,32 @@ public class PokemonAppearanceTile : MonoBehaviour
     void Start()
     {
         _tilemap = GetComponent<Tilemap>();
-        _myPlayer = FindFirstObjectByType<MyPlayerController>();
+        _myPlayer = Managers.Object.MyPlayer;
     }
 
     public bool AppearPokemon()
     {
+        if (_myPlayer == null)
+            _myPlayer = Managers.Object.MyPlayer;
+
         int ran = Random.Range(0, 100);
 
         if (ran < _appearanceRate)
         {
             _myPlayer.State = CreatureState.Fight;
 
-            int pkmRan = Random.Range(0, _appearPkms.Count);
-
-            Debug.Log($"{_appearPkms[pkmRan]} 발생!");
-
             _screenChanger = Instantiate(_pkmAppearEffect).GetComponent<ScreenChanger>();
 
             Managers.Scene.CurrentScene.AttachToTheUI(_screenChanger.gameObject);
+
+            C_MeetWildPokemon c_MeetPacket = new C_MeetWildPokemon();
+
+            c_MeetPacket.PlayerInfo = Managers.Object.MyPlayer.MakeObjectInfo();
+            c_MeetPacket.LocationNum = _LocationNum;
+
+            BaseScene scene = Managers.Scene.CurrentScene;
+
+            scene.RegisterPacket(c_MeetPacket);
 
             return true;
         }

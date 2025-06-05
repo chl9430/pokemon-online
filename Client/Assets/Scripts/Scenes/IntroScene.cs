@@ -26,11 +26,9 @@ public enum IntroSceneState
 
 public class IntroScene : BaseScene
 {
-    int _curScriptIdx;
     string _playerName;
     PlayerGender _playerGender;
     IntroSceneState _sceneState = IntroSceneState.INTRO_TALKING;
-    List<List<string>> _scripts;
 
     [SerializeField] ScriptBoxUI scriptBox;
     [SerializeField] MoveableUI _profAndImgZone;
@@ -38,49 +36,43 @@ public class IntroScene : BaseScene
     [SerializeField] TMP_InputField _inputField;
     [SerializeField] FadeInOutUI _profFIOImg;
     [SerializeField] FadeInOutUI _genderFIOZone;
-    // [SerializeField] HorizontalSelectBoxUI _genderHSelectBox;
+    [SerializeField] GridSelectBox _genderSelectBox;
     [SerializeField] FadeInOutUI _maleImgBtn;
     [SerializeField] FadeInOutUI _femaleImgBtn;
 
     protected override void Init()
     {
         base.Init();
+    }
 
-        {
-            _scripts = new List<List<string>>();
+    protected override void Start()
+    {
+        base.Start();
 
-            List<string> scripts1 = new List<string>()
-            {
-                "Hello! Welcome to the pokemon world!",
-                "My name is professor Oak!",
-                "What is your name?",
-            };
+        List<string> btnNames = new List<string>();
+        btnNames.Add("Male");
+        btnNames.Add("Female");
 
-            _scripts.Add(scripts1);
+        List<object> nameObjs = new List<object>();
 
-            List<string> scripts2 = new List<string>()
-            {
-                "Okay! Thank you for letting me know!",
-                "Are you man or woman?",
-            };
+        foreach (string name in btnNames)
+            nameObjs.Add(name);
 
-            _scripts.Add(scripts2);
-
-            List<string> scripts3 = new List<string>()
-            {
-                "Okay! You are ",
-                "There you go! I am pretty sure It is time to ready to go to the pokemon world!",
-                "See you soon! I hope you will have a paid-off travel!"
-            };
-
-            _scripts.Add(scripts3);
-        }
+        _genderSelectBox.SetButtonDatas(nameObjs);
     }
 
     public override void AfterFadeInAction()
     {
         scriptBox.gameObject.SetActive(true);
-        scriptBox.BeginScriptTyping(_scripts[_curScriptIdx]);
+
+        List<string> scripts = new List<string>()
+        {
+            "Hello! Welcome to the pokemon world!",
+            "My name is professor Oak!",
+            "What is your name?",
+        };
+
+        scriptBox.BeginScriptTyping(scripts);
     }
 
     public override void DoNextAction(object value = null)
@@ -109,6 +101,15 @@ public class IntroScene : BaseScene
                     _sceneState = IntroSceneState.ENTERING_NAME;
                 }
                 break;
+            case IntroSceneState.ENTERING_NAME:
+                {
+                    _sceneState = IntroSceneState.FADING_OUT_NAME_UI;
+
+                    _inputField.interactable = false;
+                    _playerName = (string)value;
+                    _nameFIOInputField.ChangeUIAlpha(0f);
+                }
+                break;
             case IntroSceneState.FADING_OUT_NAME_UI:
                 {
                     RectTransform rt = _profAndImgZone.GetComponent<RectTransform>();
@@ -122,8 +123,14 @@ public class IntroScene : BaseScene
                 break;
             case IntroSceneState.MOVING_BACK_PROF_IMG:
                 {
-                    _curScriptIdx++;
-                    scriptBox.BeginScriptTyping(_scripts[_curScriptIdx]);
+                    List<string> scripts = new List<string>()
+                    {
+                        $"{_playerName}!",
+                        "Okay! Thank you for letting me know!",
+                        "Are you man or woman?",
+                    };
+
+                    scriptBox.BeginScriptTyping(scripts);
                     _sceneState = IntroSceneState.ASKING_GENDER;
                 }
                 break;
@@ -153,8 +160,33 @@ public class IntroScene : BaseScene
                 break;
             case IntroSceneState.FADING_IN_GENDER_UI:
                 {
-                    // _genderHSelectBox.UIState = HorizontalSelectBoxUIState.SELECTING;
                     _sceneState = IntroSceneState.ENTERING_GENDER;
+
+                    _genderSelectBox.ChangeUIState(GridSelectBoxState.SELECTING, true);
+                }
+                break;
+            case IntroSceneState.ENTERING_GENDER:
+                {
+                    if ((string)value == "Male")
+                        _playerGender = PlayerGender.PlayerMale;
+                    else if ((string)value == "Female")
+                        _playerGender = PlayerGender.PlayerFemale;
+                    else if ((string)value == "Select")
+                    {
+                        _sceneState = IntroSceneState.FADING_OUT_UNSELECTED_GENDER;
+                        _genderSelectBox.UIState = GridSelectBoxState.NONE;
+
+                        if (_playerGender == PlayerGender.PlayerMale)
+                        {
+                            _femaleImgBtn.ChangeUIAlpha(0f);
+                        }
+                        else if (_playerGender == PlayerGender.PlayerFemale)
+                        {
+                            _maleImgBtn.ChangeUIAlpha(0f);
+                        }
+
+                        _genderSelectBox.HideAllArow();
+                    }
                 }
                 break;
             case IntroSceneState.FADING_OUT_UNSELECTED_GENDER:
@@ -185,8 +217,14 @@ public class IntroScene : BaseScene
                 break;
             case IntroSceneState.MOVING_SELECTED_GENDER:
                 {
-                    _curScriptIdx++;
-                    scriptBox.BeginScriptTyping(_scripts[_curScriptIdx]);
+                    List<string> scripts = new List<string>()
+                    {
+                        $"Okay! You are {(_playerGender == PlayerGender.PlayerMale ? "Male" : "Female")}!",
+                        "There you go! I am pretty sure It is time to ready to go to the pokemon world!",
+                        "See you soon! I hope you will have a paid-off travel!"
+                    };
+
+                    scriptBox.BeginScriptTyping(scripts);
                     _sceneState = IntroSceneState.LAST_TALKING;
                 }
                 break;
@@ -208,41 +246,7 @@ public class IntroScene : BaseScene
     //{
     //    switch (_sceneState)
     //    {
-    //        case IntroSceneState.ENTERING_NAME:
-    //            {
-    //                _playerName = (string)value;
-    //                _inputField.interactable = false;
-    //                _nameFIOInputField.ChangeUIAlpha(0f);
 
-    //                _sceneState = IntroSceneState.FADING_OUT_NAME_UI;
-
-    //                string textToAdd = $"{_scripts[_curScriptIdx + 1][0]} {_playerName}!";
-    //                _scripts[_curScriptIdx + 1][0] = textToAdd;
-    //            }
-    //            break;
-    //        case IntroSceneState.ENTERING_GENDER:
-    //            {
-    //                if ((string)value == "Male")
-    //                    _playerGender = PlayerGender.PlayerMale;
-    //                else if ((string)value == "Female")
-    //                    _playerGender = PlayerGender.PlayerFemale;
-
-    //                if (_playerGender == PlayerGender.PlayerMale)
-    //                {
-    //                    _femaleImgBtn.ChangeUIAlpha(0f);
-    //                }
-    //                else if (_playerGender == PlayerGender.PlayerFemale)
-    //                {
-    //                    _maleImgBtn.ChangeUIAlpha(0f);
-    //                }
-
-    //                _genderHSelectBox.HideAllArrow();
-    //                _sceneState = IntroSceneState.FADING_OUT_UNSELECTED_GENDER;
-
-    //                string textToAdd = $"{_scripts[_curScriptIdx + 1][0]}{(string)value}!";
-    //                _scripts[_curScriptIdx + 1][0] = textToAdd;
-    //            }
-    //            break;
     //    }
     //}
 

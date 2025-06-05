@@ -1,0 +1,92 @@
+{
+    "pokemonMoves": [
+        {
+            "moveName": "Thundershock",
+            "movePower": "40",
+            "moveAccuracy": "100",
+            "maxPP": "30",
+            "moveCategory": "Special",
+            "moveType": "Electr"
+        },
+        {
+            "moveName": "Quick Attack",
+            "movePower": "40",
+            "moveAccuracy": "100",
+            "maxPP": "30",
+            "moveCategory": "Physical",
+            "moveType": "Normal"
+        },
+        {
+            "moveName": "Thunderbolt",
+            "movePower": "95",
+            "moveAccuracy": "100",
+            "maxPP": "15",
+            "moveCategory": "Special",
+            "moveType": "Electr"
+        },
+        {
+            "moveName": "Tackle",
+            "movePower": "35",
+            "moveAccuracy": "95",
+            "maxPP": "35",
+            "moveCategory": "Physical",
+            "moveType": "Normal"
+        },
+        {
+            "moveName": "Vine Whip",
+            "movePower": "35",
+            "moveAccuracy": "100",
+            "maxPP": "15",
+            "moveCategory": "Physical",
+            "moveType": "Grass"
+        },
+        {
+            "moveName": "Razor Leaf",
+            "movePower": "55",
+            "moveAccuracy": "95",
+            "maxPP": "25",
+            "moveCategory": "Physical",
+            "moveType": "Grass"
+        },
+        {
+            "moveName": "Scratch",
+            "movePower": "40",
+            "moveAccuracy": "100",
+            "maxPP": "35",
+            "moveCategory": "Physical",
+            "moveType": "Normal"
+        },
+        {
+            "moveName": "Ember",
+            "movePower": "40",
+            "moveAccuracy": "100",
+            "maxPP": "25",
+            "moveCategory": "Special",
+            "moveType": "Fire"
+        },
+        {
+            "moveName": "Fire Fang",
+            "movePower": "65",
+            "moveAccuracy": "95",
+            "maxPP": "15",
+            "moveCategory": "Physical",
+            "moveType": "Fire"
+        },
+        {
+            "moveName": "Bubble",
+            "movePower": "20",
+            "moveAccuracy": "100",
+            "maxPP": "30",
+            "moveCategory": "Special",
+            "moveType": "Water"
+        },
+        {
+            "moveName": "Water Gun",
+            "movePower": "40",
+            "moveAccuracy": "100",
+            "maxPP": "25",
+            "moveCategory": "Special",
+            "moveType": "Water"
+        }
+    ]
+}

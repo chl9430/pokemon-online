@@ -95,7 +95,59 @@ public class PacketHandler
 
         Debug.Log($"S_AccessPokemonSummary : {s_AccessPacket.PkmSummary}");
 
-        PokemonSummaryScene scene = Managers.Scene.CurrentScene as PokemonSummaryScene;
+        BaseScene scene = Managers.Scene.CurrentScene;
         scene.UpdateData(s_AccessPacket);
+    }
+
+    public static void S_UsePokemonMoveHandler(PacketSession session, IMessage packet)
+    {
+        S_UsePokemonMove s_UseMovePacket = packet as S_UsePokemonMove;
+        int remainedPP = s_UseMovePacket.RemainedPP;
+
+        Debug.Log($"S_UsePokemonMove : {s_UseMovePacket.RemainedPP}");
+
+        BaseScene scene = Managers.Scene.CurrentScene;
+        scene.UpdateData(s_UseMovePacket);
+    }
+
+    public static void S_ChangePokemonHpHandler(PacketSession session, IMessage packet)
+    {
+        S_ChangePokemonHp s_changeHpPacket = packet as S_ChangePokemonHp;
+        int remainedHp = s_changeHpPacket.RemainedHP;
+
+        Debug.Log($"S_ChangePokemonHp : {remainedHp}");
+
+        BaseScene scene = Managers.Scene.CurrentScene;
+        scene.UpdateData(s_changeHpPacket);
+    }
+
+    public static void S_GetEnemyPokemonExpHandler(PacketSession session, IMessage packet)
+    {
+        S_GetEnemyPokemonExp s_GetExpPacket = packet as S_GetEnemyPokemonExp;
+
+        Debug.Log($"S_GetEnemyPokemonExp : {s_GetExpPacket}");
+
+        BaseScene scene = Managers.Scene.CurrentScene;
+        scene.UpdateData(s_GetExpPacket);
+    }
+
+    public static void S_ChangePokemonExpHandler(PacketSession session, IMessage packet)
+    {
+        S_ChangePokemonExp s_ChangeExpPacket = packet as S_ChangePokemonExp;
+
+        Debug.Log($"s_ChangeExpPacket : {s_ChangeExpPacket}");
+
+        BaseScene scene = Managers.Scene.CurrentScene;
+        scene.UpdateData(s_ChangeExpPacket);
+    }
+
+    public static void S_ChangePokemonLevelHandler(PacketSession session, IMessage packet)
+    {
+        S_ChangePokemonLevel s_ChangeLevelPacket = packet as S_ChangePokemonLevel;
+
+        Debug.Log($"s_ChangeLevelPacket : {s_ChangeLevelPacket}");
+
+        BaseScene scene = Managers.Scene.CurrentScene;
+        scene.UpdateData(s_ChangeLevelPacket);
     }
 }

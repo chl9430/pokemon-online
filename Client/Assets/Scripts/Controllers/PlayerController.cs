@@ -5,8 +5,26 @@ using UnityEngine;
 public class PlayerController : CreatureController
 {
     protected float moveTimer = 0f;
+    protected string _name;
+    protected PlayerGender _gender;
     protected Vector3 initPos;
     protected Vector3 destPos;
+
+    public string PlayerName
+    {
+        set
+        {
+            _name = value;
+        }
+    }
+
+    public PlayerGender PlayerGender
+    {
+        set
+        {
+            _gender = value;
+        }
+    }
 
     public float MoveTimer
     {
@@ -76,6 +94,19 @@ public class PlayerController : CreatureController
             moveTimer = 0f;
             transform.position = destPos;
         }
+    }
+
+    public ObjectInfo MakeObjectInfo()
+    {
+        ObjectInfo info = new ObjectInfo()
+        {
+            ObjectId = Id,
+            Name = _name,
+            Gender = _gender,
+            PosInfo = PosInfo
+        };
+
+        return info;
     }
 
     protected virtual void CheckUpdatedFlag()

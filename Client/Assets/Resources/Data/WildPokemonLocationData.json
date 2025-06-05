@@ -1,0 +1,29 @@
+{
+    "wildPKMLocations": [
+        {
+            "locationNum": "1",
+            "wildPokemons": [
+                {
+                    "pokemonName": "Pikachu",
+                    "pokemonLevel": "2",
+                    "appearRate":  "10"
+                },
+                {
+                    "pokemonName": "Charmander",
+                    "pokemonLevel": "3",
+                    "appearRate": "20"
+                },
+                {
+                    "pokemonName": "Bulbasaur",
+                    "pokemonLevel": "3",
+                    "appearRate": "40"
+                },
+                {
+                    "pokemonName": "Squirtle",
+                    "pokemonLevel": "3",
+                    "appearRate": "30"
+                }
+            ]
+        }
+    ]
+} 

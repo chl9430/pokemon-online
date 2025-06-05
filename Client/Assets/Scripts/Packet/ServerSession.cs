@@ -23,6 +23,13 @@ public class ServerSession : PacketSession
     {
         Debug.Log($"OnConnected : {endPoint}");
 
+        // 테스트 코드
+        //C_CreatePlayer createPacket = new C_CreatePlayer();
+        //createPacket.Name = "CHRIS";
+        //createPacket.Gender = PlayerGender.PlayerMale;
+
+        //Managers.Network.Send(createPacket);
+
         PacketManager.Instance.CustomHandler = (s, m, i) =>
         {
             PacketQueue.Instance.Push(i, m);

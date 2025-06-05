@@ -23,15 +23,26 @@ public class ScriptBoxUI : MonoBehaviour
     List<string> _scripts;
     BaseScene _scene;
 
-    [SerializeField] TextMeshProUGUI _tmp;
-    [SerializeField] GameObject _nextBtn;
+    TextMeshProUGUI _tmp;
+    Image _nextBtn;
     [SerializeField] float _typeSpeed = 0.05f;
 
     void Start()
     {
+        LoadComponent();
+
         _scene = Managers.Scene.CurrentScene;
-        _tmp.text = "";
-        _nextBtn.SetActive(false);
+
+        _nextBtn.gameObject.SetActive(false);
+    }
+
+    void LoadComponent()
+    {
+        if (_tmp == null)
+            _tmp = Util.FindChild<TextMeshProUGUI>(gameObject, "ScriptBoxText", true);
+
+        if (_nextBtn == null)
+            _nextBtn = Util.FindChild<Image>(gameObject, "NextButton", true);
     }
 
     void Update()
@@ -49,11 +60,15 @@ public class ScriptBoxUI : MonoBehaviour
 
     public void SetScriptWihtoutTyping(string script)
     {
+        LoadComponent();
+
         _tmp.text = script;
     }
 
     public void BeginScriptTyping(List<string> scripts, bool autoSkip = false, float autoSkipTime = 1f)
     {
+        LoadComponent();
+
         _uiState = ScriptBoxUIState.TEXT_TYPING;
         _scripts = scripts;
         _autoSkipTime = autoSkipTime;
@@ -79,13 +94,12 @@ public class ScriptBoxUI : MonoBehaviour
     {
         for (int i = 0; i < _sentence.Length; i++)
         {
-
             _tmp.text += _sentence[i];
             yield return new WaitForSeconds(_typeSpeed);
         }
 
         if (!_autoSkip)
-            _nextBtn.SetActive(true);
+            _nextBtn.gameObject.SetActive(true);
 
         _uiState = ScriptBoxUIState.WAITING_NEXT_SENTENCE;
     }
@@ -97,7 +111,7 @@ public class ScriptBoxUI : MonoBehaviour
             StopAllCoroutines();
             _tmp.text = _sentence;
             _uiState = ScriptBoxUIState.WAITING_NEXT_SENTENCE;
-            _nextBtn.SetActive(true);
+            _nextBtn.gameObject.SetActive(true);
         }
     }
 
@@ -115,7 +129,7 @@ public class ScriptBoxUI : MonoBehaviour
 
     IEnumerator ShowNextSentence()
     {
-        _nextBtn.SetActive(false);
+        _nextBtn.gameObject.SetActive(false);
         _tmp.text = _sentence;
         _uiState = ScriptBoxUIState.TEXT_TYPING;
         _curScriptIdx++;
