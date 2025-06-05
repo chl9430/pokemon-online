@@ -15,7 +15,7 @@ public struct PokemonMoveDictData
     public PokemonType moveType;
 }
 
-public struct LearnMoveData
+public struct LearnableMoveData
 {
     public int learnLevel;
     public string moveName;
@@ -40,7 +40,7 @@ public struct PokemonSummaryDictData
     public int specialAttack;
     public int specialDefense;
     public int speed;
-    public LearnMoveData[] moves;
+    public LearnableMoveData[] learnableMoves;
 }
 
 public struct WildPokemonAppearData

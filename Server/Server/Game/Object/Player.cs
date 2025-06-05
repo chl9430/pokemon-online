@@ -11,8 +11,16 @@ namespace Server
 {
     public class Player : GameObject
     {
+        string _name;
         List<Pokemon> pokemons;
+        PlayerGender _gender;
+
         public ClientSession Session { get; set; }
+
+        public string Name { get { return _name; } set { _name = value; } }
+
+        public PlayerGender Gender { get { return _gender; } set { _gender = value; } }
+
         public List<Pokemon> Pokemons
         {
             get { return pokemons; }

@@ -50,6 +50,9 @@ namespace Server
                 // 본인한테 정보 전송
                 S_EnterRoom enterPacket = new S_EnterRoom();
                 enterPacket.Player = player.Info;
+                enterPacket.PlayerName = player.Name;
+                enterPacket.PlayerGender = player.Gender;
+
                 player.Session.Send(enterPacket);
 
                 S_Spawn spawnPacket = new S_Spawn();

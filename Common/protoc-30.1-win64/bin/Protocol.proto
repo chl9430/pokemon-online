@@ -19,17 +19,18 @@ enum MsgId {
   C_SWITCH_POKEMON = 12;
   C_ACCESS_POKEMON_SUMMARY = 13;
   S_ACCESS_POKEMON_SUMMARY = 14;
-  C_MEET_WILD_POKEMON = 15;
-  C_USE_POKEMON_MOVE = 16;
-  S_USE_POKEMON_MOVE = 17;
-  C_CHANGE_POKEMON_HP = 18;
-  S_CHANGE_POKEMON_HP = 19;
-  C_GET_ENEMY_POKEMON_EXP = 20;
-  S_GET_ENEMY_POKEMON_EXP = 21;
-  C_CHANGE_POKEMON_EXP = 22;
-  S_CHANGE_POKEMON_EXP = 23;
-  C_CHANGE_POKEMON_LEVEL = 24;
-  S_CHANGE_POKEMON_LEVEL = 25;
+  C_ENTER_POKEMON_BATTLE_SCENE = 15;
+  S_ENTER_POKEMON_BATTLE_SCENE = 16;
+  C_USE_POKEMON_MOVE = 17;
+  S_USE_POKEMON_MOVE = 18;
+  C_CHANGE_POKEMON_HP = 19;
+  S_CHANGE_POKEMON_HP = 20;
+  C_GET_ENEMY_POKEMON_EXP = 21;
+  S_GET_ENEMY_POKEMON_EXP = 22;
+  C_CHANGE_POKEMON_EXP = 23;
+  S_CHANGE_POKEMON_EXP = 24;
+  C_CHANGE_POKEMON_LEVEL = 25;
+  S_CHANGE_POKEMON_LEVEL = 26;
 }
 
 enum CreatureState {
@@ -64,6 +65,8 @@ message C_ExitGame {
 
 message S_EnterRoom {
     ObjectInfo player = 1;
+    string playerName = 2;
+    PlayerGender playerGender = 3;
 }
 
 message S_LeaveRoom {
@@ -96,7 +99,7 @@ message C_CreatePlayer {
 }
 
 message C_AddPokemon {
-    ObjectInfo playerInfo = 1;
+    int32 playerId = 1;
 	string pokemonName = 2;
 	string nickName = 3;
 	int32 level = 4;
@@ -106,7 +109,10 @@ message C_AddPokemon {
 }
 
 message S_AddPokemon {
-    PokemonSummary summary = 1;
+    PokemonInfo pokemonInfo = 1;
+    PokemonStat pokemonStat = 2;
+    PokemonExpInfo expInfo = 3;
+    repeated PokemonMove pokemonMoves = 4;
 }
 
 message C_SwitchPokemon {
@@ -118,19 +124,30 @@ message C_SwitchPokemon {
 message C_AccessPokemonSummary
 {
     int32 playerId = 1;
-    int32 pkmDicNum = 2;
+    int32 pokemonOrder = 2;
 }
 
 message S_AccessPokemonSummary
 {
-    ObjectInfo playerInfo = 1;
-    PokemonSummary pkmSummary = 2;
+    PokemonInfo pokemonInfo = 2;
+    PokemonStat pokemonStat = 3;
+    PokemonExpInfo expInfo = 4;
+    repeated PokemonMove pokemonMoves = 5;
 }
 
-message C_MeetWildPokemon
+message C_EnterPokemonBattleScene
+{
+    int32 playerId = 1;
+    int32 locationNum = 2;
+}
+
+message S_EnterPokemonBattleScene
 {
     ObjectInfo playerInfo = 1;
-    int32 locationNum = 2;
+    PokemonInfo pokemonInfo = 2;
+    PokemonStat pokemonStat = 3;
+    PokemonExpInfo expInfo = 4;
+    repeated PokemonMove pokemonMoves = 5;
 }
 
 message C_UsePokemonMove
@@ -160,7 +177,7 @@ message C_ChangePokemonHp
 
 message S_ChangePokemonHp
 {
-    int32 remainedHP = 1;
+    int32 remainedHp = 1;
 }
 
 message C_GetEnemyPokemonExp
@@ -183,9 +200,7 @@ message C_ChangePokemonExp
 
 message S_ChangePokemonExp
 {
-    int32 pokemonTotalExp = 1;
-    int32 pokemonRemainLevelExp = 2;
-    int32 pokemonCurExp = 3;
+    PokemonExpInfo pokemonExpInfo = 1;
 }
 
 message C_ChangePokemonLevel
@@ -207,9 +222,7 @@ message S_ChangePokemonLevel
 
 message ObjectInfo {
   int32 objectId = 1;
-  string name = 2;
-  PlayerGender gender = 3;
-  PositionInfo posInfo = 4;
+  PositionInfo posInfo = 2;
 }
 
 message PositionInfo {
@@ -217,13 +230,6 @@ message PositionInfo {
 	MoveDir moveDir = 2;
 	int32 posX = 3;
 	int32 posY = 4;
-}
-
-message PokemonSummary
-{
-    PokemonInfo info = 1;
-    PokemonSkill skill = 2;
-    repeated PokemonBattleMove battleMoves = 3;
 }
 
 message PokemonInfo
@@ -247,6 +253,22 @@ message PokemonInfo
     // string metMapName;
 }
 
+message PokemonStat {
+	int32 hp = 1;
+	int32 maxHp = 2;
+	int32 attack = 3;
+	int32 defense = 4;
+	int32 specialAttack = 5;
+	int32 specialDefense = 6;
+	int32 speed = 7;
+}
+
+message PokemonExpInfo {
+    int32 curExp = 1;
+    int32 totalExp = 2;
+    int32 remainExpToNextLevel = 3;
+}
+/*
 message PokemonSkill
 {
     // Item holdItem;
@@ -259,8 +281,8 @@ message PokemonSkill
     int32 remainLevelExp = 3;
     int32 curExp = 4;
 }
-
-message PokemonBattleMove
+*/
+message PokemonMove
 {
     string moveName = 1;
     int32 movePower = 2;
@@ -326,14 +348,4 @@ enum MoveCategory
     PHYSICAL = 0;
     SPECIAL = 1;
     OTHER = 2;
-}
-
-message PokemonStat {
-	int32 hp = 1;
-	int32 maxHp = 2;
-	int32 attack = 3;
-	int32 defense = 4;
-	int32 specialAttack = 5;
-	int32 specialDefense = 6;
-	int32 speed = 7;
 }

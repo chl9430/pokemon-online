@@ -22,7 +22,7 @@
             "specialAttack": "50",
             "specialDefense": "50",
             "speed": "90",
-            "moves": [
+            "learnableMoves": [
                 {
                     "learnLevel": "1",
                     "moveName": "Quick Attack"
@@ -79,7 +79,7 @@
             "specialAttack": "65",
             "specialDefense": "65",
             "speed": "45",
-            "moves": [
+            "learnableMoves": [
                 {
                     "learnLevel": "1",
                     "moveName": "Tackle"
@@ -136,7 +136,7 @@
             "specialAttack": "60",
             "specialDefense": "50",
             "speed": "65",
-            "moves": [
+            "learnableMoves": [
                 {
                     "learnLevel": "1",
                     "moveName": "Scratch"
@@ -193,7 +193,7 @@
             "specialAttack": "50",
             "specialDefense": "64",
             "speed": "43",
-            "moves": [
+            "learnableMoves": [
                 {
                     "learnLevel": "1",
                     "moveName": "Tackle"
