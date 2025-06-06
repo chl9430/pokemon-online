@@ -24,6 +24,7 @@ namespace Server
         public List<Pokemon> Pokemons
         {
             get { return pokemons; }
+            set { pokemons = value; }
         }
 
         public Player()
@@ -43,6 +44,16 @@ namespace Server
 
             pokemons[from] = pokemons[to];
             pokemons[to] = pokemon;
+        }
+
+        public PlayerInfo MakePlayerInfo()
+        {
+            PlayerInfo playerInfo = new PlayerInfo();
+            playerInfo.ObjectInfo = Info;
+            playerInfo.PlayerName = Name;
+            playerInfo.PlayerGender = Gender;
+
+            return playerInfo;
         }
     }
 }

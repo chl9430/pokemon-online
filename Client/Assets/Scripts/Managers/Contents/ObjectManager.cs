@@ -5,7 +5,6 @@ using UnityEngine;
 public class ObjectManager
 {
     public MyPlayerController MyPlayer { get; set; }
-    public List<Pokemon> _pokemons = new List<Pokemon>();
     Dictionary<int, GameObject> _objects = new Dictionary<int, GameObject>();
 
     public static GameObjectType GetObjectTypeById(int id)
@@ -14,46 +13,17 @@ public class ObjectManager
         return (GameObjectType)type;
     }
 
-    public void Add(ObjectInfo info, bool myPlayer = false)
+    public void Add(GameObject go, ObjectInfo info)
     {
         GameObjectType objectType = GetObjectTypeById(info.ObjectId);
         if (objectType == GameObjectType.Player)
         {
-            if (myPlayer)
-            {
-                GameObject go = null;
+            _objects.Add(info.ObjectId, go);
 
-                if (info.Gender == PlayerGender.PlayerMale)
-                    go = Managers.Resource.Instantiate("Creature/MyPlayerMale");
-                else if (info.Gender == PlayerGender.PlayerFemale)
-                    go = Managers.Resource.Instantiate("Creature/MyPlayerFemale");
-
-                go.name = info.Name;
-                _objects.Add(info.ObjectId, go);
-
-                MyPlayer = go.GetComponent<MyPlayerController>();
-                MyPlayer.PlayerName = info.Name;
-                MyPlayer.PlayerGender = info.Gender;
-                MyPlayer.Id = info.ObjectId;
-                MyPlayer.PosInfo = info.PosInfo;
-                MyPlayer.SyncPos();
-            }
-            else
-            {
-                GameObject go = null;
-
-                if (info.Gender == PlayerGender.PlayerMale)
-                    go = Managers.Resource.Instantiate("Creature/PlayerMale");
-                else if (info.Gender == PlayerGender.PlayerFemale)
-                    go = Managers.Resource.Instantiate("Creature/PlayerFemale");
-
-                go.name = info.Name;
-                _objects.Add(info.ObjectId, go);
-
-                PlayerController pc = go.GetComponent<PlayerController>();
-                pc.PosInfo = info.PosInfo;
-                pc.SyncPos();
-            }
+            BaseController bc = go.GetComponent<PlayerController>();
+            bc.PosInfo = info.PosInfo;
+            bc.SyncPos();
+            bc.Id = info.ObjectId;
         }
     }
 

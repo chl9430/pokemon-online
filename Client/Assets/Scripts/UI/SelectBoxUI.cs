@@ -40,11 +40,11 @@ public class SelectBoxUI : Action_UI
         {
             if (selectedIdx == 0)
             {
-                Pokemon pokemon = _pokemonListUI.GetSelectedPokemon();
+                Pokemon selectedPokemon = _pokemonListUI.GetSelectedPokemon();
 
                 C_AccessPokemonSummary accessPacket = new C_AccessPokemonSummary();
                 accessPacket.PlayerId = Managers.Object.MyPlayer.Id;
-                accessPacket.PkmDicNum = pokemon.PokemonSummary.Info.DictionaryNum;
+                // accessPacket.PokemonOrder = Managers.Object._pokemons.FindIndex(pokemon => pokemon == selectedPokemon);
 
                 Managers.Network.SavePacket(accessPacket);
 

@@ -22,6 +22,7 @@ public class PokemonSummaryScene : BaseScene
     public override void UpdateData(IMessage packet)
     {
         S_AccessPokemonSummary accessPacket = packet as S_AccessPokemonSummary;
-        summaryUI.FillPokemonSummary(accessPacket.PkmSummary);
+
+        summaryUI.FillPokemonSummary(accessPacket.PokemonSum);
     }
 }

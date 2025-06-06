@@ -39,6 +39,7 @@ public class BattleScene : BaseScene
     TextMeshProUGUI[] _moveInfoTMPs;
     PlayableDirector _playableDirector;
     ObjectInfo _playerInfo;
+    List<Pokemon> _myPokemons;
 
     Pokemon _myPokemon;
     Pokemon _enemyPokemon;
@@ -71,7 +72,17 @@ public class BattleScene : BaseScene
         
         _scripts = new List<List<string>>();
 
-        Managers.Network.SendSavedPacket();
+        // 테스트 시 사용.
+        if (Managers.Network.Packet == null)
+        {
+            C_EnterPokemonBattleScene enterBattlePacket = new C_EnterPokemonBattleScene();
+            enterBattlePacket.PlayerId = -1;
+            enterBattlePacket.LocationNum = 1;
+
+            Managers.Network.Send(enterBattlePacket);
+        }
+        else
+            Managers.Network.SendSavedPacket();
     }
 
     public override void UpdateData(IMessage packet)
@@ -80,16 +91,26 @@ public class BattleScene : BaseScene
         {
             case BattleSceneState.INTRO:
                 {
-                    S_AccessPokemonSummary accessPacket = packet as S_AccessPokemonSummary;
-                    ObjectInfo info = accessPacket.PlayerInfo;
+                    S_EnterPokemonBattleScene enterBattleScenePacket = packet as S_EnterPokemonBattleScene;
 
-                    _playerInfo = info;
+                    PlayerInfo playerInfo = enterBattleScenePacket.PlayerInfo;
+                    PokemonSummary enemyPokemon = enterBattleScenePacket.EnemyPokemon;
+                    IList myPokmeonSums = enterBattleScenePacket.PlayerPokemons;
 
-                    _myPokemonArea.FillTrainerImage(info.Gender);
-                    _myPokemonArea.Pokemon = Managers.Object._pokemons[0];
+                    _myPokemons = new List<Pokemon>();
+
+                    foreach (PokemonSummary pokemonSum in myPokmeonSums)
+                    {
+                        _myPokemons.Add(new Pokemon(pokemonSum));
+                    }
+
+                    _playerInfo = playerInfo.ObjectInfo;
+
+                    _myPokemonArea.FillTrainerImage(playerInfo.PlayerGender);
+                    _myPokemonArea.Pokemon = _myPokemons[0];
                     _myPokemon = _myPokemonArea.Pokemon;
 
-                    _enemyPokemonArea.FillPokemonInfo(new Pokemon(accessPacket.PkmSummary), false);
+                    _enemyPokemonArea.FillPokemonInfo(new Pokemon(enemyPokemon), false);
                     _enemyPokemon = _enemyPokemonArea.Pokemon;
                 }
                 break;
@@ -103,8 +124,8 @@ public class BattleScene : BaseScene
 
                     SetSelectedMove(_selectedMove);
 
-                    _myPokemon.SelectedMove.PP = remainedPP;
-                    _enemyPokemon.SelectedMove.PP--;
+                    _myPokemon.SelectedMove.CurPP = remainedPP;
+                    _enemyPokemon.SelectedMove.CurPP--;
 
                     ActiveUIBySceneState(_sceneState);
 
@@ -125,7 +146,7 @@ public class BattleScene : BaseScene
 
                     _loadingPacket = false;
 
-                    int remainedHp = changeHpPacket.RemainedHP;
+                    int remainedHp = changeHpPacket.RemainedHp;
 
                     _defensePKM.PokemonStat.Hp = remainedHp;
 
@@ -158,15 +179,11 @@ public class BattleScene : BaseScene
                     _loadingPacket = false;
 
                     S_ChangePokemonExp changeExpPacket = packet as S_ChangePokemonExp;
-                    int myPokemonTotalExp = changeExpPacket.PokemonTotalExp;
-                    int myPokemonRemainLevelExp = changeExpPacket.PokemonRemainLevelExp;
-                    int myPokemonCurExp = changeExpPacket.PokemonCurExp;
+                    PokemonExpInfo expInfo = changeExpPacket.PokemonExpInfo;
 
-                    _myPokemon.PokemonSkill.TotalExp = myPokemonTotalExp;
-                    _myPokemon.PokemonSkill.RemainLevelExp = myPokemonRemainLevelExp;
-                    _myPokemon.PokemonSkill.CurExp = myPokemonCurExp;
+                    _myPokemon.PokemonExpInfo = expInfo;
 
-                    _myPokemonArea.ChangePokemonEXP(_myPokemon.PokemonSkill.CurExp);
+                    _myPokemonArea.ChangePokemonEXP(_myPokemon.PokemonExpInfo.CurExp);
                 }
                 break;
             case BattleSceneState.GETTING_EXP:
@@ -184,8 +201,8 @@ public class BattleScene : BaseScene
 
                     _myPokemon.PokemonInfo.Level = pokemonLevel;
                     _myPokemon.PokemonStat = stat;
-                    _myPokemon.PokemonSkill.RemainLevelExp = remainLevelExp;
-                    _myPokemon.PokemonSkill.CurExp = curExp;
+                    _myPokemon.PokemonExpInfo.RemainExpToNextLevel = remainLevelExp;
+                    _myPokemon.PokemonExpInfo.CurExp = curExp;
 
                     _myPokemonArea.FillPokemonInfo(_myPokemon, true);
                     _statusBox.SetStatusDiffRate(statDiff);
@@ -205,15 +222,11 @@ public class BattleScene : BaseScene
                     _loadingPacket = false;
 
                     S_ChangePokemonExp changeExpPacket = packet as S_ChangePokemonExp;
-                    int myPokemonTotalExp = changeExpPacket.PokemonTotalExp;
-                    int myPokemonRemainLevelExp = changeExpPacket.PokemonRemainLevelExp;
-                    int myPokemonCurExp = changeExpPacket.PokemonCurExp;
+                    PokemonExpInfo expInfo = changeExpPacket.PokemonExpInfo;
 
-                    _myPokemon.PokemonSkill.TotalExp = myPokemonTotalExp;
-                    _myPokemon.PokemonSkill.RemainLevelExp = myPokemonRemainLevelExp;
-                    _myPokemon.PokemonSkill.CurExp = myPokemonCurExp;
+                    _myPokemon.PokemonExpInfo = expInfo;
 
-                    _myPokemonArea.ChangePokemonEXP(_myPokemon.PokemonSkill.CurExp);
+                    _myPokemonArea.ChangePokemonEXP(_myPokemon.PokemonExpInfo.CurExp);
 
                     ActiveUIBySceneState(_sceneState);
                 }
@@ -241,120 +254,6 @@ public class BattleScene : BaseScene
             _actionSelectBox.SetButtonNames(btnNames);
             _actionSelectBox.SetButtonDatas(nameObjs);
         }
-
-        {
-            // PokemonSummary dummySummary = new PokemonSummary();
-            //PokemonInfo dummyInfo = new PokemonInfo()
-            //{
-            //    DictionaryNum = 35,
-            //    NickName = "MESSI",
-            //    PokemonName = "Charmander",
-            //    Level = 1,
-            //    Gender = PokemonGender.Male,
-            //    Type1 = PokemonType.Fire,
-            //    Type2 = PokemonType.Water,
-            //    OwnerName = "CHRIS",
-            //    OwnerId = 99999
-            //};
-            //PokemonSkill dummySkill = new PokemonSkill()
-            //{
-            //    Stat = new PokemonStat(),
-            //};
-            //PokemonBattleMove dummyBattleMove = new PokemonBattleMove()
-            //{
-            //};
-
-            //dummySummary.Info = dummyInfo;
-            //dummySummary.Skill = dummySkill;
-
-            //List<PokemonMove> moves = new List<PokemonMove>()
-            //    {
-            //        new(20, 10, 100, "Ember", PokemonType.Fire, MoveCategory.Special),
-            //        new(15, 20, 100, "Ember2", PokemonType.Fire, MoveCategory.Special),
-            //        new(10, 30, 100, "Ember3", PokemonType.Fire, MoveCategory.Special),
-            //        new(5, 100, 100, "Ember4", PokemonType.Fire, MoveCategory.Special),
-            //    };
-
-            //Pokemon pokemon = new Pokemon(dummySummary);
-            //pokemon.Moves = moves;
-            //pokemon.PokemonBaseStat = new PokemonBaseStat()
-            //{
-            //    MaxHP = 35,
-            //    Attack = 55,
-            //    Defense = 30,
-            //    SpecialAttack = 50,
-            //    SpecialDefense = 40,
-            //    Speed = 90
-            //};
-            //pokemon.SetStat();
-            //pokemon.PokemonStat.Hp = pokemon.PokemonStat.MaxHp;
-
-            //List<string> names = new List<string>();
-            //names.Add(pokemon.Moves[0].MoveName);
-            //names.Add(pokemon.Moves[1].MoveName);
-            //names.Add(pokemon.Moves[2].MoveName);
-            //names.Add(pokemon.Moves[3].MoveName);
-
-            //List<object> movesObjs = new List<object>();
-
-            //foreach (PokemonMove move in moves)
-            //    movesObjs.Add(move);
-
-            //_moveSelectBox.SetButtonNames(names);
-            //_moveSelectBox.SetButtonDatas(movesObjs);
-
-            //_myPokemonArea.FillPokemonInfo(pokemon, true);
-        }
-
-        {
-            //PokemonSummary dummySummary = new PokemonSummary();
-            //PokemonInfo dummyInfo = new PokemonInfo()
-            //{
-            //    DictionaryNum = 35,
-            //    NickName = "Squirtle",
-            //    PokemonName = "Squirtle",
-            //    Level = 1,
-            //    Gender = PokemonGender.Female,
-            //    Type1 = PokemonType.Water,
-            //    Type2 = PokemonType.Normal,
-            //    OwnerName = "NONE",
-            //    OwnerId = 0
-            //};
-            //PokemonSkill dummySkill = new PokemonSkill()
-            //{
-            //    Stat = new PokemonStat(),
-            //};
-            //PokemonBattleMove dummyBattleMove = new PokemonBattleMove()
-            //{
-            //};
-
-            //dummySummary.Info = dummyInfo;
-            //dummySummary.Skill = dummySkill;
-
-            //List<PokemonMove> _moves = new List<PokemonMove>()
-            //    {
-            //        new(20, 10, 100, "Bubble", PokemonType.Water, MoveCategory.Special),
-            //        new(15, 20, 100, "Bubble2", PokemonType.Water, MoveCategory.Special),
-            //        new(10, 30, 100, "Bubble3", PokemonType.Water, MoveCategory.Special),
-            //        new(5, 40, 100, "Bubble4", PokemonType.Water, MoveCategory.Special),
-            //    };
-
-            //Pokemon pokemon = new Pokemon(dummySummary);
-            //pokemon.Moves = _moves;
-            //pokemon.PokemonBaseStat = new PokemonBaseStat()
-            //{
-            //    MaxHP = 35,
-            //    Attack = 55,
-            //    Defense = 30,
-            //    SpecialAttack = 50,
-            //    SpecialDefense = 40,
-            //    Speed = 90
-            //};
-            //pokemon.SetStat();
-            //pokemon.PokemonStat.Hp = pokemon.PokemonStat.MaxHp;
-
-            //_enemyPokemonArea.FillPokemonInfo(pokemon, false);
-        }
     }
 
     public void TriggerTimelineAction()
@@ -377,17 +276,17 @@ public class BattleScene : BaseScene
                 break;
             case BattleSceneState.CHANGING_POKEMON:
                 {
-                    _myPokemonArea.FillPokemonInfo(Managers.Object._pokemons[0], true);
+                    _myPokemonArea.FillPokemonInfo(_myPokemon, true);
                     _myPokemon = _myPokemonArea.Pokemon;
 
                     List<string> names = new List<string>();
 
-                    foreach (PokemonMove move in _myPokemon.Moves)
+                    foreach (PokemonMove move in _myPokemon.PokemonMoves)
                         names.Add(move.MoveName);
 
                     List<object> movesObjs = new List<object>();
 
-                    foreach (PokemonMove move in _myPokemon.Moves)
+                    foreach (PokemonMove move in _myPokemon.PokemonMoves)
                         movesObjs.Add(move);
 
                     _moveSelectBox.SetButtonNames(names);
@@ -447,7 +346,17 @@ public class BattleScene : BaseScene
 
                                 ActiveUIBySceneState(_sceneState);
 
-                                SetSelectedMove(new PokemonMove(9999, 50, 100, "Struggle", PokemonType.Normal, MoveCategory.Physical));
+                                PokemonMoveSummary struggleMove = new PokemonMoveSummary()
+                                {
+                                    MaxPP = 9999,
+                                    MovePower = 50,
+                                    MoveAccuracy = 100,
+                                    MoveName = "Struggle",
+                                    MoveType = PokemonType.Normal,
+                                    MoveCategory = MoveCategory.Physical,
+                                };
+
+                                SetSelectedMove(new PokemonMove(struggleMove));
 
                                 SetAttackAndDefensePokemonArea(ref _myPokemonArea, ref _enemyPokemonArea);
 
@@ -459,7 +368,7 @@ public class BattleScene : BaseScene
 
                                 _scriptBox.BeginScriptTyping(scripts, true);
 
-                                _enemyPokemon.SelectedMove.PP--;
+                                _enemyPokemon.SelectedMove.CurPP--;
                             }
                         }
                     }
@@ -473,7 +382,7 @@ public class BattleScene : BaseScene
                 {
                     if (value as string == "Select")
                     {
-                        if (_selectedMove.PP == 0)
+                        if (_selectedMove.CurPP == 0)
                         {
                             _sceneState = BattleSceneState.CANNOT_USE_MOVE;
                             ActiveUIBySceneState(_sceneState);
@@ -492,8 +401,8 @@ public class BattleScene : BaseScene
                                 // 서버에게 기술 사용 요청
                                 C_UsePokemonMove movePacket = new C_UsePokemonMove();
                                 movePacket.PlayerId = _playerInfo.ObjectId;
-                                movePacket.PokemonOrder = Managers.Object._pokemons.FindIndex(pokemon => pokemon == _myPokemon);
-                                movePacket.MoveOrder = _myPokemon.Moves.FindIndex(move => move == _selectedMove);
+                                movePacket.PokemonOrder = _myPokemons.FindIndex(pokemon => pokemon == _myPokemon);
+                                movePacket.MoveOrder = _myPokemon.PokemonMoves.FindIndex(move => move == _selectedMove);
                                 movePacket.UsedPP = 1;
 
                                 Managers.Network.Send(movePacket);
@@ -511,7 +420,7 @@ public class BattleScene : BaseScene
                     else
                     {
                         _selectedMove = value as PokemonMove;
-                        _moveInfoTMPs[1].text = $"{_selectedMove.PP.ToString()} / {_selectedMove.MaxPP.ToString()}";
+                        _moveInfoTMPs[1].text = $"{_selectedMove.CurPP.ToString()} / {_selectedMove.MaxPP.ToString()}";
                         _moveInfoTMPs[2].text = $"TYPE / {_selectedMove.MoveType.ToString()}";
                     }
                 }
@@ -540,7 +449,7 @@ public class BattleScene : BaseScene
                 break;
             case BattleSceneState.FIRST_ATTACK_FAILED:
                 {
-                    PokemonStat stat = _defensePKM.PokemonSummary.Skill.Stat;
+                    PokemonStat stat = _defensePKM.PokemonStat;
 
                     if (_attackPKMArea == _myPokemonArea)
                         _isMyPKMAttack = true;
@@ -598,7 +507,7 @@ public class BattleScene : BaseScene
                         changeHpPacket.DefensePKMStat = _defensePKM.PokemonStat;
                         changeHpPacket.MovePower = _attackPKM.SelectedMove.MovePower;
                         changeHpPacket.PlayerId = _playerInfo.ObjectId;
-                        changeHpPacket.PokemonOrder = Managers.Object._pokemons.FindIndex(pokemon => pokemon == _defensePKM);
+                        changeHpPacket.PokemonOrder = _myPokemons.FindIndex(pokemon => pokemon == _defensePKM);
 
                         Managers.Network.Send(changeHpPacket);
 
@@ -658,7 +567,7 @@ public class BattleScene : BaseScene
                             // 서버에도 포켓몬 경험치 획득 요청
                             C_ChangePokemonExp changeExpPacket = new C_ChangePokemonExp();
                             changeExpPacket.PlayerId = _playerInfo.ObjectId;
-                            changeExpPacket.PokemonOrder = Managers.Object._pokemons.FindIndex(pokemon => pokemon == _myPokemon);
+                            changeExpPacket.PokemonOrder = _myPokemons.FindIndex(pokemon => pokemon == _myPokemon);
                             changeExpPacket.Exp = finalExp;
 
                             Managers.Network.Send(changeExpPacket);
@@ -674,13 +583,13 @@ public class BattleScene : BaseScene
                 break;
             case BattleSceneState.GETTING_EXP:
                 {
-                    if (_myPokemon.PokemonSkill.RemainLevelExp == 0)
+                    if (_myPokemon.PokemonExpInfo.RemainExpToNextLevel == 0)
                     {
                         if (!_loadingPacket)
                         {
                             C_ChangePokemonLevel changeLevelPacket = new C_ChangePokemonLevel();
                             changeLevelPacket.PlayerId = _playerInfo.ObjectId;
-                            changeLevelPacket.PokemonOrder = Managers.Object._pokemons.FindIndex(pokemon => pokemon == _myPokemon);
+                            changeLevelPacket.PokemonOrder = _myPokemons.FindIndex(pokemon => pokemon == _myPokemon);
 
                             Managers.Network.Send(changeLevelPacket);
 
@@ -716,7 +625,7 @@ public class BattleScene : BaseScene
                             // 서버에도 포켓몬 경험치 획득 요청
                             C_ChangePokemonExp changeExpPacket = new C_ChangePokemonExp();
                             changeExpPacket.PlayerId = _playerInfo.ObjectId;
-                            changeExpPacket.PokemonOrder = Managers.Object._pokemons.FindIndex(pokemon => pokemon == _myPokemon);
+                            changeExpPacket.PokemonOrder = _myPokemons.FindIndex(pokemon => pokemon == _myPokemon);
                             changeExpPacket.Exp = finalExp;
 
                             Managers.Network.Send(changeExpPacket);
@@ -737,8 +646,8 @@ public class BattleScene : BaseScene
     {
         int finalEXP = 0;
 
-        if (_remainEXPToGet > _myPokemon.PokemonSkill.RemainLevelExp)
-            finalEXP = _myPokemon.PokemonSkill.RemainLevelExp;
+        if (_remainEXPToGet > _myPokemon.PokemonExpInfo.RemainExpToNextLevel)
+            finalEXP = _myPokemon.PokemonExpInfo.RemainExpToNextLevel;
         else
             finalEXP = _remainEXPToGet;
 
@@ -751,7 +660,7 @@ public class BattleScene : BaseScene
     {
         yield return new WaitForSeconds(1f);
 
-        PokemonStat stat = _defensePKM.PokemonSummary.Skill.Stat;
+        PokemonStat stat = _defensePKM.PokemonStat;
 
         if (_attackPKMArea == _myPokemonArea)
             _isMyPKMAttack = true;
@@ -800,11 +709,11 @@ public class BattleScene : BaseScene
     {
         List<PokemonMove> availableMoves = new List<PokemonMove>();
 
-        for (int i = 0; i < pokemon.Moves.Count; i++)
+        for (int i = 0; i < pokemon.PokemonMoves.Count; i++)
         {
-            PokemonMove move = pokemon.Moves[i];
+            PokemonMove move = pokemon.PokemonMoves[i];
 
-            if (move.PP == 0)
+            if (move.CurPP == 0)
                 continue;
             else
                 availableMoves.Add(move);
@@ -822,7 +731,19 @@ public class BattleScene : BaseScene
         if (enemyPKMAvailableMoves.Count > 0)
             _enemyPokemon.SelectedMove = enemyPKMAvailableMoves[Random.Range(0, enemyPKMAvailableMoves.Count)];
         else
-            _enemyPokemon.SelectedMove = new PokemonMove(9999, 50, 100, "Struggle", PokemonType.Normal, MoveCategory.Physical);
+        {
+            PokemonMoveSummary struggleMove = new PokemonMoveSummary()
+            {
+                MaxPP = 9999,
+                MovePower = 50,
+                MoveAccuracy = 100,
+                MoveName = "Struggle",
+                MoveType = PokemonType.Normal,
+                MoveCategory = MoveCategory.Physical,
+            };
+
+            _enemyPokemon.SelectedMove = new PokemonMove(struggleMove);
+        }
     }
 
     void ActiveUIBySceneState(BattleSceneState state)
@@ -857,8 +778,8 @@ public class BattleScene : BaseScene
         Pokemon firstPokemon = firstAttackPKMArea.Pokemon;
         Pokemon secondPokemon = secondAttackPKMArea.Pokemon;
 
-        int firstPkmSpeed = firstPokemon.PokemonSummary.Skill.Stat.Speed;
-        int secondPkmSpeed = secondPokemon.PokemonSummary.Skill.Stat.Speed;
+        int firstPkmSpeed = firstPokemon.PokemonStat.Speed;
+        int secondPkmSpeed = secondPokemon.PokemonStat.Speed;
 
         if (firstPkmSpeed > secondPkmSpeed)
         {

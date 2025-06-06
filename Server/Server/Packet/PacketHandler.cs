@@ -68,21 +68,14 @@ public class PacketHandler
 
         Player player = ObjectManager.Instance.Find(c_AddPokemonPacket.PlayerId);
 
-        Pokemon pokemon = new Pokemon(c_AddPokemonPacket.PokemonName, c_AddPokemonPacket.NickName, c_AddPokemonPacket.Level, player.Name, c_AddPokemonPacket.PlayerId);
+        Pokemon pokemon = new Pokemon(c_AddPokemonPacket.PokemonName, c_AddPokemonPacket.NickName, c_AddPokemonPacket.Level, player.Name, c_AddPokemonPacket.PlayerId, c_AddPokemonPacket.Hp);
 
         // 서버에 저장
         player.AddPokemon(pokemon);
 
         // 클라이언트에 전송
         S_AddPokemon s_ServerPokemonPacket = new S_AddPokemon();
-        s_ServerPokemonPacket.PokemonInfo = pokemon.PokemonInfo;
-        s_ServerPokemonPacket.PokemonStat = pokemon.PokemonStat;
-        s_ServerPokemonPacket.ExpInfo = pokemon.ExpInfo;
-
-        foreach (PokemonMove move in pokemon.PokemonMoves)
-        {
-            s_ServerPokemonPacket.PokemonMoves.Add(move);
-        }
+        s_ServerPokemonPacket.PokemonSum = pokemon.MakePokemonSummary();
 
         player.Session.Send(s_ServerPokemonPacket);
     }
@@ -137,14 +130,30 @@ public class PacketHandler
         var _players = player.Room.Players;
 
         S_EnterRoom enterPacket = new S_EnterRoom();
-        enterPacket.Player = player.Info;
+        PlayerInfo playerInfo = new PlayerInfo()
+        {
+            ObjectInfo = player.Info,
+            PlayerName = player.Name,
+            PlayerGender = player.Gender,
+        };
+        enterPacket.PlayerInfo = playerInfo;
+
         player.Session.Send(enterPacket);
 
         S_Spawn spawnPacket = new S_Spawn();
         foreach (Player p in _players.Values)
         {
             if (player != p)
-                spawnPacket.Objects.Add(p.Info);
+            {
+                PlayerInfo info = new PlayerInfo()
+                {
+                    ObjectInfo = p.Info,
+                    PlayerName = p.Name,
+                    PlayerGender = p.Gender,
+                };
+
+                spawnPacket.Players.Add(info);
+            }
         }
         player.Session.Send(spawnPacket);
     }
@@ -169,14 +178,7 @@ public class PacketHandler
         Pokemon pokemon = player.Pokemons[pokemonOrder];
 
         S_AccessPokemonSummary s_AccessPacket = new S_AccessPokemonSummary();
-        s_AccessPacket.PokemonInfo = pokemon.PokemonInfo;
-        s_AccessPacket.PokemonStat = pokemon.PokemonStat;
-        s_AccessPacket.ExpInfo = pokemon.ExpInfo;
-
-        foreach (PokemonMove move in pokemon.PokemonMoves)
-        {
-            s_AccessPacket.PokemonMoves.Add(move);
-        }
+        s_AccessPacket.PokemonSum = pokemon.MakePokemonSummary();
 
         player.Session.Send(s_AccessPacket);
     }
@@ -191,12 +193,36 @@ public class PacketHandler
 
         Console.WriteLine($"" +
             $"=====================\n" +
-            $"C_MeetWildPokemon\n" +
+            $"C_EnterPokemonBattleScene\n" +
             $"{c_EnterBattleScenePacket}\n" +
             $"=====================\n"
             );
 
         Player player = ObjectManager.Instance.Find(playerId);
+
+        // 테스트용 플레이어
+        if (player == null)
+        {
+            player = ObjectManager.Instance.Add<Player>();
+            {
+                player.Info.PosInfo.State = CreatureState.Idle;
+                player.Info.PosInfo.MoveDir = MoveDir.Down;
+                player.Info.PosInfo.PosX = 0;
+                player.Info.PosInfo.PosY = 0;
+
+                player.Session = clientSession;
+            }
+
+            player.Name = "TEST";
+            player.Gender = PlayerGender.PlayerMale;
+            player.Pokemons = new List<Pokemon>();
+            player.Pokemons.Add(new Pokemon("Pikachu", "PIKAO", 5, player.Name, -1));
+            player.Pokemons.Add(new Pokemon("Bulbasaur", "BUBAS", 7, player.Name, -1));
+            player.Pokemons.Add(new Pokemon("Charmander", "CHAKI", 10, player.Name, -1));
+            player.Pokemons.Add(new Pokemon("Squirtle", "SKIRT", 3, player.Name, -1));
+
+            clientSession.MyPlayer = player;
+        }
 
         if (DataManager.WildPKMLocationDict.TryGetValue(locationNum, out WildPokemonAppearData[] wildPokemonDatas))
         {
@@ -236,14 +262,12 @@ public class PacketHandler
             Pokemon wildPokemon = new Pokemon(wildPokemonData.pokemonName, wildPokemonData.pokemonName, wildPokemonData.pokemonLevel, player.Name, playerId);
 
             S_EnterPokemonBattleScene s_EnterBattleScenePacket = new S_EnterPokemonBattleScene();
-            s_EnterBattleScenePacket.PlayerInfo = player.Info;
-            s_EnterBattleScenePacket.PokemonInfo = wildPokemon.PokemonInfo;
-            s_EnterBattleScenePacket.PokemonStat = wildPokemon.PokemonStat;
-            s_EnterBattleScenePacket.ExpInfo = null;
+            s_EnterBattleScenePacket.PlayerInfo = player.MakePlayerInfo();
+            s_EnterBattleScenePacket.EnemyPokemon = wildPokemon.MakePokemonSummary();
 
-            foreach(PokemonMove move in wildPokemon.PokemonMoves)
+            foreach(Pokemon pokemon in player.Pokemons)
             {
-                s_EnterBattleScenePacket.PokemonMoves.Add(move);
+                s_EnterBattleScenePacket.PlayerPokemons.Add(pokemon.MakePokemonSummary());
             }
 
             player.Session.Send(s_EnterBattleScenePacket);
@@ -294,7 +318,7 @@ public class PacketHandler
         PokemonStat defensePKMStat = c_ChangeHPPacket.DefensePKMStat;
         int movePower = c_ChangeHPPacket.MovePower;
         int playerId = c_ChangeHPPacket.PlayerId;
-        int pokemonOrder = c_ChangeHPPacket .PokemonOrder;
+        int pokemonOrder = c_ChangeHPPacket.PokemonOrder;
 
         Console.WriteLine($"" +
             $"=====================\n" +
@@ -304,7 +328,14 @@ public class PacketHandler
             );
 
         Player player = ObjectManager.Instance.Find(playerId);
-        Pokemon pokemon = player.Pokemons[pokemonOrder];
+
+        Pokemon pokemon = null;
+
+        // 방어 포켓몬이 야생 포켓몬이라면
+        if (pokemonOrder != -1)
+        {
+            pokemon = player.Pokemons[pokemonOrder];
+        }
 
         // 데미지 계산
         int finalDamage = CalFinalDamage(moveCategory, attackPKMInfo.Level, attackPKMStat, defensePKMStat, movePower);

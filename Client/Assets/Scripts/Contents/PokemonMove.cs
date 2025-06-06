@@ -1,38 +1,36 @@
 using Google.Protobuf.Protocol;
 using UnityEngine;
-using UnityEngine.UI;
 
 public class PokemonMove
 {
-    int _maxPP;
-    int _pp;
+    int _curPp;
+    int _maxPp;
     int _movePower;
-    int _accuracy;
+    int _moveAccuracy;
     string _moveName;
+    Texture2D _hitEffectImg;
     PokemonType _moveType;
     MoveCategory _moveCategory;
 
-    Texture2D _hitEffectImg;
-
-    public int PP { get { return _pp; } set { _pp = value; } }
-    public int MaxPP { get { return _maxPP; } }
+    public int CurPP { get { return _curPp; } set { _curPp = value; } }
+    public int MaxPP { get { return _maxPp; } }
     public int MovePower { get { return _movePower; } }
-    public int Accuracy { get { return _accuracy; } }
+    public int MoveAccuracy { get { return _moveAccuracy; } }
     public string MoveName { get { return _moveName; } }
+    public Texture2D HitEffectImage { get { return _hitEffectImg; } }
     public PokemonType MoveType { get { return _moveType; } }
     public MoveCategory MoveCategory { get { return _moveCategory; } }
-    public Texture2D HitEffectImage { get { return _hitEffectImg; } }
 
-    public PokemonMove(int maxPP, int movePower, int accuracy, string moveName, PokemonType moveType, MoveCategory moveCategory)
+    public PokemonMove(PokemonMoveSummary moveSum)
     {
-        _pp = maxPP;
-        _maxPP = maxPP;
-        _movePower = movePower;
-        _accuracy = accuracy;
-        _moveName = moveName;
-        _moveType = moveType;
-        _moveCategory = moveCategory;
+        _curPp = moveSum.MaxPP;
+        _maxPp = moveSum.MaxPP;
+        _movePower = moveSum.MovePower;
+        _moveAccuracy = moveSum.MoveAccuracy;
+        _moveName = moveSum.MoveName;
+        _moveType = moveSum.MoveType;
+        _moveCategory = moveSum.MoveCategory;
 
-        _hitEffectImg = Managers.Resource.Load<Texture2D>($"Textures/Effect/Physical_Hit_{_moveType.ToString()}");
+        _hitEffectImg = Managers.Resource.Load<Texture2D>($"Textures/Effect/Physical_Hit_{MoveType.ToString()}");
     }
 }

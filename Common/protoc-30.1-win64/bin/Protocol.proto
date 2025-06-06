@@ -64,9 +64,7 @@ message C_ExitGame {
 }
 
 message S_EnterRoom {
-    ObjectInfo player = 1;
-    string playerName = 2;
-    PlayerGender playerGender = 3;
+    PlayerInfo playerInfo = 1;
 }
 
 message S_LeaveRoom {
@@ -77,7 +75,7 @@ message C_ReturnGame {
 }
 
 message S_Spawn {
-    repeated ObjectInfo objects = 1;
+    repeated PlayerInfo players = 1;
 }
 
 message S_Despawn {
@@ -103,16 +101,11 @@ message C_AddPokemon {
 	string pokemonName = 2;
 	string nickName = 3;
 	int32 level = 4;
-    PokemonGender gender = 5;
-    PokemonNature nature = 6;
-    int32 hp = 7;
+    int32 hp = 5;
 }
 
 message S_AddPokemon {
-    PokemonInfo pokemonInfo = 1;
-    PokemonStat pokemonStat = 2;
-    PokemonExpInfo expInfo = 3;
-    repeated PokemonMove pokemonMoves = 4;
+    PokemonSummary pokemonSum = 1;
 }
 
 message C_SwitchPokemon {
@@ -129,10 +122,7 @@ message C_AccessPokemonSummary
 
 message S_AccessPokemonSummary
 {
-    PokemonInfo pokemonInfo = 2;
-    PokemonStat pokemonStat = 3;
-    PokemonExpInfo expInfo = 4;
-    repeated PokemonMove pokemonMoves = 5;
+    PokemonSummary pokemonSum = 1;
 }
 
 message C_EnterPokemonBattleScene
@@ -143,11 +133,9 @@ message C_EnterPokemonBattleScene
 
 message S_EnterPokemonBattleScene
 {
-    ObjectInfo playerInfo = 1;
-    PokemonInfo pokemonInfo = 2;
-    PokemonStat pokemonStat = 3;
-    PokemonExpInfo expInfo = 4;
-    repeated PokemonMove pokemonMoves = 5;
+    PlayerInfo playerInfo = 1;
+    PokemonSummary enemyPokemon = 2;
+    repeated PokemonSummary playerPokemons = 3;
 }
 
 message C_UsePokemonMove
@@ -225,11 +213,25 @@ message ObjectInfo {
   PositionInfo posInfo = 2;
 }
 
+message PlayerInfo {
+    ObjectInfo objectInfo = 1;
+    string playerName = 2;
+    PlayerGender playerGender = 3;
+}
+
 message PositionInfo {
 	CreatureState state = 1;
 	MoveDir moveDir = 2;
 	int32 posX = 3;
 	int32 posY = 4;
+}
+
+message PokemonSummary
+{
+    PokemonInfo pokemonInfo = 1;
+    PokemonStat pokemonStat = 2;
+    PokemonExpInfo pokemonExpInfo = 3;
+    repeated PokemonMoveSummary pokemonMoves = 4;
 }
 
 message PokemonInfo
@@ -268,21 +270,8 @@ message PokemonExpInfo {
     int32 totalExp = 2;
     int32 remainExpToNextLevel = 3;
 }
-/*
-message PokemonSkill
-{
-    // Item holdItem;
 
-    // Item ribbon;
-
-    PokemonStat stat = 1;
-
-    int32 totalExp = 2;
-    int32 remainLevelExp = 3;
-    int32 curExp = 4;
-}
-*/
-message PokemonMove
+message PokemonMoveSummary
 {
     string moveName = 1;
     int32 movePower = 2;

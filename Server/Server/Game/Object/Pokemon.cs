@@ -3,7 +3,7 @@ using System.Globalization;
 
 namespace Server
 {
-    public class Pokemon : GameObject
+    public class Pokemon
     {
         PokemonInfo _pokemonInfo;
         PokemonStat _pokemonStat;
@@ -32,7 +32,7 @@ namespace Server
             get { return _pokemonMoves; }
         }
 
-        public Pokemon(string pokemonName, string pokemonNickName, int level, string ownerName, int ownerId)
+        public Pokemon(string pokemonName, string pokemonNickName, int level, string ownerName, int ownerId, int remainHp = -1)
         {
             _pokemonInfo = new PokemonInfo();
             _pokemonStat = new PokemonStat();
@@ -100,6 +100,13 @@ namespace Server
                 // 스텟
                 UpdateStat();
 
+                int hp = remainHp;
+
+                if (hp > _pokemonStat.MaxHp)
+                    hp = _pokemonStat.MaxHp;
+
+                _pokemonStat.Hp = hp == -1 ? _pokemonStat.MaxHp : hp;
+
                 // 경험치
                 int prevLevelTotalExp = 0;
                 int nextLevelTotalExp = 0;
@@ -141,18 +148,14 @@ namespace Server
 
                 for (int i = 0; i < moveNames.Length; i++)
                 {
+                    if (moveNames[i] == "")
+                    {
+                        continue;
+                    }
+
                     if (DataManager.PokemonMoveDict.TryGetValue(moveNames[i], out _moveDictData))
                     {
-                        PokemonMove move = new PokemonMove()
-                        {
-                            MoveName = _moveDictData.moveName,
-                            MovePower = _moveDictData.movePower,
-                            MoveAccuracy = _moveDictData.moveAccuracy,
-                            CurPP = _moveDictData.maxPP,
-                            MaxPP = _moveDictData.maxPP,
-                            MoveType = _moveDictData.moveType,
-                            MoveCategory = _moveDictData.moveCategory,
-                        };
+                        PokemonMove move = new PokemonMove(_moveDictData.maxPP, _moveDictData.movePower, _moveDictData.moveAccuracy, _moveDictData.moveName, _moveDictData.moveType, _moveDictData.moveCategory);
 
                         _pokemonMoves.Add(move);
                     }
@@ -273,6 +276,21 @@ namespace Server
                 stat = (int)(((((float)baseStat) * 2f) * ((float)level) / 100f) + 5f);
 
             return stat;
+        }
+
+        public PokemonSummary MakePokemonSummary()
+        {
+            PokemonSummary pokemonSum = new PokemonSummary();
+            pokemonSum.PokemonInfo = _pokemonInfo;
+            pokemonSum.PokemonStat = _pokemonStat;
+            pokemonSum.PokemonExpInfo = _expInfo;
+
+            foreach (PokemonMove move in _pokemonMoves)
+            {
+                pokemonSum.PokemonMoves.Add(move.MakePokemonMoveSummary());
+            }
+
+            return pokemonSum;
         }
     }
 }

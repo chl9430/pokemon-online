@@ -146,7 +146,7 @@ public class PokemonListUI : Action_UI
         }
         */
 
-        _pokemons = Managers.Object._pokemons;
+        // _pokemons = Managers.Object._pokemons;
 
         FillButtonList();
 
@@ -201,7 +201,7 @@ public class PokemonListUI : Action_UI
 
             card.PokemonListUI = this;
 
-            Texture2D image = Managers.Resource.Load<Texture2D>($"Textures/Pokemon/{pokemon.PokemonSummary.Info.PokemonName}_Icon");
+            Texture2D image = Managers.Resource.Load<Texture2D>($"Textures/Pokemon/{pokemon.PokemonInfo.PokemonName}_Icon");
 
             RectTransform rt = card.GetComponent<RectTransform>();
             rt.offsetMin = Vector2.zero;
@@ -209,10 +209,10 @@ public class PokemonListUI : Action_UI
             rt.localScale = Vector2.one;
 
             card.ApplyImage(image);
-            card.ApplyPokemonInfo(pokemon.PokemonSummary.Info.NickName,
-                pokemon.PokemonSummary.Skill.Stat.Hp,
-                pokemon.PokemonSummary.Skill.Stat.MaxHp,
-                pokemon.PokemonSummary.Info.Level);
+            card.ApplyPokemonInfo(pokemon.PokemonInfo.NickName,
+                pokemon.PokemonStat.Hp,
+                pokemon.PokemonStat.MaxHp,
+                pokemon.PokemonInfo.Level);
 
             _btns.Add(card);
 
@@ -327,20 +327,20 @@ public class PokemonListUI : Action_UI
 
     void SwitchPokemon()
     {
-        Texture2D fromImg = Managers.Resource.Load<Texture2D>($"Textures/Pokemon/{_pokemons[switchPokemonIdx].PokemonSummary.Info.PokemonName}_Icon");
-        Texture2D Toimg = Managers.Resource.Load<Texture2D>($"Textures/Pokemon/{_pokemons[selectedIdx].PokemonSummary.Info.PokemonName}_Icon");
+        Texture2D fromImg = Managers.Resource.Load<Texture2D>($"Textures/Pokemon/{_pokemons[switchPokemonIdx].PokemonInfo.PokemonName}_Icon");
+        Texture2D Toimg = Managers.Resource.Load<Texture2D>($"Textures/Pokemon/{_pokemons[selectedIdx].PokemonInfo.PokemonName}_Icon");
 
         ((PokemonCard)_btns[switchPokemonIdx]).ApplyImage(Toimg);
-        ((PokemonCard)_btns[switchPokemonIdx]).ApplyPokemonInfo(_pokemons[selectedIdx].PokemonSummary.Info.NickName,
-                _pokemons[selectedIdx].PokemonSummary.Skill.Stat.Hp,
-                _pokemons[selectedIdx].PokemonSummary.Skill.Stat.MaxHp,
-                _pokemons[selectedIdx].PokemonSummary.Info.Level);
+        ((PokemonCard)_btns[switchPokemonIdx]).ApplyPokemonInfo(_pokemons[selectedIdx].PokemonInfo.NickName,
+                _pokemons[selectedIdx].PokemonStat.Hp,
+                _pokemons[selectedIdx].PokemonStat.MaxHp,
+                _pokemons[selectedIdx].PokemonInfo.Level);
 
         ((PokemonCard)_btns[selectedIdx]).ApplyImage(fromImg);
-        ((PokemonCard)_btns[selectedIdx]).ApplyPokemonInfo(_pokemons[switchPokemonIdx].PokemonSummary.Info.NickName,
-                _pokemons[switchPokemonIdx].PokemonSummary.Skill.Stat.Hp,
-                _pokemons[switchPokemonIdx].PokemonSummary.Skill.Stat.MaxHp,
-                _pokemons[switchPokemonIdx].PokemonSummary.Info.Level);
+        ((PokemonCard)_btns[selectedIdx]).ApplyPokemonInfo(_pokemons[switchPokemonIdx].PokemonInfo.NickName,
+                _pokemons[switchPokemonIdx].PokemonStat.Hp,
+                _pokemons[switchPokemonIdx].PokemonStat.MaxHp,
+                _pokemons[switchPokemonIdx].PokemonInfo.Level);
 
         int switchPokemonCardDir = -1;
         int selectedPokemonCardDir = -1;

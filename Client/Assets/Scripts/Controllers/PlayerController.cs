@@ -96,19 +96,6 @@ public class PlayerController : CreatureController
         }
     }
 
-    public ObjectInfo MakeObjectInfo()
-    {
-        ObjectInfo info = new ObjectInfo()
-        {
-            ObjectId = Id,
-            Name = _name,
-            Gender = _gender,
-            PosInfo = PosInfo
-        };
-
-        return info;
-    }
-
     protected virtual void CheckUpdatedFlag()
     {
 

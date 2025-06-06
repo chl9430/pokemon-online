@@ -18,7 +18,7 @@ public class PokemonSummaryUI : Action_UI
     Vector2 newMinPos;
     Vector2 newMaxPos;
     RectTransform selectedContent;
-    PokemonSummary _summary;
+    // PokemonSummary _summary;
 
     [SerializeField] float slideSpeed;
     [SerializeField] RectTransform[] sliderContent;
@@ -95,34 +95,30 @@ public class PokemonSummaryUI : Action_UI
         */
     }
 
-    public void FillPokemonSummary(PokemonSummary summary)
+    public void FillPokemonSummary(PokemonSummary pokemonSum)
     {
-        _summary = summary;
+        FillText(dictNum, $"No.{pokemonSum.PokemonInfo.DictionaryNum}");
+        FillText(nickName, $"{pokemonSum.PokemonInfo.NickName}");
+        FillText(pokemonName, $"/ {pokemonSum.PokemonInfo.PokemonName}");
+        FillText(level, $"Lv.{pokemonSum.PokemonInfo.Level}");
+        FillText(owner, $"Owner : {pokemonSum.PokemonInfo.OwnerName}");
+        FillText(ownerId, $"ID : {pokemonSum.PokemonInfo.OwnerId}");
+        FillText(nature, $"{pokemonSum.PokemonInfo.Nature} nature");
+        FillText(metLevel, $"met at Lv.{pokemonSum.PokemonInfo.MetLevel}");
 
-        PokemonInfo info = summary.Info;
-        FillText(dictNum, $"No.{info.DictionaryNum}");
-        FillText(nickName, $"{info.NickName}");
-        FillText(pokemonName, $"/ {info.PokemonName}");
-        FillText(level, $"Lv.{info.Level}");
-        FillText(owner, $"Owner : {info.OwnerName}");
-        FillText(ownerId, $"ID : {info.OwnerId}");
-        FillText(nature, $"{info.Nature} nature");
-        FillText(metLevel, $"met at Lv.{info.MetLevel}");
+        FillImage(pokemonImg, $"Textures/Pokemon/{pokemonSum.PokemonInfo.PokemonName}");
+        FillImage(gender, $"Textures/UI/PokemonGender_{pokemonSum.PokemonInfo.Gender}");
+        FillImage(type1, $"Textures/UI/{pokemonSum.PokemonInfo.Type1}_Icon");
+        FillImage(type2, $"Textures/UI/{pokemonSum.PokemonInfo.Type2}_Icon");
 
-        FillImage(pokemonImg, $"Textures/Pokemon/{info.PokemonName}");
-        FillImage(gender, $"Textures/UI/PokemonGender_{info.Gender}");
-        FillImage(type1, $"Textures/UI/{info.Type1}_Icon");
-        FillImage(type2, $"Textures/UI/{info.Type2}_Icon");
-
-        PokemonSkill skill = summary.Skill;
-        FillText(hpAndMaxHP, $"{skill.Stat.Hp} / {skill.Stat.MaxHp}");
-        FillText(attack, $"{skill.Stat.Attack}");
-        FillText(defense, $"{skill.Stat.Defense}");
-        FillText(speicalAttack, $"{skill.Stat.SpecialAttack}");
-        FillText(speicalDefense, $"{skill.Stat.SpecialDefense}");
-        FillText(speed, $"{skill.Stat.Speed}");
-        FillText(totalEXP, $"{skill.TotalExp}");
-        FillText(expToNextLevel, $"{skill.RemainLevelExp}");
+        FillText(hpAndMaxHP, $"{pokemonSum.PokemonStat.Hp} / {pokemonSum.PokemonStat.MaxHp}");
+        FillText(attack, $"{pokemonSum.PokemonStat.Attack}");
+        FillText(defense, $"{pokemonSum.PokemonStat.Defense}");
+        FillText(speicalAttack, $"{pokemonSum.PokemonStat.SpecialAttack}");
+        FillText(speicalDefense, $"{pokemonSum.PokemonStat.SpecialDefense}");
+        FillText(speed, $"{pokemonSum.PokemonStat.Speed}");
+        FillText(totalEXP, $"{pokemonSum.PokemonExpInfo.TotalExp}");
+        FillText(expToNextLevel, $"{pokemonSum.PokemonExpInfo.RemainExpToNextLevel}");
     }
 
     void FillText(TextMeshProUGUI tmp, string text)

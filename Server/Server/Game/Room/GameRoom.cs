@@ -49,26 +49,33 @@ namespace Server
 
                 // 본인한테 정보 전송
                 S_EnterRoom enterPacket = new S_EnterRoom();
-                enterPacket.Player = player.Info;
-                enterPacket.PlayerName = player.Name;
-                enterPacket.PlayerGender = player.Gender;
+
+                PlayerInfo playerInfo = player.MakePlayerInfo();
+                
+                enterPacket.PlayerInfo = playerInfo;
 
                 player.Session.Send(enterPacket);
 
+                // 본인한테 타인 정보 전송
                 S_Spawn spawnPacket = new S_Spawn();
                 foreach (Player p in _players.Values)
                 {
                     if (player != p)
-                        spawnPacket.Objects.Add(p.Info);
+                    {
+                        spawnPacket.Players.Add(p.MakePlayerInfo());
+                    }
                 }
 
                 player.Session.Send(spawnPacket);
             }
 
-            // 타인한테 정보 전송
+            // 타인한테 본인 정보 전송
             {
+                Player player = gameObject as Player;
+
                 S_Spawn spawnPacket = new S_Spawn();
-                spawnPacket.Objects.Add(gameObject.Info);
+
+                spawnPacket.Players.Add(player.MakePlayerInfo());
 
                 foreach (Player p in _players.Values)
                 {

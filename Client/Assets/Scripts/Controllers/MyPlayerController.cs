@@ -40,33 +40,27 @@ public class MyPlayerController : PlayerController
         {
             C_AddPokemon addPacket = new C_AddPokemon()
             {
+                PlayerId = Id,
                 PokemonName = "Pikachu",
                 NickName = "PIKAO",
                 Level = 5,
-                Gender = PokemonGender.Male,
-                PlayerInfo = MakeObjectInfo(),
-                Nature = PokemonNature.Serious,
-                Hp = 1,
+                Hp = 100,
             };
             C_AddPokemon addPacket2 = new C_AddPokemon()
             {
+                PlayerId = Id,
                 PokemonName = "Charmander",
                 NickName = "CHAO",
                 Level = 1,
-                Gender = PokemonGender.Female,
-                PlayerInfo = MakeObjectInfo(),
-                Nature = PokemonNature.Timid,
-                Hp = 21,
+                Hp = 100,
             };
             C_AddPokemon addPacket3 = new C_AddPokemon()
             {
+                PlayerId = Id,
                 PokemonName = "Squirtle",
                 NickName = "SKIRT",
                 Level = 3,
-                Gender = PokemonGender.Male,
-                PlayerInfo = MakeObjectInfo(),
-                Nature = PokemonNature.Bashful,
-                Hp = 3,
+                Hp = 100,
             };
 
             Managers.Network.Send(addPacket);

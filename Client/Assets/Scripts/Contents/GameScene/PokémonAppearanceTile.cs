@@ -34,14 +34,14 @@ public class PokemonAppearanceTile : MonoBehaviour
 
             Managers.Scene.CurrentScene.AttachToTheUI(_screenChanger.gameObject);
 
-            C_MeetWildPokemon c_MeetPacket = new C_MeetWildPokemon();
+            C_EnterPokemonBattleScene c_enterBattleScenePacket = new C_EnterPokemonBattleScene();
 
-            c_MeetPacket.PlayerInfo = Managers.Object.MyPlayer.MakeObjectInfo();
-            c_MeetPacket.LocationNum = _LocationNum;
+            c_enterBattleScenePacket.PlayerId = Managers.Object.MyPlayer.Id;
+            c_enterBattleScenePacket.LocationNum = _LocationNum;
 
             BaseScene scene = Managers.Scene.CurrentScene;
 
-            scene.RegisterPacket(c_MeetPacket);
+            scene.RegisterPacket(c_enterBattleScenePacket);
 
             return true;
         }

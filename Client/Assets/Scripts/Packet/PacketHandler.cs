@@ -1,6 +1,8 @@
 using Google.Protobuf;
 using Google.Protobuf.Protocol;
+using NUnit.Framework;
 using ServerCore;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Diagnostics;
 
@@ -15,11 +17,26 @@ public class PacketHandler
 
     public static void S_EnterRoomHandler(PacketSession session, IMessage packet)
     {
-        S_EnterRoom enterRoomPacket = packet as S_EnterRoom;
+        S_EnterRoom s_EnterRoomPacket = packet as S_EnterRoom;
+        PlayerInfo playerInfo = s_EnterRoomPacket.PlayerInfo;
 
-        Debug.Log($"S_EnterRoom : {enterRoomPacket.Player}");
+        Debug.Log($"S_EnterRoom : {s_EnterRoomPacket}");
 
-        Managers.Object.Add(enterRoomPacket.Player, myPlayer: true);
+        GameObject myPlayer = null;
+
+        if (playerInfo.PlayerGender == PlayerGender.PlayerMale)
+            myPlayer = Managers.Resource.Instantiate("Creature/MyPlayerMale");
+        else if (playerInfo.PlayerGender == PlayerGender.PlayerFemale)
+            myPlayer = Managers.Resource.Instantiate("Creature/MyPlayerFemale");
+
+        myPlayer.name = $"{playerInfo.PlayerName}_{playerInfo.ObjectInfo.ObjectId}";
+
+        Managers.Object.Add(myPlayer, playerInfo.ObjectInfo);
+        Managers.Object.MyPlayer = myPlayer.GetComponent<MyPlayerController>();
+
+        PlayerController pc = myPlayer.GetComponent<PlayerController>();
+        pc.PlayerName = playerInfo.PlayerName;
+        pc.PlayerGender = playerInfo.PlayerGender;
     }
 
     public static void S_LeaveRoomHandler(PacketSession session, IMessage packet)
@@ -31,13 +48,26 @@ public class PacketHandler
 
     public static void S_SpawnHandler(PacketSession session, IMessage packet)
     {
-        S_Spawn spawnPacket = packet as S_Spawn;
+        S_Spawn s_SpawnPacket = packet as S_Spawn;
 
-        Debug.Log($"S_Spawn : {spawnPacket.Objects.Count}");
+        Debug.Log($"S_Spawn : {s_SpawnPacket}");
 
-        foreach (ObjectInfo obj in spawnPacket.Objects)
+        foreach (PlayerInfo player in s_SpawnPacket.Players)
         {
-            Managers.Object.Add(obj, myPlayer: false);
+            GameObject anotherPlayer = null;
+
+            if (player.PlayerGender == PlayerGender.PlayerMale)
+                anotherPlayer = Managers.Resource.Instantiate("Creature/MyPlayerMale");
+            else if (player.PlayerGender == PlayerGender.PlayerFemale)
+                anotherPlayer = Managers.Resource.Instantiate("Creature/MyPlayerFemale");
+
+            anotherPlayer.name = player.PlayerName;
+
+            Managers.Object.Add(anotherPlayer, player.ObjectInfo);
+
+            PlayerController pc = anotherPlayer.GetComponent<PlayerController>();
+            pc.PlayerName = player.PlayerName;
+            pc.PlayerGender = player.PlayerGender;
         }
     }
 
@@ -75,28 +105,32 @@ public class PacketHandler
 
     public static void S_AddPokemonHandler(PacketSession session, IMessage packet)
     {
-        S_AddPokemon serverPokemonPacket = packet as S_AddPokemon;
-        PokemonSummary summary = serverPokemonPacket.Summary;
+        S_AddPokemon s_ServerPokemonPacket = packet as S_AddPokemon;
+        PokemonSummary pokemonSum = s_ServerPokemonPacket.PokemonSum;
 
-        Debug.Log($"S_AddPokemon : {serverPokemonPacket.Summary}");
+        Debug.Log($"S_AddPokemon : {s_ServerPokemonPacket}");
 
-        GameObject player = Managers.Object.FindById(summary.Info.OwnerId);
-        if (player == null)
-            return;
-
-        Pokemon pokemon = new Pokemon(summary);
-
-        Managers.Object._pokemons.Add(pokemon);
+        Pokemon pokemon = new Pokemon(pokemonSum);
     }
 
     public static void S_AccessPokemonSummaryHandler(PacketSession session, IMessage packet)
     {
         S_AccessPokemonSummary s_AccessPacket = packet as S_AccessPokemonSummary;
 
-        Debug.Log($"S_AccessPokemonSummary : {s_AccessPacket.PkmSummary}");
+        Debug.Log($"S_AccessPokemonSummary : {s_AccessPacket}");
 
         BaseScene scene = Managers.Scene.CurrentScene;
         scene.UpdateData(s_AccessPacket);
+    }
+
+    public static void S_EnterPokemonBattleSceneHandler(PacketSession session, IMessage packet)
+    {
+        S_EnterPokemonBattleScene s_EnterBattleScenePacket = packet as S_EnterPokemonBattleScene;
+
+        Debug.Log($"S_EnterPokemonBattleScene : {s_EnterBattleScenePacket}");
+
+        BaseScene scene = Managers.Scene.CurrentScene;
+        scene.UpdateData(s_EnterBattleScenePacket);
     }
 
     public static void S_UsePokemonMoveHandler(PacketSession session, IMessage packet)
@@ -113,7 +147,7 @@ public class PacketHandler
     public static void S_ChangePokemonHpHandler(PacketSession session, IMessage packet)
     {
         S_ChangePokemonHp s_changeHpPacket = packet as S_ChangePokemonHp;
-        int remainedHp = s_changeHpPacket.RemainedHP;
+        int remainedHp = s_changeHpPacket.RemainedHp;
 
         Debug.Log($"S_ChangePokemonHp : {remainedHp}");
 

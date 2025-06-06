@@ -5,73 +5,59 @@ using UnityEngine;
 
 public class Pokemon
 {
-    PokemonSummary _pokemonSummary;
-
     PokemonInfo _pokemonInfo;
-    PokemonSkill _pokemonSkill;
     PokemonStat _pokemonStat;
-    List<PokemonMove> _moves;
+    PokemonExpInfo _pokemonExpInfo;
+    List<PokemonMove> _pokemonMoves;
 
     PokemonMove _selectedMove;
 
-    Texture2D pokemonImg;
-    Texture2D pokemonBackImg;
+    Texture2D _pokemonImg;
+    Texture2D _pokemonBackImg;
 
-    public List<PokemonMove> Moves
+    public List<PokemonMove> PokemonMoves
     {
         get
         {
-            return _moves;
+            return _pokemonMoves;
         }
 
         set
         {
-            _moves = value;
+            _pokemonMoves = value;
         }
     }
 
     public PokemonMove SelectedMove { set { _selectedMove = value; } get { return _selectedMove; } }
-
-    public PokemonSummary PokemonSummary 
-    {  
-        get 
-        {
-            return _pokemonSummary;
-        }
-    }
-    public PokemonInfo PokemonInfo { get { return _pokemonInfo; } }
-    public PokemonSkill PokemonSkill { get { return _pokemonSkill; } }
+    public PokemonInfo PokemonInfo { get { return _pokemonInfo; } set { _pokemonInfo = value; } }
     public PokemonStat PokemonStat { get { return _pokemonStat; } set { _pokemonStat = value; } }
+    public PokemonExpInfo PokemonExpInfo { get { return _pokemonExpInfo; } set { _pokemonExpInfo = value; } }
 
-    public Texture2D PokemonImage { get { return pokemonImg; } }
-    public Texture2D PokemonBackImage { get { return pokemonBackImg; } }
+    public Texture2D PokemonImage { get { return _pokemonImg; } }
+    public Texture2D PokemonBackImage { get { return _pokemonBackImg; } }
 
-    public Pokemon(PokemonSummary summary)
+    public Pokemon(PokemonSummary pokemonSum)
     {
-        _pokemonSummary = summary;
-        _pokemonInfo = summary.Info;
-        _pokemonSkill = summary.Skill;
-        _pokemonStat = summary.Skill.Stat;
-        _moves = new List<PokemonMove>();
+        _pokemonInfo = pokemonSum.PokemonInfo;
+        _pokemonStat = pokemonSum.PokemonStat;
+        _pokemonExpInfo = pokemonSum.PokemonExpInfo;
+        _pokemonMoves = new List<PokemonMove>();
 
-        IList moves = summary.BattleMoves;
-        for (int i = 0; i < moves.Count; i++)
+        foreach (PokemonMoveSummary moveSum in pokemonSum.PokemonMoves)
         {
-            PokemonBattleMove battleMove = (PokemonBattleMove)moves[i];
-
-            PokemonMove move = new PokemonMove(battleMove.MaxPP, battleMove.MovePower, battleMove.MoveAccuracy, battleMove.MoveName, battleMove.MoveType, battleMove.MoveCategory);
-            _moves.Add(move);
+            PokemonMove move = new PokemonMove(moveSum);
+            _pokemonMoves.Add(move);
         }
 
-        pokemonImg = Managers.Resource.Load<Texture2D>($"Textures/Pokemon/{summary.Info.PokemonName}");
-        pokemonBackImg = Managers.Resource.Load<Texture2D>($"Textures/Pokemon/{summary.Info.PokemonName}_Back");
+        _pokemonImg = Managers.Resource.Load<Texture2D>($"Textures/Pokemon/{_pokemonInfo.PokemonName}");
+        _pokemonBackImg = Managers.Resource.Load<Texture2D>($"Textures/Pokemon/{_pokemonInfo.PokemonName}_Back");
     }
 
     public bool IsHitByAcc()
     {
         int ran = Random.Range(0, 100);
 
-        if (ran > _selectedMove.Accuracy)
+        if (ran > _selectedMove.MoveAccuracy)
         {
             return false;
         }

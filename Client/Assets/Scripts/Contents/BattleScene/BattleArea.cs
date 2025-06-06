@@ -55,7 +55,10 @@ public class BattleArea : MonoBehaviour
 
         _isMyPokemon = isMyPokemon;
         _pokemon = pokemon;
-        PokemonSummary summary = pokemon.PokemonSummary;
+
+        PokemonInfo pokemonInfo = pokemon.PokemonInfo;
+        PokemonStat pokemonStat = pokemon.PokemonStat;
+        PokemonExpInfo expInfo = pokemon.PokemonExpInfo;
 
         Texture2D image;
 
@@ -67,19 +70,19 @@ public class BattleArea : MonoBehaviour
         _pokemonImage.sprite = Sprite.Create(image, new Rect(0, 0, image.width, image.height), Vector2.one * 0.5f);
         _pokemonImage.SetNativeSize();
 
-        _pokemonNickName.text = summary.Info.NickName;
+        _pokemonNickName.text = pokemonInfo.NickName;
 
-        _pokemonLevel.text = $"Lv.{summary.Info.Level.ToString()}";
+        _pokemonLevel.text = $"Lv.{pokemonInfo.Level.ToString()}";
 
-        image = Managers.Resource.Load<Texture2D>($"Textures/UI/PokemonGender_{summary.Info.Gender}");
+        image = Managers.Resource.Load<Texture2D>($"Textures/UI/PokemonGender_{pokemonInfo.Gender}");
 
         _pokemonGender.sprite = Sprite.Create(image, new Rect(0, 0, image.width, image.height), Vector2.one * 0.5f);
         _pokemonGender.SetNativeSize();
 
-        _hpGauge.SetGauge(summary.Skill.Stat.Hp, summary.Skill.Stat.MaxHp);
+        _hpGauge.SetGauge(pokemonStat.Hp, pokemonStat.MaxHp);
 
         if (_expGauge != null)
-            _expGauge.SetGauge(pokemon.PokemonSkill.CurExp, summary.Skill.RemainLevelExp);
+            _expGauge.SetGauge(expInfo.CurExp, expInfo.RemainExpToNextLevel);
     }
 
     public void ChangePokemonHP(int destHP)
