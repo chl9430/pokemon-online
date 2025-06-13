@@ -47,6 +47,9 @@ class PacketManager
         _onRecv.Add((ushort)MsgId.CEnterPokemonBattleScene, MakePacket<C_EnterPokemonBattleScene>);
         _handler.Add((ushort)MsgId.CEnterPokemonBattleScene, PacketHandler.C_EnterPokemonBattleSceneHandler);
 
+        _onRecv.Add((ushort)MsgId.CEnterPlayerBagScene, MakePacket<C_EnterPlayerBagScene>);
+        _handler.Add((ushort)MsgId.CEnterPlayerBagScene, PacketHandler.C_EnterPlayerBagSceneHandler);
+
         _onRecv.Add((ushort)MsgId.CUsePokemonMove, MakePacket<C_UsePokemonMove>);
         _handler.Add((ushort)MsgId.CUsePokemonMove, PacketHandler.C_UsePokemonMoveHandler);
 

@@ -5,6 +5,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+public struct PokeBallDictData
+{
+    public string itemName;
+    public string itemDescription;
+    public float catchRate;
+}
+
 public struct PokemonMoveDictData
 {
     public string moveName;
@@ -108,6 +115,24 @@ namespace Server
             foreach (PokemonMoveDictData moveData in pokemonMoves)
             {
                 dict.Add(moveData.moveName, moveData);
+            }
+            return dict;
+        }
+    }
+    #endregion
+
+    #region PokeBall
+    [Serializable]
+    public class PokeBallData : ILoader<string, PokeBallDictData>
+    {
+        public List<PokeBallDictData> pokeBallItems = new List<PokeBallDictData>();
+
+        public Dictionary<string, PokeBallDictData> MakeDict()
+        {
+            Dictionary<string, PokeBallDictData> dict = new Dictionary<string, PokeBallDictData>();
+            foreach (PokeBallDictData itemData in pokeBallItems)
+            {
+                dict.Add(itemData.itemName, itemData);
             }
             return dict;
         }

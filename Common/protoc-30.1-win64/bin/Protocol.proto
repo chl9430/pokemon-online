@@ -19,8 +19,10 @@ enum MsgId {
   C_SWITCH_POKEMON = 12;
   C_ACCESS_POKEMON_SUMMARY = 13;
   S_ACCESS_POKEMON_SUMMARY = 14;
-  C_ENTER_POKEMON_BATTLE_SCENE = 15;
-  S_ENTER_POKEMON_BATTLE_SCENE = 16;
+  C_ENTER_POKEMON_BATTLE_SCENE = 30;
+  S_ENTER_POKEMON_BATTLE_SCENE = 31;
+  C_ENTER_PLAYER_BAG_SCENE = 32;
+  S_ENTER_PLAYER_BAG_SCENE = 33;
   C_USE_POKEMON_MOVE = 17;
   S_USE_POKEMON_MOVE = 18;
   C_CHANGE_POKEMON_HP = 19;
@@ -136,6 +138,18 @@ message S_EnterPokemonBattleScene
     PlayerInfo playerInfo = 1;
     PokemonSummary enemyPokemon = 2;
     repeated PokemonSummary playerPokemons = 3;
+}
+
+message C_EnterPlayerBagScene
+{
+    int32 playerId = 1;
+    ItemCategory itemCategory = 2;
+}
+
+message S_EnterPlayerBagScene
+{
+    PlayerInfo playerInfo = 1;
+    repeated ItemSummary items = 2;
 }
 
 message C_UsePokemonMove
@@ -282,6 +296,14 @@ message PokemonMoveSummary
     PokemonType moveType = 7;
 }
 
+message ItemSummary
+{
+    ItemCategory itemCategory = 1;
+    string itemName = 2;
+    string itemDescription = 3;
+    int32 itemCnt = 4;
+}
+
 message LevelUpStatusDiff
 {
     int32 MaxHP = 1;
@@ -337,4 +359,13 @@ enum MoveCategory
     PHYSICAL = 0;
     SPECIAL = 1;
     OTHER = 2;
+}
+
+enum ItemCategory
+{
+    ITEM = 0;
+    POKE_BALL = 1;
+    TECHNICAL_MACHINE = 2;
+    BERRY = 3;
+    KEY_ITEM = 4;
 }

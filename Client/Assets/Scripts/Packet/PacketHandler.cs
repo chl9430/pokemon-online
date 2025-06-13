@@ -133,6 +133,16 @@ public class PacketHandler
         scene.UpdateData(s_EnterBattleScenePacket);
     }
 
+    public static void S_EnterPlayerBagSceneHandler(PacketSession session, IMessage packet)
+    {
+        S_EnterPlayerBagScene s_EnterPlayerBagScenePacket = packet as S_EnterPlayerBagScene;
+
+        Debug.Log($"S_EnterPlayerBagScene : {s_EnterPlayerBagScenePacket}");
+
+        BaseScene scene = Managers.Scene.CurrentScene;
+        scene.UpdateData(s_EnterPlayerBagScenePacket);
+    }
+
     public static void S_UsePokemonMoveHandler(PacketSession session, IMessage packet)
     {
         S_UsePokemonMove s_UseMovePacket = packet as S_UsePokemonMove;

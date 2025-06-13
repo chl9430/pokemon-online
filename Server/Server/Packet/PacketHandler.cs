@@ -2,6 +2,7 @@
 using Google.Protobuf.Protocol;
 using Server;
 using ServerCore;
+using System.Numerics;
 
 public class PacketHandler
 {
@@ -203,25 +204,7 @@ public class PacketHandler
         // 테스트용 플레이어
         if (player == null)
         {
-            player = ObjectManager.Instance.Add<Player>();
-            {
-                player.Info.PosInfo.State = CreatureState.Idle;
-                player.Info.PosInfo.MoveDir = MoveDir.Down;
-                player.Info.PosInfo.PosX = 0;
-                player.Info.PosInfo.PosY = 0;
-
-                player.Session = clientSession;
-            }
-
-            player.Name = "TEST";
-            player.Gender = PlayerGender.PlayerMale;
-            player.Pokemons = new List<Pokemon>();
-            player.Pokemons.Add(new Pokemon("Pikachu", "PIKAO", 5, player.Name, -1));
-            player.Pokemons.Add(new Pokemon("Bulbasaur", "BUBAS", 7, player.Name, -1));
-            player.Pokemons.Add(new Pokemon("Charmander", "CHAKI", 10, player.Name, -1));
-            player.Pokemons.Add(new Pokemon("Squirtle", "SKIRT", 3, player.Name, -1));
-
-            clientSession.MyPlayer = player;
+            player = MakeTestPlayer(clientSession);
         }
 
         if (DataManager.WildPKMLocationDict.TryGetValue(locationNum, out WildPokemonAppearData[] wildPokemonDatas))
@@ -275,6 +258,80 @@ public class PacketHandler
         else
         {
             Console.WriteLine("Cannot find Location Data!");
+        }
+    }
+
+    public static Player MakeTestPlayer(ClientSession clientSession)
+    {
+        Player player = ObjectManager.Instance.Add<Player>();
+        {
+            player.Info.PosInfo.State = CreatureState.Idle;
+            player.Info.PosInfo.MoveDir = MoveDir.Down;
+            player.Info.PosInfo.PosX = 0;
+            player.Info.PosInfo.PosY = 0;
+
+            player.Session = clientSession;
+        }
+
+        // 플레이어 정보
+        player.Name = "TEST";
+        player.Gender = PlayerGender.PlayerMale;
+
+        // 플레이어 포켓몬
+        player.Pokemons = new List<Pokemon>();
+        player.Pokemons.Add(new Pokemon("Pikachu", "PIKAO", 5, player.Name, -1));
+        player.Pokemons.Add(new Pokemon("Bulbasaur", "BUBAS", 7, player.Name, -1));
+        player.Pokemons.Add(new Pokemon("Charmander", "CHAKI", 10, player.Name, -1));
+        player.Pokemons.Add(new Pokemon("Squirtle", "SKIRT", 3, player.Name, -1));
+
+        // 플레이어 아이템
+        player.AddItem(ItemCategory.PokeBall, "Monster Ball", 10);
+        player.AddItem(ItemCategory.PokeBall, "Great Ball", 10);
+        player.AddItem(ItemCategory.PokeBall, "Ultra Ball", 10);
+
+        clientSession.MyPlayer = player;
+
+        return player;
+    }
+
+    public static void C_EnterPlayerBagSceneHandler(PacketSession session, IMessage packet)
+    {
+        C_EnterPlayerBagScene c_EnterBagScenePacket = packet as C_EnterPlayerBagScene;
+        int playerId = c_EnterBagScenePacket.PlayerId;
+        ItemCategory itemCategory = c_EnterBagScenePacket.ItemCategory;
+
+        ClientSession clientSession = session as ClientSession;
+
+        Console.WriteLine($"" +
+            $"=====================\n" +
+            $"C_EnterPlayerBagScene\n" +
+            $"{c_EnterBagScenePacket}\n" +
+            $"=====================\n"
+            );
+
+        Player player = ObjectManager.Instance.Find(playerId);
+
+        // 테스트용 플레이어
+        if (player == null)
+        {
+            player = MakeTestPlayer(clientSession);
+        }
+
+        if (player.Items.TryGetValue(itemCategory, out List<Item> items))
+        {
+            S_EnterPlayerBagScene s_EnterBagScenePacket = new S_EnterPlayerBagScene();
+            s_EnterBagScenePacket.PlayerInfo = player.MakePlayerInfo();
+
+            foreach (Item item in items)
+            {
+                s_EnterBagScenePacket.Items.Add(item.MakeItemSummary());
+            }
+
+            player.Session.Send(s_EnterBagScenePacket);
+        }
+        else
+        {
+            Console.WriteLine("Cannot find item category!");
         }
     }
 

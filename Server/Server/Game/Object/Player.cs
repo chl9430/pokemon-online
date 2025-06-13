@@ -13,6 +13,7 @@ namespace Server
     {
         string _name;
         List<Pokemon> pokemons;
+        Dictionary<ItemCategory, List<Item>> _items;
         PlayerGender _gender;
 
         public ClientSession Session { get; set; }
@@ -27,10 +28,22 @@ namespace Server
             set { pokemons = value; }
         }
 
+        public Dictionary<ItemCategory, List<Item>> Items
+        {
+            get { return _items; }
+        }
+
         public Player()
         {
             ObjectType = GameObjectType.Player;
             pokemons = new List<Pokemon>();
+
+            _items = new Dictionary<ItemCategory, List<Item>>();
+            _items.Add(ItemCategory.Item, new List<Item>());
+            _items.Add(ItemCategory.PokeBall, new List<Item>());
+            _items.Add(ItemCategory.TechnicalMachine, new List<Item>());
+            _items.Add(ItemCategory.Berry, new List<Item>());
+            _items.Add(ItemCategory.KeyItem, new List<Item>());
         }
 
         public void AddPokemon(Pokemon pokemon)
@@ -54,6 +67,28 @@ namespace Server
             playerInfo.PlayerGender = Gender;
 
             return playerInfo;
+        }
+
+        public void AddItem(ItemCategory itemCategory, string itemName, int itemCnt)
+        {
+            if (_items.TryGetValue(itemCategory, out List<Item> categoryItems))
+            {
+                foreach (Item item in categoryItems)
+                {
+                    if (item.ItemName == itemName)
+                    {
+                        item.ItemCount += itemCnt;
+                        return;
+                    }
+                }
+
+                if (itemCategory == ItemCategory.PokeBall)
+                    categoryItems.Add(new PokeBall(itemName, itemCnt));
+            }
+            else
+            {
+                Console.WriteLine("Cannot find item category!");
+            }
         }
     }
 }
