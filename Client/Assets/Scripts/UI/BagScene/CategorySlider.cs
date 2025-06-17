@@ -15,17 +15,22 @@ public class CategorySlider : MonoBehaviour
     int _dir;
     int _curIdx;
     int _moveFinishCnt;
-    bool _broadcastToScene;
     SliderState _sliderState = SliderState.NONE;
     BaseScene _scene;
+    List<SliderContent> _categoryList;
 
-    [SerializeField] List<SliderContent> categoryList;
+    public SliderState SliderState { get { return _sliderState; } set { _sliderState = value; } }
+
+    [SerializeField] SliderContent _sliderContent;
+
+    void Awake()
+    {
+        _categoryList = new List<SliderContent>();
+    }
 
     void Start()
     {
         _scene = Managers.Scene.CurrentScene;
-
-        _scene.DoNextAction(_curIdx);
     }
 
     private void Update()
@@ -34,6 +39,11 @@ public class CategorySlider : MonoBehaviour
         {
             case SliderState.WAITING_INPUT:
                 {
+                    if (_categoryList.Count == 1)
+                    {
+                        return;
+                    }
+
                     if (Input.GetKeyDown(KeyCode.LeftArrow))
                     {
                         if (_sliderState == SliderState.MOVING)
@@ -41,19 +51,30 @@ public class CategorySlider : MonoBehaviour
                             return;
                         }
 
+                        foreach (SliderContent content in _categoryList)
+                        {
+                            RectTransform rt = content.GetComponent<RectTransform>();
+
+                            if (rt.anchorMax.x == _categoryList.Count)
+                            {
+                                rt.anchorMin = new Vector2(-1, rt.anchorMin.y);
+                                rt.anchorMax = new Vector2(0, rt.anchorMax.y);
+                            }
+                        }
+
                         _dir = 1;
                         _curIdx--;
 
                         if (_curIdx < 0)
                         {
-                            _curIdx = categoryList.Count - 1;
+                            _curIdx = _categoryList.Count - 1;
                         }
 
                         _sliderState = SliderState.MOVING;
 
-                        for (int i = 0; i < categoryList.Count; i++)
+                        for (int i = 0; i < _categoryList.Count; i++)
                         {
-                            SliderContent category = categoryList[i];
+                            SliderContent category = _categoryList[i];
 
                             category.MoveContent(5f, _dir);
                         }
@@ -68,16 +89,16 @@ public class CategorySlider : MonoBehaviour
                         _dir = -1;
                         _curIdx++;
 
-                        if (_curIdx == categoryList.Count)
+                        if (_curIdx == _categoryList.Count)
                         {
                             _curIdx = 0;
                         }
 
                         _sliderState = SliderState.MOVING;
 
-                        for (int i = 0; i < categoryList.Count; i++)
+                        for (int i = 0; i < _categoryList.Count; i++)
                         {
-                            SliderContent category = categoryList[i];
+                            SliderContent category = _categoryList[i];
 
                             category.MoveContent(5f, _dir);
                         }
@@ -91,50 +112,54 @@ public class CategorySlider : MonoBehaviour
     {
         _moveFinishCnt++;
 
-        if (_moveFinishCnt == categoryList.Count)
+        if (_moveFinishCnt == _categoryList.Count)
         {
             _moveFinishCnt = 0;
             _sliderState = SliderState.NONE;
 
             if (_dir == -1)
             {
-                for (int i = 0; i < categoryList.Count; i++)
+                for (int i = 0; i < _categoryList.Count; i++)
                 {
-                    SliderContent category = categoryList[i];
+                    SliderContent category = _categoryList[i];
                     RectTransform rt = category.GetComponent<RectTransform>();
 
-                    if (rt.anchorMax.x == -2)
+                    if (rt.anchorMax.x == 0)
                     {
-                        rt.anchorMin = new Vector2(categoryList.Count - 3, rt.anchorMin.y);
-                        rt.anchorMax = new Vector2(categoryList.Count - 2, rt.anchorMax.y);
-                    }
-                }
-            }
-            else
-            {
-                for (int i = 0; i < categoryList.Count; i++)
-                {
-                    SliderContent category = categoryList[i];
-                    RectTransform rt = category.GetComponent<RectTransform>();
-
-                    if (rt.anchorMin.x == categoryList.Count - 2)
-                    {
-                        rt.anchorMin = new Vector2(-2, rt.anchorMin.y);
-                        rt.anchorMax = new Vector2(-1, rt.anchorMax.y);
+                        rt.anchorMin = new Vector2(_categoryList.Count - 1, rt.anchorMin.y);
+                        rt.anchorMax = new Vector2(_categoryList.Count, rt.anchorMax.y);
                     }
                 }
             }
 
-            if (_broadcastToScene)
-            {
-                _scene.DoNextAction(_curIdx);
-            }
+            _scene.DoNextAction(this);
         }
     }
 
-    public void WaitUserInputForSlider(bool broadcastToScene)
+    public object GetSelectedContentData()
     {
-        _sliderState = SliderState.WAITING_INPUT;
-        _broadcastToScene = broadcastToScene;
+        return _categoryList[_curIdx].ContentData;
+    }
+
+    public void SetSliderContents(List<object> _sliderContents)
+    {
+        for (int i = 0; i < _sliderContents.Count; i++)
+        {
+            SliderContent sliderContent = GameObject.Instantiate(_sliderContent, gameObject.transform);
+            sliderContent.SetContentName(_sliderContents[i].ToString());
+            sliderContent.SetData(_sliderContents[i]);
+            _categoryList.Add(sliderContent);
+
+            RectTransform rt = sliderContent.GetComponent<RectTransform>();
+
+            rt.anchorMin = new Vector2(i, 0);
+            rt.anchorMax = new Vector2(i + 1, 1);
+            rt.pivot = new Vector2(0.5f, 0.5f);
+            rt.offsetMin = Vector2.zero;
+            rt.offsetMax = Vector2.zero;
+            rt.localScale = Vector3.one;
+        }
+
+        _scene.DoNextAction(this);
     }
 }

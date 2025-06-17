@@ -285,9 +285,19 @@ public class PacketHandler
         player.Pokemons.Add(new Pokemon("Squirtle", "SKIRT", 3, player.Name, -1));
 
         // 플레이어 아이템
-        player.AddItem(ItemCategory.PokeBall, "Monster Ball", 10);
+        player.AddItem(ItemCategory.PokeBall, "Monster Ball", 99);
+        player.AddItem(ItemCategory.PokeBall, "Great Ball", 99);
+        player.AddItem(ItemCategory.PokeBall, "Ultra Ball", 99);
+        player.AddItem(ItemCategory.PokeBall, "Ultra Ball", 99);
+        player.AddItem(ItemCategory.PokeBall, "Ultra Ball", 99);
+        player.AddItem(ItemCategory.PokeBall, "Ultra Ball", 99);
+        player.AddItem(ItemCategory.PokeBall, "Ultra Ball", 99);
+        player.AddItem(ItemCategory.PokeBall, "Monster Ball", 45);
+        player.AddItem(ItemCategory.PokeBall, "Great Ball", 78);
+        player.AddItem(ItemCategory.PokeBall, "Great Ball", 34);
         player.AddItem(ItemCategory.PokeBall, "Great Ball", 10);
-        player.AddItem(ItemCategory.PokeBall, "Ultra Ball", 10);
+        player.AddItem(ItemCategory.PokeBall, "Great Ball", 10);
+        player.AddItem(ItemCategory.PokeBall, "Great Ball", 50);
 
         clientSession.MyPlayer = player;
 
@@ -317,22 +327,22 @@ public class PacketHandler
             player = MakeTestPlayer(clientSession);
         }
 
-        if (player.Items.TryGetValue(itemCategory, out List<Item> items))
-        {
-            S_EnterPlayerBagScene s_EnterBagScenePacket = new S_EnterPlayerBagScene();
-            s_EnterBagScenePacket.PlayerInfo = player.MakePlayerInfo();
+        S_EnterPlayerBagScene s_EnterBagScenePacket = new S_EnterPlayerBagScene();
+        s_EnterBagScenePacket.PlayerInfo = player.MakePlayerInfo();
 
-            foreach (Item item in items)
+        foreach (var pair in player.Items)
+        {
+            CategoryInventory categoryInventory = new CategoryInventory();
+
+            foreach (Item item in pair.Value)
             {
-                s_EnterBagScenePacket.Items.Add(item.MakeItemSummary());
+                categoryInventory.CategoryItemSums.Add(item.MakeItemSummary());
             }
 
-            player.Session.Send(s_EnterBagScenePacket);
+            s_EnterBagScenePacket.Inventory.Add((int)pair.Key, categoryInventory);
         }
-        else
-        {
-            Console.WriteLine("Cannot find item category!");
-        }
+
+        player.Session.Send(s_EnterBagScenePacket);
     }
 
     public static void C_UsePokemonMoveHandler(PacketSession session, IMessage packet)

@@ -149,7 +149,7 @@ message C_EnterPlayerBagScene
 message S_EnterPlayerBagScene
 {
     PlayerInfo playerInfo = 1;
-    repeated ItemSummary items = 2;
+    map<int32, CategoryInventory> inventory = 2;
 }
 
 message C_UsePokemonMove
@@ -294,6 +294,11 @@ message PokemonMoveSummary
     int32 maxPP = 5;
     MoveCategory moveCategory = 6;
     PokemonType moveType = 7;
+}
+
+message CategoryInventory
+{
+    repeated ItemSummary categoryItemSums = 1;
 }
 
 message ItemSummary

@@ -71,14 +71,20 @@ namespace Server
 
         public void AddItem(ItemCategory itemCategory, string itemName, int itemCnt)
         {
+            if (itemCnt > 99)
+                Console.WriteLine("Cannot add too many items!");
+
             if (_items.TryGetValue(itemCategory, out List<Item> categoryItems))
             {
                 foreach (Item item in categoryItems)
                 {
                     if (item.ItemName == itemName)
                     {
-                        item.ItemCount += itemCnt;
-                        return;
+                        if (item.ItemCount + itemCnt <= 99)
+                        {
+                            item.ItemCount += itemCnt;
+                            return;
+                        }
                     }
                 }
 

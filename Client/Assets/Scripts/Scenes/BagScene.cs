@@ -1,6 +1,10 @@
 using Google.Protobuf;
+using Google.Protobuf.Collections;
 using Google.Protobuf.Protocol;
+using System;
 using System.Collections.Generic;
+using System.Linq;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -8,23 +12,31 @@ public enum BagSceneState
 {
     NONE = 0,
     WAITING_INPUT = 1,
+    WAITING_ACTION = 2,
 }
 
 public class BagScene : BaseScene
 {
+    Item _selectedItem;
+    Dictionary<ItemCategory, List<Item>> _bag;
     BagSceneState _sceneState = BagSceneState.NONE;
 
-    [SerializeField] CategorySlider categorySlider;
-    [SerializeField] List<Image> sliderIndicatorImgs;
+    [SerializeField] CategorySlider _categorySlider;
+    [SerializeField] List<Image> _sliderIndicatorImgs;
+    [SerializeField] ScrollSelectBox _scrollSelectBox;
+    [SerializeField] List<Image> _scrollBoxArrow;
+    [SerializeField] GridSelectBox _gridSelectBox;
+    [SerializeField] Image _itemImg;
+    [SerializeField] TextMeshProUGUI _itemDescription;
 
 
     protected override void Init()
     {
         base.Init();
 
-        _sceneState = BagSceneState.WAITING_INPUT;
-
         SceneType = Define.Scene.Bag;
+
+        _bag = new Dictionary<ItemCategory, List<Item>>();
 
         // 테스트 시 사용.
         if (Managers.Network.Packet == null)
@@ -42,12 +54,50 @@ public class BagScene : BaseScene
     protected override void Start()
     {
         base.Start();
-
-        categorySlider.WaitUserInputForSlider(true);
     }
 
     public override void UpdateData(IMessage packet)
     {
+        switch (_sceneState)
+        {
+            case BagSceneState.NONE:
+                {
+                    _sceneState = BagSceneState.WAITING_INPUT;
+                    ActiveUIBySceneState(_sceneState);
+
+                    S_EnterPlayerBagScene enterBagScenePacket = packet as S_EnterPlayerBagScene;
+                    PlayerInfo info = enterBagScenePacket.PlayerInfo;
+                    MapField<int, CategoryInventory> inventory = enterBagScenePacket.Inventory;
+
+                    // 인벤토리 채우기
+                    foreach (var pair in inventory)
+                    {
+                        ItemCategory itemCategory = (ItemCategory)pair.Key;
+                        _bag[itemCategory] = new List<Item>();
+
+                        List<ItemSummary> categoryItems = new List<ItemSummary>(pair.Value.CategoryItemSums);
+
+                        foreach (ItemSummary itemSum in categoryItems)
+                        {
+                            _bag[itemCategory].Add(new Item(itemSum));
+                        }
+                    }
+
+                    // 아이템 카테고리 슬라이더 설정
+                    List<object> _itemCategories = Enum.GetValues(typeof(ItemCategory))
+                                            .Cast<ItemCategory>()
+                                            .Where(key => _bag.ContainsKey(key))
+                                            .Select(key => (object)key)
+                    .ToList();
+
+                    // 유저의 인풋을 받기 시작한다.
+                    _categorySlider.SetSliderContents(_itemCategories);
+
+                    // 셀렉트 박스 데이터 채우기
+                    _gridSelectBox.SetButtonDatas(new List<object>() { "Use", "Give", "Toss", "Cancel" });
+                }
+                break;
+        }
     }
 
     public override void DoNextAction(object value = null)
@@ -56,31 +106,147 @@ public class BagScene : BaseScene
         {
             case BagSceneState.WAITING_INPUT:
                 {
-                    int selectedIdx = (int)value;
-                    Debug.Log(selectedIdx);
-
-                    categorySlider.WaitUserInputForSlider(true);
-
-                    for (int i = 0; i < sliderIndicatorImgs.Count; i++)
+                    if (value is ScrollSelectBox)
                     {
-                        Image img = sliderIndicatorImgs[i];
-                        RectTransform rt = sliderIndicatorImgs[i].GetComponent<RectTransform>();
+                        Debug.Log("3");
+                        ScrollSelectBox scrollBox = value as ScrollSelectBox;
 
-                        if (i == selectedIdx)
+                        if (scrollBox.ScrollBoxContents.Count == 0)
                         {
-                            rt.sizeDelta = new Vector2(30, 30);
-                            img.color = Color.red;
+                            _scrollBoxArrow[0].gameObject.SetActive(false);
+                            _scrollBoxArrow[1].gameObject.SetActive(false);
+
+                            _itemImg.sprite = null;
+
+                            _itemDescription.text = "";
+                            return;
+                        }
+
+                        if (scrollBox.ScrollCnt == 0)
+                        {
+                            _scrollBoxArrow[0].gameObject.SetActive(false);
+                            _scrollBoxArrow[1].gameObject.SetActive(true);
+                        }
+                        else if (scrollBox.ScrollCnt == scrollBox.ScrollBoxContents.Count - scrollBox.ViewCount)
+                        {
+                            _scrollBoxArrow[0].gameObject.SetActive(true);
+                            _scrollBoxArrow[1].gameObject.SetActive(false);
                         }
                         else
                         {
-                            rt.sizeDelta = new Vector2(15, 15);
-                            img.color = Color.white;
+                            _scrollBoxArrow[0].gameObject.SetActive(true);
+                            _scrollBoxArrow[1].gameObject.SetActive(true);
                         }
+
+                        Item selectedItem = scrollBox.SelectedContent.BtnData as Item;
+
+                        Texture2D image = selectedItem.ItemImg;
+
+                        _itemImg.sprite = Sprite.Create(image, new Rect(0, 0, image.width, image.height), Vector2.one * 0.5f);
+                        _itemImg.SetNativeSize();
+
+                        _itemDescription.text = selectedItem.ItemDescription;
+                    }
+                    else if (value is CategorySlider)
+                    {
+                        Debug.Log("2");
+                        ItemCategory selectedCategory = (ItemCategory)((value as CategorySlider).GetSelectedContentData());
+
+                        for (int i = 0; i < _sliderIndicatorImgs.Count; i++)
+                        {
+                            Image img = _sliderIndicatorImgs[i];
+                            RectTransform rt = _sliderIndicatorImgs[i].GetComponent<RectTransform>();
+
+                            if (i == (int)selectedCategory)
+                            {
+                                rt.sizeDelta = new Vector2(30, 30);
+                                img.color = Color.red;
+                            }
+                            else
+                            {
+                                rt.sizeDelta = new Vector2(15, 15);
+                                img.color = Color.white;
+                            }
+                        }
+
+                        // 이전에 보여지던 카테고리 내 아이템 리스트 삭제
+                        List<ArrowButton> scrollBoxContents = _scrollSelectBox.ScrollBoxContents;
+
+                        foreach (ArrowButton obj in scrollBoxContents)
+                        {
+                            Managers.Resource.Destroy(obj.gameObject);
+                        }
+
+                        scrollBoxContents.Clear();
+
+                        // 카테고리 내 아이템 리스트 설정
+                        foreach (Item item in _bag[selectedCategory])
+                        {
+                            ArrowButton scrollBoxContent = Managers.Resource.Instantiate("UI/BagScene/ScrollContentZone", _scrollSelectBox.transform).GetComponent<ArrowButton>();
+
+                            Util.FindChild<TextMeshProUGUI>(scrollBoxContent.gameObject, "ItemName", true).text = item.ItemName;
+
+                            Util.FindChild<TextMeshProUGUI>(scrollBoxContent.gameObject, "ItemCount", true).text = "×" + item.ItemCnt;
+
+                            scrollBoxContent.BtnData = item;
+
+                            scrollBoxContents.Add(scrollBoxContent);
+                        }
+
+                        // 유저의 인풋을 받기 시작한다.
+                        _categorySlider.SliderState = SliderState.WAITING_INPUT;
+
+                        _scrollSelectBox.CreateScrollBoxItems(scrollBoxContents);
+                        _scrollSelectBox.ScrollBoxState = ScrollBoxState.WAITING_INPUT;
+                    }
+                    else
+                    {
+                        Debug.Log("1");
+                        Item item = value as Item;
+
+                        _selectedItem = item;
+
+                        _sceneState = BagSceneState.WAITING_ACTION;
+                        ActiveUIBySceneState(_sceneState);
+                    }
+                }
+                break;
+            case BagSceneState.WAITING_ACTION:
+                {
+                    string input = value as string;
+
+                    if (input == "Select")
+                    {
+                        Debug.Log($"{_selectedItem.ItemName}/{_selectedItem.ItemCnt}");
+                    }
+                    else if (input == "Back")
+                    {
+                        Debug.Log($"Back!");
+                        
+                        _sceneState = BagSceneState.WAITING_INPUT;
+                        ActiveUIBySceneState(_sceneState);
                     }
                 }
                 break;
         }
     }
+
+    void ActiveUIBySceneState(BagSceneState state)
+    {
+        if (state == BagSceneState.WAITING_INPUT)
+        {
+            _categorySlider.SliderState = SliderState.WAITING_INPUT;
+            _scrollSelectBox.ScrollBoxState = ScrollBoxState.WAITING_INPUT;
+            _gridSelectBox.ChangeUIState(GridSelectBoxState.NONE, false);
+        }
+        else if (state == BagSceneState.WAITING_ACTION)
+        {
+            _categorySlider.SliderState = SliderState.NONE;
+            _scrollSelectBox.ScrollBoxState = ScrollBoxState.NONE;
+            _gridSelectBox.ChangeUIState(GridSelectBoxState.SELECTING, true);
+        }
+    }
+
 
     public override void Clear()
     {
