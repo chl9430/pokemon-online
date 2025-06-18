@@ -22,6 +22,17 @@ public class ScreenChanger : MonoBehaviour
         _scene = Managers.Scene.CurrentScene;
     }
 
+    public void SetScreenAlpha(float alpha)
+    {
+        if (alpha < 0f || alpha > 1f)
+            return;
+
+        Color color = fadeImage.color;
+
+        color.a = alpha;
+        fadeImage.color = color;
+    }
+
     public void OnTimelineStopped(PlayableDirector aDirector)
     {
         _scene.DoNextActionWithTimeline();

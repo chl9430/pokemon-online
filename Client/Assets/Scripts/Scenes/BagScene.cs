@@ -17,9 +17,14 @@ public enum BagSceneState
 
 public class BagScene : BaseScene
 {
+    bool _loadingPacket = false;
+    string _selectedAction;
     Item _selectedItem;
-    Dictionary<ItemCategory, List<Item>> _bag;
+    ItemCategory _selectedCategory;
     BagSceneState _sceneState = BagSceneState.NONE;
+
+    PlayerInfo _playerInfo;
+    Dictionary<ItemCategory, List<Item>> _bag;
 
     [SerializeField] CategorySlider _categorySlider;
     [SerializeField] List<Image> _sliderIndicatorImgs;
@@ -43,7 +48,6 @@ public class BagScene : BaseScene
         {
             C_EnterPlayerBagScene enterBagScenePacket = new C_EnterPlayerBagScene();
             enterBagScenePacket.PlayerId = -1;
-            enterBagScenePacket.ItemCategory = ItemCategory.PokeBall;
 
             Managers.Network.Send(enterBagScenePacket);
         }
@@ -68,6 +72,9 @@ public class BagScene : BaseScene
                     S_EnterPlayerBagScene enterBagScenePacket = packet as S_EnterPlayerBagScene;
                     PlayerInfo info = enterBagScenePacket.PlayerInfo;
                     MapField<int, CategoryInventory> inventory = enterBagScenePacket.Inventory;
+
+                    // 플레이어 정보 저장
+                    _playerInfo = info;
 
                     // 인벤토리 채우기
                     foreach (var pair in inventory)
@@ -94,7 +101,8 @@ public class BagScene : BaseScene
                     _categorySlider.SetSliderContents(_itemCategories);
 
                     // 셀렉트 박스 데이터 채우기
-                    _gridSelectBox.SetButtonDatas(new List<object>() { "Use", "Give", "Toss", "Cancel" });
+                    if (_playerInfo.ObjectInfo.PosInfo.State == CreatureState.Fight)
+                        _gridSelectBox.SetButtonDatas(new List<object>() { "Use", "Give", "Toss", "Cancel" });
                 }
                 break;
         }
@@ -108,7 +116,6 @@ public class BagScene : BaseScene
                 {
                     if (value is ScrollSelectBox)
                     {
-                        Debug.Log("3");
                         ScrollSelectBox scrollBox = value as ScrollSelectBox;
 
                         if (scrollBox.ScrollBoxContents.Count == 0)
@@ -147,10 +154,10 @@ public class BagScene : BaseScene
 
                         _itemDescription.text = selectedItem.ItemDescription;
                     }
-                    else if (value is CategorySlider)
+                    else if (value is CategorySlider) // 카테고리 슬라이더를 움직였을때
                     {
-                        Debug.Log("2");
                         ItemCategory selectedCategory = (ItemCategory)((value as CategorySlider).GetSelectedContentData());
+                        _selectedCategory = selectedCategory;
 
                         for (int i = 0; i < _sliderIndicatorImgs.Count; i++)
                         {
@@ -201,7 +208,6 @@ public class BagScene : BaseScene
                     }
                     else
                     {
-                        Debug.Log("1");
                         Item item = value as Item;
 
                         _selectedItem = item;
@@ -217,7 +223,39 @@ public class BagScene : BaseScene
 
                     if (input == "Select")
                     {
-                        Debug.Log($"{_selectedItem.ItemName}/{_selectedItem.ItemCnt}");
+                        Debug.Log(_playerInfo.ObjectInfo.PosInfo.State);
+                        if (_selectedAction == "Use")
+                        {
+                            if (!_loadingPacket)
+                            {
+                                if (_playerInfo.ObjectInfo.PosInfo.State == CreatureState.Fight)
+                                {
+                                    C_UseItem c_useItem = new C_UseItem();
+                                    c_useItem.PlayerId = _playerInfo.ObjectInfo.ObjectId;
+                                    c_useItem.ItemCategory = _selectedCategory;
+                                    c_useItem.ItemOrder = _bag[_selectedCategory].FindIndex(item => item == _selectedItem);
+
+                                    Managers.Network.SavePacket(c_useItem);
+
+                                    ScreenChanger.ChangeAndFadeOutScene(Define.Scene.Battle);
+                                }
+
+                                _loadingPacket = true;
+                            }
+                        }
+                        else if (_selectedAction == "Toss")
+                        {
+                            Debug.Log("Toss");
+                        }
+                        else if (_selectedAction == "Give")
+                        {
+                            Debug.Log("Give");
+                        }
+                        else if (_selectedAction == "Cancel")
+                        {
+                            _sceneState = BagSceneState.WAITING_INPUT;
+                            ActiveUIBySceneState(_sceneState);
+                        }
                     }
                     else if (input == "Back")
                     {
@@ -225,6 +263,10 @@ public class BagScene : BaseScene
                         
                         _sceneState = BagSceneState.WAITING_INPUT;
                         ActiveUIBySceneState(_sceneState);
+                    }
+                    else
+                    {
+                        _selectedAction = input;
                     }
                 }
                 break;
@@ -250,6 +292,5 @@ public class BagScene : BaseScene
 
     public override void Clear()
     {
-        throw new System.NotImplementedException();
     }
 }

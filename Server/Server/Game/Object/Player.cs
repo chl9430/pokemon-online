@@ -14,6 +14,7 @@ namespace Server
         string _name;
         List<Pokemon> pokemons;
         Dictionary<ItemCategory, List<Item>> _items;
+        PrivateBattleRoom _battleRoom;
         PlayerGender _gender;
 
         public ClientSession Session { get; set; }
@@ -32,6 +33,8 @@ namespace Server
         {
             get { return _items; }
         }
+
+        public PrivateBattleRoom BattleRoom { get { return _battleRoom; } set { _battleRoom = value; } }
 
         public Player()
         {
@@ -95,6 +98,18 @@ namespace Server
             {
                 Console.WriteLine("Cannot find item category!");
             }
+        }
+
+        public Item UseItem(ItemCategory itemCategory, int itemOrder)
+        {
+            Item usedItem = _items[itemCategory][itemOrder];
+
+            usedItem.ItemCount--;
+
+            if (usedItem.ItemCount <= 0)
+                _items[itemCategory].RemoveAt(itemOrder);
+
+            return usedItem;
         }
     }
 }

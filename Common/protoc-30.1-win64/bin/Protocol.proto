@@ -23,6 +23,8 @@ enum MsgId {
   S_ENTER_POKEMON_BATTLE_SCENE = 31;
   C_ENTER_PLAYER_BAG_SCENE = 32;
   S_ENTER_PLAYER_BAG_SCENE = 33;
+  C_USE_ITEM = 50;
+  S_USE_ITEM = 51;
   C_USE_POKEMON_MOVE = 17;
   S_USE_POKEMON_MOVE = 18;
   C_CHANGE_POKEMON_HP = 19;
@@ -140,10 +142,24 @@ message S_EnterPokemonBattleScene
     repeated PokemonSummary playerPokemons = 3;
 }
 
-message C_EnterPlayerBagScene
+message C_UseItem
 {
     int32 playerId = 1;
     ItemCategory itemCategory = 2;
+    int32 itemOrder = 3;
+}
+
+message S_UseItem
+{
+    PlayerInfo playerInfo = 1;
+    PokemonSummary enemyPokemon = 2;
+    repeated PokemonSummary playerPokemons = 3;
+    ItemSummary usedItem = 4;
+}
+
+message C_EnterPlayerBagScene
+{
+    int32 playerId = 1;
 }
 
 message S_EnterPlayerBagScene
@@ -168,13 +184,9 @@ message S_UsePokemonMove
 message C_ChangePokemonHp
 {
     MoveCategory moveCategory = 1;
-    PokemonInfo attackPKMInfo = 2;
-    PokemonInfo defensePKMInfo = 3;
-    PokemonStat attackPKMStat = 4;
-    PokemonStat defensePKMStat = 5;
-    int32 movePower = 6;
-    int32 playerId = 7;
-    int32 pokemonOrder = 8;
+    int32 movePower = 2;
+    int32 playerId = 3;
+    int32 pokemonOrder = 4;
 }
 
 message S_ChangePokemonHp

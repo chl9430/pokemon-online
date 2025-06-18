@@ -23,26 +23,17 @@ public class GameScene : BaseScene
 
         Screen.SetResolution(1280, 720, false);
 
-        //if (Managers.Object.MyPlayer == null && Managers.Object.myPlayerObjInfo != null)
-        //{
-        //    C_ReturnGame returnPacket = new C_ReturnGame();
-        //    returnPacket.PlayerId = Managers.Object.myPlayerObjInfo.ObjectId;
-        //    Managers.Network.Send(returnPacket);
-        //}
+        // 테스트 시 사용.
+        if (Managers.Network.Packet == null)
+        {
+            C_CreatePlayer createPlayerPacket = new C_CreatePlayer();
+            createPlayerPacket.Gender = PlayerGender.PlayerFemale;
+            createPlayerPacket.Name = "TEST";
 
-        Managers.Network.SendSavedPacket();
-
-        //Managers.UI.ShowSceneUI<UI_Inven>();
-        //Dictionary<int, Data.Stat> dict = Managers.Data.StatDict;
-        //gameObject.GetOrAddComponent<CursorController>();
-
-        //GameObject player = Managers.Game.Spawn(Define.WorldObject.Player, "UnityChan");
-        //Camera.main.gameObject.GetOrAddComponent<CameraController>().SetPlayer(player);
-
-        ////Managers.Game.Spawn(Define.WorldObject.Monster, "Knight");
-        //GameObject go = new GameObject { name = "SpawningPool" };
-        //SpawningPool pool = go.GetOrAddComponent<SpawningPool>();
-        //pool.SetKeepMonsterCount(2);
+            Managers.Network.Send(createPlayerPacket);
+        }
+        else
+            Managers.Network.SendSavedPacket();
     }
 
     public override void RegisterPacket(IMessage packet)

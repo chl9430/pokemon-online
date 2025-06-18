@@ -36,20 +36,29 @@ public class PacketHandler
             $"=====================\n"
             );
 
-        Player player = ObjectManager.Instance.Add<Player>();
+        Player player = null;
+
+        if (c_CreatePlayerPacket.Name == "TEST")
         {
-            player.Info.PosInfo.State = CreatureState.Idle;
-            player.Info.PosInfo.MoveDir = MoveDir.Down;
-            player.Info.PosInfo.PosX = 0;
-            player.Info.PosInfo.PosY = 0;
-
-            player.Session = clientSession;
+            player = MakeTestPlayer(clientSession);
         }
+        else
+        {
+            player = ObjectManager.Instance.Add<Player>();
+            {
+                player.Info.PosInfo.State = CreatureState.Idle;
+                player.Info.PosInfo.MoveDir = MoveDir.Down;
+                player.Info.PosInfo.PosX = 0;
+                player.Info.PosInfo.PosY = 0;
 
-        player.Name = c_CreatePlayerPacket.Name;
-        player.Gender = c_CreatePlayerPacket.Gender;
+                player.Session = clientSession;
+            }
 
-        clientSession.MyPlayer = player;
+            player.Name = c_CreatePlayerPacket.Name;
+            player.Gender = c_CreatePlayerPacket.Gender;
+
+            clientSession.MyPlayer = player;
+        }
 
         GameRoom room = RoomManager.Instance.Find(1);
         room.Push(room.EnterRoom, player);
@@ -207,58 +216,52 @@ public class PacketHandler
             player = MakeTestPlayer(clientSession);
         }
 
-        if (DataManager.WildPKMLocationDict.TryGetValue(locationNum, out WildPokemonAppearData[] wildPokemonDatas))
+        player.Info.PosInfo.State = CreatureState.Fight;
+        player.BattleRoom = new PrivateBattleRoom(player);
+        player.BattleRoom.MakeWildPokemon(locationNum);
+        player.BattleRoom.MyPokemon = player.Pokemons[0];
+
+        S_EnterPokemonBattleScene s_EnterBattleScenePacket = new S_EnterPokemonBattleScene();
+        s_EnterBattleScenePacket.PlayerInfo = player.MakePlayerInfo();
+        s_EnterBattleScenePacket.EnemyPokemon = player.BattleRoom.WildPokemon.MakePokemonSummary();
+
+        foreach (Pokemon pokemon in player.Pokemons)
         {
-            WildPokemonAppearData wildPokemonData = wildPokemonDatas[0];
-
-            Random random = new Random();
-            int ran = random.Next(100);
-
-            int totalRateCnt = 0;
-
-            for (int i = 0; i < wildPokemonDatas.Length; i++)
-            {
-                int rateCnt = 0;
-                int appearRate = wildPokemonDatas[i].appearRate;
-
-                bool found = false;
-
-                while (rateCnt < appearRate)
-                {
-                    if (totalRateCnt != ran)
-                    {
-                        totalRateCnt++;
-                        rateCnt++;
-                    }
-                    else
-                    {
-                        wildPokemonData = wildPokemonDatas[i];
-                        found = true;
-                        break;
-                    }
-                }
-
-                if (found)
-                    break;
-            }
-
-            Pokemon wildPokemon = new Pokemon(wildPokemonData.pokemonName, wildPokemonData.pokemonName, wildPokemonData.pokemonLevel, player.Name, playerId);
-
-            S_EnterPokemonBattleScene s_EnterBattleScenePacket = new S_EnterPokemonBattleScene();
-            s_EnterBattleScenePacket.PlayerInfo = player.MakePlayerInfo();
-            s_EnterBattleScenePacket.EnemyPokemon = wildPokemon.MakePokemonSummary();
-
-            foreach(Pokemon pokemon in player.Pokemons)
-            {
-                s_EnterBattleScenePacket.PlayerPokemons.Add(pokemon.MakePokemonSummary());
-            }
-
-            player.Session.Send(s_EnterBattleScenePacket);
+            s_EnterBattleScenePacket.PlayerPokemons.Add(pokemon.MakePokemonSummary());
         }
-        else
+
+        player.Session.Send(s_EnterBattleScenePacket);
+    }
+
+    public static void C_UseItemHandler(PacketSession session, IMessage packet)
+    {
+        C_UseItem c_useItemPacket = packet as C_UseItem;
+        int playerId = c_useItemPacket.PlayerId;
+        ItemCategory itemCategory = c_useItemPacket.ItemCategory;
+        int itemOrder = c_useItemPacket.ItemOrder;
+
+        Console.WriteLine($"" +
+            $"=====================\n" +
+            $"C_UseItem\n" +
+            $"{c_useItemPacket}\n" +
+            $"=====================\n"
+            );
+
+        Player player = ObjectManager.Instance.Find(playerId);
+        PrivateBattleRoom battleRoom = player.BattleRoom;
+
+        S_UseItem s_useItemPacket = new S_UseItem();
+        s_useItemPacket.PlayerInfo = player.MakePlayerInfo();
+        s_useItemPacket.EnemyPokemon = battleRoom.WildPokemon.MakePokemonSummary();
+
+        foreach (Pokemon pokemon in player.Pokemons)
         {
-            Console.WriteLine("Cannot find Location Data!");
+            s_useItemPacket.PlayerPokemons.Add(pokemon.MakePokemonSummary());
         }
+
+        s_useItemPacket.UsedItem = player.UseItem(itemCategory, itemOrder).MakeItemSummary();
+
+        player.Session.Send(s_useItemPacket);
     }
 
     public static Player MakeTestPlayer(ClientSession clientSession)
@@ -275,7 +278,7 @@ public class PacketHandler
 
         // 플레이어 정보
         player.Name = "TEST";
-        player.Gender = PlayerGender.PlayerMale;
+        player.Gender = PlayerGender.PlayerFemale;
 
         // 플레이어 포켓몬
         player.Pokemons = new List<Pokemon>();
@@ -308,7 +311,6 @@ public class PacketHandler
     {
         C_EnterPlayerBagScene c_EnterBagScenePacket = packet as C_EnterPlayerBagScene;
         int playerId = c_EnterBagScenePacket.PlayerId;
-        ItemCategory itemCategory = c_EnterBagScenePacket.ItemCategory;
 
         ClientSession clientSession = session as ClientSession;
 
@@ -363,12 +365,14 @@ public class PacketHandler
             );
 
         Player player = ObjectManager.Instance.Find(playerId);
-        PokemonMove usedMove = player.Pokemons[pokemonOrder].PokemonMoves[moveOrder];
-
-        usedMove.CurPP -= usedPP;
+        PrivateBattleRoom battleRoom = player.BattleRoom;
 
         S_UsePokemonMove s_UseMovePacket = new S_UsePokemonMove();
-        s_UseMovePacket.RemainedPP = usedMove.CurPP;
+
+        if (pokemonOrder == -1)
+            s_UseMovePacket.RemainedPP = battleRoom.UseWildPokemonMove(moveOrder, usedPP);
+        else
+            s_UseMovePacket.RemainedPP = battleRoom.UseMyPokemonMove(moveOrder, usedPP);
 
         player.Session.Send(s_UseMovePacket);
     }
@@ -379,10 +383,6 @@ public class PacketHandler
         ClientSession clientSession = session as ClientSession;
 
         MoveCategory moveCategory = c_ChangeHPPacket.MoveCategory;
-        PokemonInfo attackPKMInfo = c_ChangeHPPacket.AttackPKMInfo;
-        PokemonInfo defensePKMInfo = c_ChangeHPPacket.DefensePKMInfo;
-        PokemonStat attackPKMStat = c_ChangeHPPacket.AttackPKMStat;
-        PokemonStat defensePKMStat = c_ChangeHPPacket.DefensePKMStat;
         int movePower = c_ChangeHPPacket.MovePower;
         int playerId = c_ChangeHPPacket.PlayerId;
         int pokemonOrder = c_ChangeHPPacket.PokemonOrder;
@@ -395,35 +395,14 @@ public class PacketHandler
             );
 
         Player player = ObjectManager.Instance.Find(playerId);
-
-        Pokemon pokemon = null;
-
-        // 방어 포켓몬이 야생 포켓몬이라면
-        if (pokemonOrder != -1)
-        {
-            pokemon = player.Pokemons[pokemonOrder];
-        }
-
-        // 데미지 계산
-        int finalDamage = CalFinalDamage(moveCategory, attackPKMInfo.Level, attackPKMStat, defensePKMStat, movePower);
+        PrivateBattleRoom battleRoom = player.BattleRoom;
 
         S_ChangePokemonHp s_ChangeHPPacket = new S_ChangePokemonHp();
 
-        // 방어 포켓몬이 내 포켓몬이라면
-        if (pokemon != null)
-        {
-            pokemon.GetDamage(finalDamage);
-            s_ChangeHPPacket.RemainedHp = pokemon.PokemonStat.Hp;
-        }
-        else // 방어 포켓몬이 야생 포켓몬이라면
-        {
-            defensePKMStat.Hp -= finalDamage;
-
-            if (defensePKMStat.Hp < 0)
-                defensePKMStat.Hp = 0;
-
-            s_ChangeHPPacket.RemainedHp = defensePKMStat.Hp;
-        }
+        if (pokemonOrder == -1)
+            s_ChangeHPPacket.RemainedHp = battleRoom.ChangeWildPokemonHp(moveCategory, movePower);
+        else
+            s_ChangeHPPacket.RemainedHp = battleRoom.ChangeMyPokemonHp(moveCategory, movePower);
 
         player.Session.Send(s_ChangeHPPacket);
     }
@@ -441,12 +420,10 @@ public class PacketHandler
             $"=====================\n"
             );
 
-        int exp = (112 * enemyPokemonInfo.Level) / 7;
-
         Player player = ObjectManager.Instance.Find(playerId);
-
+        
         S_GetEnemyPokemonExp s_GetExpPacket = new S_GetEnemyPokemonExp();
-        s_GetExpPacket.Exp = exp;
+        s_GetExpPacket.Exp = player.BattleRoom.GetExp();
 
         player.Session.Send(s_GetExpPacket);
     }
@@ -501,30 +478,5 @@ public class PacketHandler
         changeLevelPacket.PokemonCurExp = pokemon.ExpInfo.CurExp;
 
         player.Session.Send(changeLevelPacket);
-    }
-
-
-
-    static int CalFinalDamage(MoveCategory moveCategory, int attackPKMLevel, PokemonStat attackPKMStat, PokemonStat defensePKMStat, int movePower)
-    {
-        int finalDamage = 0;
-
-        if (moveCategory == MoveCategory.Physical)
-            finalDamage = (int)((
-            ((((float)attackPKMLevel) * 2f / 5f) + 2f)
-            * ((float)movePower)
-            * ((float)attackPKMStat.Attack) / ((float)defensePKMStat.Defense)
-            ) / 50f + 2f);
-        else if (moveCategory == MoveCategory.Special)
-            finalDamage = (int)((
-            ((((float)attackPKMLevel) * 2f / 5f) + 2f)
-            * ((float)movePower)
-            * ((float)attackPKMStat.SpecialAttack) / ((float)defensePKMStat.SpecialDefense)
-            ) / 50f + 2f);
-
-        if (finalDamage <= 0)
-            finalDamage = 1;
-
-        return finalDamage;
     }
 }
