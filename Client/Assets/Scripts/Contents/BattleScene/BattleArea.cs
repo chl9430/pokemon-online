@@ -15,7 +15,7 @@ public class BattleArea : MonoBehaviour
     [SerializeField] Image _pokemonGender;
     [SerializeField] GaugeUI _hpGauge;
     [SerializeField] GaugeUI _expGauge;
-    [SerializeField] MoveableUI _pokemonUI;
+    [SerializeField] Animator _pokemonAnim;
 
     public Pokemon Pokemon { get { return _pokemon; } set { _pokemon = value; } }
 
@@ -33,8 +33,6 @@ public class BattleArea : MonoBehaviour
             _pokemonGender = Util.FindChild<Image>(gameObject, "PokemonGender", true);
         if (_hpGauge == null)
             _hpGauge = Util.FindChild<GaugeUI>(gameObject, "HPGauge", true);
-        if (_pokemonUI == null)
-            _pokemonUI = Util.FindChild<MoveableUI>(gameObject, "PokemonMoveableUI", true);
     }
 
     public void FillTrainerImage(PlayerGender gender)
@@ -74,7 +72,7 @@ public class BattleArea : MonoBehaviour
 
         _pokemonLevel.text = $"Lv.{pokemonInfo.Level.ToString()}";
 
-        image = Managers.Resource.Load<Texture2D>($"Textures/UI/PokemonGender_{pokemonInfo.Gender}");
+        image = pokemon.PokemonGenderImage;
 
         _pokemonGender.sprite = Sprite.Create(image, new Rect(0, 0, image.width, image.height), Vector2.one * 0.5f);
         _pokemonGender.SetNativeSize();
@@ -97,28 +95,15 @@ public class BattleArea : MonoBehaviour
 
     public void AttackMovePokemonUI()
     {
-        RectTransform rt = _pokemonUI.GetComponent<RectTransform>();
-
-        Vector2 minDestPos;
-        Vector2 maxDestPos;
-
         if (_isMyPokemon)
-        {
-            minDestPos = new Vector2(rt.anchorMin.x + 0.25f, rt.anchorMin.y);
-            maxDestPos = new Vector2(rt.anchorMax.x + 0.25f, rt.anchorMax.y);
-        }
+            _pokemonAnim.Play("BattlePokemon_RightAttack");
         else
-        {
-            minDestPos = new Vector2(rt.anchorMin.x - 0.25f, rt.anchorMin.y);
-            maxDestPos = new Vector2(rt.anchorMax.x - 0.25f, rt.anchorMax.y);
-        }
-
-        _pokemonUI.SetOldAndDestPos(minDestPos, maxDestPos, MoveableUIState.MOVE_AND_COMEBACK, 3f);
+            _pokemonAnim.Play("BattlePokemon_LeftAttack");
     }
 
     public void BlinkPokemonUI()
     {
-        _pokemonUI.StartBlink(2, 0.25f);
+        _pokemonAnim.Play("BattlePokemon_Hit");
     }
 
     public void TriggerPokemonHitImage(Pokemon attackingPKM)
@@ -145,14 +130,6 @@ public class BattleArea : MonoBehaviour
 
     public void PokemonDie()
     {
-        RectTransform rt = _pokemonUI.GetComponent<RectTransform>();
-
-        Vector2 minDestPos;
-        Vector2 maxDestPos;
-
-        minDestPos = new Vector2(rt.anchorMin.x, rt.anchorMin.y - 1);
-        maxDestPos = new Vector2(rt.anchorMax.x, rt.anchorMax.y - 1);
-
-        _pokemonUI.SetOldAndDestPos(minDestPos, maxDestPos, MoveableUIState.MOVING, 3f);
+        _pokemonAnim.Play("BattlePokemon_Die");
     }
 }

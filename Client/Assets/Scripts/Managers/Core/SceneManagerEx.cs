@@ -5,7 +5,10 @@ using UnityEngine.SceneManagement;
 
 public class SceneManagerEx
 {
+    object _data;
     public BaseScene CurrentScene { get { return GameObject.FindFirstObjectByType<BaseScene>(); } }
+
+    public object Data { get { return _data; } set { _data = value; } }
 
 	public void LoadScene(Define.Scene type)
     {

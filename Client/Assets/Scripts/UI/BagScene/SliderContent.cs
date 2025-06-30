@@ -13,19 +13,19 @@ public class SliderContent : MonoBehaviour
     float _startTime;
     float _moveSpeed;
     RectTransform _rect;
-    CategorySlider _slider;
     TextMeshProUGUI _tmp;
     Vector2 _prevMinPos;
     Vector2 _prevMaxPos;
     Vector2 _destMinPos;
     Vector2 _destMaxPos;
     SliderContentState _state = SliderContentState.NONE;
+    
+    [SerializeField] CategorySlider _slider;
 
-    public object ContentData {  get { return _contentData; } }
+    public object ContentData {  get { return _contentData; } set { _contentData = value; } }
 
     void Start()
     {
-        _slider = transform.parent.GetComponent<CategorySlider>();
         _tmp = GetComponent<TextMeshProUGUI>();
     }
 
@@ -72,18 +72,5 @@ public class SliderContent : MonoBehaviour
 
         _destMinPos = new Vector2(_prevMinPos.x + dir, _prevMinPos.y);
         _destMaxPos = new Vector2(_prevMaxPos.x + dir, _prevMaxPos.y);
-    }
-
-    public void SetData(object data)
-    {
-        _contentData = data;
-    }
-
-    public void SetContentName(string name)
-    {
-        if (_tmp == null)
-            _tmp = Util.FindChild<TextMeshProUGUI>(gameObject, "ContentText");
-
-        _tmp.text = name;
     }
 }

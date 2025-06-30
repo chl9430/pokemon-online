@@ -19,10 +19,12 @@ enum MsgId {
   C_SWITCH_POKEMON = 12;
   C_ACCESS_POKEMON_SUMMARY = 13;
   S_ACCESS_POKEMON_SUMMARY = 14;
-  C_ENTER_POKEMON_BATTLE_SCENE = 30;
-  S_ENTER_POKEMON_BATTLE_SCENE = 31;
-  C_ENTER_PLAYER_BAG_SCENE = 32;
-  S_ENTER_PLAYER_BAG_SCENE = 33;
+  C_ENTER_POKEMON_LIST_SCENE = 30;
+  S_ENTER_POKEMON_LIST_SCENE = 31;
+  C_ENTER_POKEMON_BATTLE_SCENE = 32;
+  S_ENTER_POKEMON_BATTLE_SCENE = 33;
+  C_ENTER_PLAYER_BAG_SCENE = 34;
+  S_ENTER_PLAYER_BAG_SCENE = 35;
   C_USE_ITEM = 50;
   S_USE_ITEM = 51;
   C_USE_POKEMON_MOVE = 17;
@@ -116,6 +118,17 @@ message C_SwitchPokemon {
     int32 ownerId = 1;
     int32 pokemonFromIdx = 2;
     int32 pokemonToIdx = 3;
+}
+
+message C_EnterPokemonListScene
+{
+    int32 playerId = 1;
+}
+
+message S_EnterPokemonListScene
+{
+    PlayerInfo playerInfo = 1;
+    repeated PokemonSummary pokemonSums = 2;
 }
 
 message C_AccessPokemonSummary

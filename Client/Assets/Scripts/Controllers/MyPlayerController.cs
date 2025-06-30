@@ -4,9 +4,20 @@ using UnityEngine.Tilemaps;
 
 public class MyPlayerController : PlayerController
 {
-    public PokemonAppearanceTile pkmAppearTile;
-
+    bool _isLocked = true;
     float moveTimerLimit = 0.15f;
+    BaseScene _scene;
+    PokemonAppearanceTile _pokemonTile;
+
+    public bool IsLocked { set { _isLocked = value; } }
+    public PokemonAppearanceTile PokemonTile {  set { _pokemonTile = value; } }
+
+    protected override void Start()
+    {
+        base.Start();
+
+        _scene = Managers.Scene.CurrentScene;
+    }
 
     void LateUpdate()
     {
@@ -16,6 +27,9 @@ public class MyPlayerController : PlayerController
     protected override void UpdateController()
     {
         // base.UpdateController();
+
+        if (_isLocked)
+            return;
 
         switch (State)
         {
@@ -34,39 +48,6 @@ public class MyPlayerController : PlayerController
 
                 break;
         }
-
-        // 테스트 코드
-        if (Input.GetKeyDown(KeyCode.L))
-        {
-            C_AddPokemon addPacket = new C_AddPokemon()
-            {
-                PlayerId = Id,
-                PokemonName = "Pikachu",
-                NickName = "PIKAO",
-                Level = 5,
-                Hp = 100,
-            };
-            C_AddPokemon addPacket2 = new C_AddPokemon()
-            {
-                PlayerId = Id,
-                PokemonName = "Charmander",
-                NickName = "CHAO",
-                Level = 1,
-                Hp = 100,
-            };
-            C_AddPokemon addPacket3 = new C_AddPokemon()
-            {
-                PlayerId = Id,
-                PokemonName = "Squirtle",
-                NickName = "SKIRT",
-                Level = 3,
-                Hp = 100,
-            };
-
-            Managers.Network.Send(addPacket);
-            Managers.Network.Send(addPacket2);
-            Managers.Network.Send(addPacket3);
-        }
     }
 
     protected override void Init()
@@ -77,7 +58,7 @@ public class MyPlayerController : PlayerController
 
     void ChangeDir()
     {
-        if (Input.GetKeyDown(KeyCode.W))
+        if (Input.GetKeyDown(KeyCode.UpArrow))
         {
             if (Dir == MoveDir.Up)
             {
@@ -92,7 +73,7 @@ public class MyPlayerController : PlayerController
                 Managers.Network.Send(movePacket);
             }
         }
-        else if (Input.GetKeyDown(KeyCode.S))
+        else if (Input.GetKeyDown(KeyCode.DownArrow))
         {
             if (Dir == MoveDir.Down)
             {
@@ -107,7 +88,7 @@ public class MyPlayerController : PlayerController
                 Managers.Network.Send(movePacket);
             }
         }
-        else if (Input.GetKeyDown(KeyCode.A))
+        else if (Input.GetKeyDown(KeyCode.LeftArrow))
         {
             if (Dir == MoveDir.Left)
             {
@@ -122,7 +103,7 @@ public class MyPlayerController : PlayerController
                 Managers.Network.Send(movePacket);
             }
         }
-        else if (Input.GetKeyDown(KeyCode.D))
+        else if (Input.GetKeyDown(KeyCode.RightArrow))
         {
             if (Dir == MoveDir.Right)
             {
@@ -144,7 +125,7 @@ public class MyPlayerController : PlayerController
         if (State == CreatureState.Walk)
             return;
 
-        if (Input.GetKey(KeyCode.W))
+        if (Input.GetKey(KeyCode.UpArrow))
         {
             moveTimer += Time.deltaTime;
 
@@ -155,7 +136,7 @@ public class MyPlayerController : PlayerController
                 SetToNextPos();
             }
         }
-        else if (Input.GetKey(KeyCode.S))
+        else if (Input.GetKey(KeyCode.DownArrow))
         {
             moveTimer += Time.deltaTime;
 
@@ -166,7 +147,7 @@ public class MyPlayerController : PlayerController
                 SetToNextPos();
             }
         }
-        else if (Input.GetKey(KeyCode.A))
+        else if (Input.GetKey(KeyCode.LeftArrow))
         {
             moveTimer += Time.deltaTime;
 
@@ -177,7 +158,7 @@ public class MyPlayerController : PlayerController
                 SetToNextPos();
             }
         }
-        else if (Input.GetKey(KeyCode.D))
+        else if (Input.GetKey(KeyCode.RightArrow))
         {
             moveTimer += Time.deltaTime;
 
@@ -198,17 +179,23 @@ public class MyPlayerController : PlayerController
     {
         if (Input.GetKeyDown(KeyCode.Space))
         {
-            BaseScene scene = Managers.Scene.CurrentScene;
-
             if (toggle)
             {
-                ((GameScene)scene).ToggleGameMenu(toggle);
                 State = CreatureState.WatchMenu;
+                C_Move movePacket = new C_Move();
+                movePacket.PosInfo = PosInfo;
+                Managers.Network.Send(movePacket);
+
+                _scene.DoNextAction(State);
             }
             else
             {
-                ((GameScene)scene).ToggleGameMenu(toggle);
                 State = CreatureState.Idle;
+                C_Move movePacket = new C_Move();
+                movePacket.PosInfo = PosInfo;
+                Managers.Network.Send(movePacket);
+
+                _scene.DoNextAction(State);
             }
         }
     }
@@ -238,28 +225,32 @@ public class MyPlayerController : PlayerController
             transform.position = destPos;
 
             // 몬스터 스폰
-            if (pkmAppearTile != null)
+            if (_pokemonTile != null)
             {
-                if (pkmAppearTile.AppearPokemon())
+                if (_pokemonTile.AppearPokemon())
+                {
+                    State = CreatureState.Fight;
+                    _scene.DoNextAction(State);
                     return;
+                }
             }
 
-            if (Input.GetKey(KeyCode.W))
+            if (Input.GetKey(KeyCode.UpArrow))
             {
                 Dir = MoveDir.Up;
                 SetToNextPos();
             }
-            else if (Input.GetKey(KeyCode.S))
+            else if (Input.GetKey(KeyCode.DownArrow))
             {
                 Dir = MoveDir.Down;
                 SetToNextPos();
             }
-            else if (Input.GetKey(KeyCode.A))
+            else if (Input.GetKey(KeyCode.LeftArrow))
             {
                 Dir = MoveDir.Left;
                 SetToNextPos();
             }
-            else if (Input.GetKey(KeyCode.D))
+            else if (Input.GetKey(KeyCode.RightArrow))
             {
                 Dir = MoveDir.Right;
                 SetToNextPos();

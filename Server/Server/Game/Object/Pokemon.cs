@@ -46,9 +46,9 @@ namespace Server
                 GenderRatioData[] genderRatioDatas = _summaryDictData.genderRatio;
                 GenderRatioData foundGenderData = genderRatioDatas[0];
 
-                float ran = (float)(random.NextDouble() * 100.0f);
+                float ran = (float)Math.Round(random.NextDouble() * 100.0f, 1);
 
-                float totalRateCnt = 0;
+                int totalRateCnt = 0;
 
                 for (int i = 0; i < genderRatioDatas.Length; i++)
                 {
@@ -59,9 +59,9 @@ namespace Server
 
                     while (rateCnt < genderRatio)
                     {
-                        if (totalRateCnt != ran)
+                        if (((float)totalRateCnt / 10f) != ran)
                         {
-                            totalRateCnt += 0.1f;
+                            totalRateCnt += 1;
                             rateCnt += 0.1f;
                         }
                         else

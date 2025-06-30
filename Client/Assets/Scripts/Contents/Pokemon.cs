@@ -14,6 +14,8 @@ public class Pokemon
 
     Texture2D _pokemonImg;
     Texture2D _pokemonBackImg;
+    Texture2D _pokemonIconImg;
+    Texture2D _pokemonGenderImg;
 
     public List<PokemonMove> PokemonMoves
     {
@@ -35,6 +37,8 @@ public class Pokemon
 
     public Texture2D PokemonImage { get { return _pokemonImg; } }
     public Texture2D PokemonBackImage { get { return _pokemonBackImg; } }
+    public Texture2D PokemonIconImage { get { return _pokemonIconImg; } }
+    public Texture2D PokemonGenderImage {  get { return _pokemonGenderImg; } }
 
     public Pokemon(PokemonSummary pokemonSum)
     {
@@ -51,6 +55,8 @@ public class Pokemon
 
         _pokemonImg = Managers.Resource.Load<Texture2D>($"Textures/Pokemon/{_pokemonInfo.PokemonName}");
         _pokemonBackImg = Managers.Resource.Load<Texture2D>($"Textures/Pokemon/{_pokemonInfo.PokemonName}_Back");
+        _pokemonIconImg = Managers.Resource.Load<Texture2D>($"Textures/Pokemon/{_pokemonInfo.PokemonName}_Icon");
+        _pokemonGenderImg = Managers.Resource.Load<Texture2D>($"Textures/Pokemon/PokemonGender_{_pokemonInfo.Gender}");
     }
 
     public bool IsHitByAcc()

@@ -17,26 +17,12 @@ public class PacketHandler
 
     public static void S_EnterRoomHandler(PacketSession session, IMessage packet)
     {
-        S_EnterRoom s_EnterRoomPacket = packet as S_EnterRoom;
-        PlayerInfo playerInfo = s_EnterRoomPacket.PlayerInfo;
+        S_EnterRoom s_enterRoomPacket = packet as S_EnterRoom;
 
-        Debug.Log($"S_EnterRoom : {s_EnterRoomPacket}");
+        Debug.Log($"S_EnterRoom : {s_enterRoomPacket}");
 
-        GameObject myPlayer = null;
-
-        if (playerInfo.PlayerGender == PlayerGender.PlayerMale)
-            myPlayer = Managers.Resource.Instantiate("Creature/MyPlayerMale");
-        else if (playerInfo.PlayerGender == PlayerGender.PlayerFemale)
-            myPlayer = Managers.Resource.Instantiate("Creature/MyPlayerFemale");
-
-        myPlayer.name = $"{playerInfo.PlayerName}_{playerInfo.ObjectInfo.ObjectId}";
-
-        Managers.Object.Add(myPlayer, playerInfo.ObjectInfo);
-        Managers.Object.MyPlayer = myPlayer.GetComponent<MyPlayerController>();
-
-        PlayerController pc = myPlayer.GetComponent<PlayerController>();
-        pc.PlayerName = playerInfo.PlayerName;
-        pc.PlayerGender = playerInfo.PlayerGender;
+        BaseScene scene = Managers.Scene.CurrentScene;
+        scene.UpdateData(s_enterRoomPacket);
     }
 
     public static void S_LeaveRoomHandler(PacketSession session, IMessage packet)
@@ -57,9 +43,9 @@ public class PacketHandler
             GameObject anotherPlayer = null;
 
             if (player.PlayerGender == PlayerGender.PlayerMale)
-                anotherPlayer = Managers.Resource.Instantiate("Creature/MyPlayerMale");
+                anotherPlayer = Managers.Resource.Instantiate("Creature/PlayerMale");
             else if (player.PlayerGender == PlayerGender.PlayerFemale)
-                anotherPlayer = Managers.Resource.Instantiate("Creature/MyPlayerFemale");
+                anotherPlayer = Managers.Resource.Instantiate("Creature/PlayerFemale");
 
             anotherPlayer.name = player.PlayerName;
 
@@ -92,6 +78,9 @@ public class PacketHandler
         if (bc == null)
             return;
 
+        // Debug.Log($"{movePacket.ObjectId} : [{movePacket.PosInfo.PosX}, {movePacket.PosInfo.PosY}]");
+        // Debug.Log($"{movePacket.ObjectId} : [{movePacket.PosInfo.State}]");
+
         Vector3 curPos = new Vector3(bc.PosInfo.PosX, bc.PosInfo.PosY, 0);
         Vector3 nextPos = new Vector3(movePacket.PosInfo.PosX, movePacket.PosInfo.PosY, 0);
 
@@ -111,6 +100,16 @@ public class PacketHandler
         Debug.Log($"S_AddPokemon : {s_ServerPokemonPacket}");
 
         Pokemon pokemon = new Pokemon(pokemonSum);
+    }
+
+    public static void S_EnterPokemonListSceneHandler(PacketSession session, IMessage packet)
+    {
+        S_EnterPokemonListScene s_enterPokemonListPacket = packet as S_EnterPokemonListScene;
+
+        Debug.Log($"S_EnterPokemonListScene : {s_enterPokemonListPacket}");
+
+        BaseScene scene = Managers.Scene.CurrentScene;
+        scene.UpdateData(s_enterPokemonListPacket);
     }
 
     public static void S_AccessPokemonSummaryHandler(PacketSession session, IMessage packet)

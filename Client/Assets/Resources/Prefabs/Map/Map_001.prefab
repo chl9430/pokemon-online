@@ -3911,7 +3911,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _appearanceRate: 40
   _LocationNum: 1
-  _pkmAppearEffect: {fileID: 8586777432521838279, guid: c98ebdb2eee21254bb76ee3dee20a154, type: 3}
+  _pokemonAppearEffect: {fileID: 1022802390984343320, guid: 310dcbe579f171d4092226f278ee5be3, type: 3}
 --- !u!19719996 &1940327495851186129
 TilemapCollider2D:
   m_ObjectHideFlags: 0

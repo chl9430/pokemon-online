@@ -4,127 +4,122 @@ using UnityEngine;
 
 public enum GridSelectBoxState
 {
-    SELECTING = 0,
-    NONE = 1,
+    NONE = 0,
+    SELECTING = 1
 }
 
 public class GridSelectBox : MonoBehaviour
 {
     int _x = 0;
     int _y = 0;
+    int _row;
+    int _col;
     GridSelectBoxState _uiState = GridSelectBoxState.NONE;
-    ArrowButton[,] _btnGrid;
+    DynamicButton[,] _btnGrid;
     BaseScene _scene;
 
-    [SerializeField] int _row;
-    [SerializeField] int _col;
+    
 
     public GridSelectBoxState UIState
     {
         set
         {
             _uiState = value;
-        }
-    }
 
-    public ArrowButton[,] BtnGrid
-    {
-        get
-        {
-            return _btnGrid;
+            if (_uiState == GridSelectBoxState.SELECTING)
+                _scene.DoNextAction(_x * _col + _y);
         }
-    }
-
-    void Awake()
-    {
-        _btnGrid = new ArrowButton[_row, _col];
     }
 
     void Start()
     {
         _scene = Managers.Scene.CurrentScene;
-
-        FillButtonGrid();
-
-        _btnGrid[_x, _y].ToggleArrow(true);
     }
 
-    void FillButtonGrid()
+    public void FillButtonGrid(int row, int col, List<DynamicButton> btns)
     {
+        _row = row;
+        _col = col;
+
+        if (_scene == null)
+            _scene = Managers.Scene.CurrentScene;
+
         if (_btnGrid == null)
-            _btnGrid = new ArrowButton[_row, _col];
+            _btnGrid = new DynamicButton[_row, _col];
 
-        ArrowButton[] _btns = gameObject.GetComponentsInChildren<ArrowButton>();
-
-        if (_btns.Length != _row * _col)
-            Debug.Log("Button count is incorrect.");
 
         for (int i = 0; i < _btnGrid.GetLength(0); i++)
         {
             for (int j = 0; j < _btnGrid.GetLength(1); j++)
             {
-                _btnGrid[i, j] = _btns[i * _row + j];
+                _btnGrid[i, j] = btns[j * _row + i];
             }
         }
+
+        _btnGrid[_x, _y].SetSelectedOrNotSelected(true);
     }
 
     void ChooseAction()
     {
         if (Input.GetKeyDown(KeyCode.LeftArrow))
         {
-            if (_y == 0 || _btnGrid[_x, (_y - 1)].BtnData == null)
+            if (_y == 0)
                 return;
 
-            _btnGrid[_x, _y].ToggleArrow(false);
+            _btnGrid[_x, _y].SetSelectedOrNotSelected(false);
 
             _y--;
 
-            _btnGrid[_x, _y].ToggleArrow(true);
-            _scene.DoNextAction(_btnGrid[_x, _y].BtnData);
+            _btnGrid[_x, _y].SetSelectedOrNotSelected(true);
+
+            _scene.DoNextAction(_x * _col + _y);
         }
         else if (Input.GetKeyDown(KeyCode.RightArrow))
         {
-            if (_y == _col - 1 || _btnGrid[_x, (_y + 1)].BtnData == null)
+            if (_y == _col - 1)
                 return;
 
-            _btnGrid[_x, _y].ToggleArrow(false);
+            _btnGrid[_x, _y].SetSelectedOrNotSelected(false);
 
             _y++;
 
-            _btnGrid[_x, _y].ToggleArrow(true);
-            _scene.DoNextAction(_btnGrid[_x, _y].BtnData);
+            _btnGrid[_x, _y].SetSelectedOrNotSelected(true);
+
+            _scene.DoNextAction(_x * _col + _y);
         }
         else if (Input.GetKeyDown(KeyCode.DownArrow))
         {
-            if (_x == _row - 1 || _btnGrid[(_x + 1), _y].BtnData == null)
+            if (_x == _row - 1)
                 return;
 
-            _btnGrid[_x, _y].ToggleArrow(false);
+            _btnGrid[_x, _y].SetSelectedOrNotSelected(false);
 
             _x++;
 
-            _btnGrid[_x, _y].ToggleArrow(true);
-            _scene.DoNextAction(_btnGrid[_x, _y].BtnData);
+            _btnGrid[_x, _y].SetSelectedOrNotSelected(true);
+
+            _scene.DoNextAction(_x * _col + _y);
         }
         else if (Input.GetKeyDown(KeyCode.UpArrow))
         {
-            if (_x == 0 || _btnGrid[(_x - 1), _y].BtnData == null)
+            if (_x == 0)
                 return;
 
-            _btnGrid[_x, _y].ToggleArrow(false);
+            _btnGrid[_x, _y].SetSelectedOrNotSelected(false);
 
             _x--;
 
-            _btnGrid[_x, _y].ToggleArrow(true);
-            _scene.DoNextAction(_btnGrid[_x, _y].BtnData);
+            _btnGrid[_x, _y].SetSelectedOrNotSelected(true);
+
+            _scene.DoNextAction(_x * _col + _y);
         }
         else if (Input.GetKeyDown(KeyCode.D))
         {
-            _scene.DoNextAction("Select");
+            _scene.DoNextAction(Define.InputSelectBoxEvent.SELECT);
         }
         else if (Input.GetKeyDown(KeyCode.S))
         {
-            _scene.DoNextAction("Back");
+            _scene.DoNextAction(Define.InputSelectBoxEvent.BACK);
         }
     }
 
@@ -138,71 +133,13 @@ public class GridSelectBox : MonoBehaviour
         }
     }
 
-    public void SetButtonNames(List<string> names)
-    {
-        if (_btnGrid == null)
-            FillButtonGrid();
-
-        for (int i = 0; i < _btnGrid.GetLength(0); i++)
-        {
-            for (int j = 0; j < _btnGrid.GetLength(1); j++)
-            {
-                if (i * _btnGrid.GetLength(0) + j >= names.Count)
-                    return;
-
-                _btnGrid[i, j].SetButtonName(names[i * _btnGrid.GetLength(0) + j]);
-            }
-        }
-    }
-
-    public void SetButtonDatas(List<object> datas)
-    {
-        if (_btnGrid == null)
-            FillButtonGrid();
-
-        for (int i = 0; i < _btnGrid.GetLength(0); i++)
-        {
-            for (int j = 0; j < _btnGrid.GetLength(1); j++)
-            {
-                if (i * _btnGrid.GetLength(0) + j >= datas.Count)
-                    return;
-
-                _btnGrid[i, j].BtnData = datas[i * _btnGrid.GetLength(0) + j];
-            }
-        }
-    }
-
-    public void ChangeGrid(int row, int col)
-    {
-        _row = row;
-        _col = col;
-
-        FillButtonGrid();
-    }
-
-    public void ChangeUIState(GridSelectBoxState state, bool isActive)
-    {
-        _uiState = state;
-
-        if (_scene == null)
-            _scene = Managers.Scene.CurrentScene;
-
-        if (isActive)
-            _scene.DoNextAction(_btnGrid[_x, _y].BtnData);
-
-        if (isActive)
-            gameObject.SetActive(true);
-        else
-            gameObject.SetActive(false);
-    }
-
     public void HideAllArow()
     {
         for (int i = 0; i < _btnGrid.GetLength(0); i++)
         {
             for (int j = 0; j < _btnGrid.GetLength(1); j++)
             {
-                _btnGrid[i, j].ToggleArrow(false);
+                _btnGrid[i, j].SetSelectedOrNotSelected(false);
             }
         }
     }

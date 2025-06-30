@@ -5,17 +5,17 @@ using UnityEngine.Tilemaps;
 
 public class PokemonAppearanceTile : MonoBehaviour
 {
+    BaseScene _scene;
+
     [SerializeField] int _appearanceRate;
     [SerializeField] int _LocationNum;
-    [SerializeField] GameObject _pkmAppearEffect;
+    [SerializeField] ScreenEffecter _pokemonAppearEffect;
 
-    Tilemap _tilemap;
     MyPlayerController _myPlayer;
-    ScreenChanger _screenChanger;
 
     void Start()
     {
-        _tilemap = GetComponent<Tilemap>();
+        _scene = Managers.Scene.CurrentScene;
         _myPlayer = Managers.Object.MyPlayer;
     }
 
@@ -28,20 +28,16 @@ public class PokemonAppearanceTile : MonoBehaviour
 
         if (ran < _appearanceRate)
         {
-            _myPlayer.State = CreatureState.Fight;
-
-            _screenChanger = Instantiate(_pkmAppearEffect).GetComponent<ScreenChanger>();
-
-            Managers.Scene.CurrentScene.AttachToTheUI(_screenChanger.gameObject);
+            ScreenEffecter effecter = Instantiate(_pokemonAppearEffect, _scene.ScreenEffecterZone);
+            effecter.PlayEffect("PokemonAppear");
+            _scene.ScreenEffecter = effecter;
 
             C_EnterPokemonBattleScene c_enterBattleScenePacket = new C_EnterPokemonBattleScene();
 
             c_enterBattleScenePacket.PlayerId = Managers.Object.MyPlayer.Id;
             c_enterBattleScenePacket.LocationNum = _LocationNum;
 
-            BaseScene scene = Managers.Scene.CurrentScene;
-
-            scene.RegisterPacket(c_enterBattleScenePacket);
+            Managers.Network.SavePacket(c_enterBattleScenePacket);
 
             return true;
         }
@@ -55,7 +51,7 @@ public class PokemonAppearanceTile : MonoBehaviour
         {
             MyPlayerController myPlayer = collision.gameObject.GetComponent<MyPlayerController>();
 
-            myPlayer.pkmAppearTile = this;
+            myPlayer.PokemonTile = this;
         }
     }
 
@@ -65,7 +61,7 @@ public class PokemonAppearanceTile : MonoBehaviour
         {
             MyPlayerController myPlayer = collision.gameObject.GetComponent<MyPlayerController>();
 
-            myPlayer.pkmAppearTile = null;
+            myPlayer.PokemonTile = null;
         }
     }
 }

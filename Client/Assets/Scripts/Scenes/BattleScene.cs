@@ -9,7 +9,7 @@ using UnityEngine;
 using UnityEngine.Playables;
 using UnityEngine.UI;
 
-enum BattleSceneState
+public enum BattleSceneState
 {
     NONE = 0,
     INTRO = 1,
@@ -38,7 +38,6 @@ enum BattleSceneState
 public class BattleScene : BaseScene
 {
     BattleSceneState _sceneState = BattleSceneState.NONE;
-    List<List<string>> _scripts;
     TextMeshProUGUI[] _moveInfoTMPs;
     PlayableDirector _playableDirector;
     PlayerInfo _playerInfo;
@@ -46,7 +45,6 @@ public class BattleScene : BaseScene
 
     Pokemon _myPokemon;
     Pokemon _enemyPokemon;
-    PokemonMove _selectedMove;
     Item _usedItem;
 
     Pokemon _attackPKM;
@@ -56,17 +54,65 @@ public class BattleScene : BaseScene
     bool _isMyPKMAttack = false;
     bool _isEnemyPKMAttack = false;
     bool _loadingPacket = false;
-    string _selectedAction;
 
     int _remainEXPToGet;
 
     [SerializeField] ScriptBoxUI _scriptBox;
-    [SerializeField] GridSelectBox _actionSelectBox;
-    [SerializeField] GridSelectBox _moveSelectBox;
+    [SerializeField] GridLayoutSelectBox _actionSelectBox;
+    [SerializeField] List<DynamicButton> _actionBtns;
+    [SerializeField] GridLayoutSelectBox _moveSelectBox;
+    [SerializeField] DynamicButton _moveBtn;
+    List<DynamicButton> _moveBtns;
     [SerializeField] GameObject _moveInfoBox;
     [SerializeField] BattleArea _enemyPokemonArea;
     [SerializeField] BattleArea _myPokemonArea;
     [SerializeField] StatusBox _statusBox;
+
+    public BattleSceneState SceneState
+    {
+        set
+        {
+            _sceneState = value;
+
+            // 액션 선택 박스
+            if (_sceneState == BattleSceneState.SELECTING_ACTION)
+            {
+                _actionSelectBox.gameObject.SetActive(true);
+                _actionSelectBox.UIState = GridLayoutSelectBoxState.SELECTING;
+            }
+            else
+            {
+                _actionSelectBox.gameObject.SetActive(false);
+                _actionSelectBox.UIState = GridLayoutSelectBoxState.NONE;
+            }
+
+            // 기술 선택 박스
+            if (_sceneState == BattleSceneState.SELECTING_MOVE)
+            {
+                _moveSelectBox.gameObject.SetActive(true);
+                _moveSelectBox.UIState = GridLayoutSelectBoxState.SELECTING;
+
+                _moveInfoBox.SetActive(true);
+            }
+            else
+            {
+                _moveSelectBox.gameObject.SetActive(false);
+                _moveSelectBox.UIState = GridLayoutSelectBoxState.NONE;
+
+                _moveInfoBox.SetActive(false);
+            }
+
+            // 레벨 업 스텟 표시 박스
+            if (_sceneState == BattleSceneState.UPGRADING_STATUS)
+            {
+                _statusBox.gameObject.SetActive(true);
+            }
+            else
+            {
+                _statusBox.gameObject.SetActive(false);
+            }
+        }
+    }
 
     protected override void Init()
     {
@@ -74,9 +120,13 @@ public class BattleScene : BaseScene
 
         SceneType = Define.Scene.Battle;
 
-        _scripts = new List<List<string>>();
+        _moveBtns = new List<DynamicButton>();
+    }
 
-        ScreenChanger.SetScreenAlpha(1f);
+    protected override void Start()
+    {
+        _playableDirector = GetComponent<PlayableDirector>();
+        _moveInfoTMPs = _moveInfoBox.GetComponentsInChildren<TextMeshProUGUI>();
 
         // 테스트 시 사용.
         if (Managers.Network.Packet == null)
@@ -91,23 +141,23 @@ public class BattleScene : BaseScene
             Managers.Network.SendSavedPacket();
     }
 
-    public override void AfterFadeInAction()
+    void MakeUI()
     {
-        switch (_sceneState)
+        // 액션 버튼 데이터 채우기
+        for (int i = 0; i < _actionBtns.Count; i++)
         {
-            case BattleSceneState.AFTER_USE_ITEM_UPDATE:
-                {
-                    List<string> scripts = new List<string>()
-                    {
-                        $"{_playerInfo.PlayerName} used {_usedItem.ItemName}!"
-                    };
-
-                    _scriptBox.BeginScriptTyping(scripts, true);
-
-                    _sceneState = BattleSceneState.ITEM_USE_SCRIPTING;
-                }
-                break;
+            _actionBtns[i].BtnData = Util.FindChild<TextMeshProUGUI>(_actionBtns[i].gameObject, "ContentText", true).text;
         }
+        _actionSelectBox.SetSelectBoxContent(_actionBtns, 2, 2);
+
+        // 기술 버튼 데이터 채우기
+        for (int i = 0; i < _myPokemon.PokemonMoves.Count; i++)
+        {
+            _moveBtns.Add(GameObject.Instantiate(_moveBtn, _moveSelectBox.transform));
+            Util.FindChild<TextMeshProUGUI>(_moveBtns[i].gameObject, "ContentText", true).text = _myPokemon.PokemonMoves[i].MoveName;
+            _moveBtns[i].BtnData = _myPokemon.PokemonMoves[i];
+        }
+        _moveSelectBox.SetSelectBoxContent(_moveBtns, 2, 2);
     }
 
     public override void UpdateData(IMessage packet)
@@ -118,7 +168,8 @@ public class BattleScene : BaseScene
                 {
                     if (packet is S_UseItem)
                     {
-                        ScreenChanger.FadeInScene();
+                        _enterEffect.PlayEffect("FadeIn");
+
                         S_UseItem useItemPacket = packet as S_UseItem;
 
                         PlayerInfo playerInfo = useItemPacket.PlayerInfo;
@@ -126,6 +177,7 @@ public class BattleScene : BaseScene
                         IList myPokmeonSums = useItemPacket.PlayerPokemons;
                         ItemSummary itemSumamary = useItemPacket.UsedItem;
 
+                        // 포켓몬 및 플레이어 데이터 채우기
                         _playerInfo = playerInfo;
 
                         _myPokemons = new List<Pokemon>();
@@ -135,22 +187,26 @@ public class BattleScene : BaseScene
                             _myPokemons.Add(new Pokemon(pokemonSum));
                         }
 
+                        // 포켓몬 랜더링
+                        _myPokemonArea.FillPokemonInfo(_myPokemon, true);
+
                         _myPokemonArea.Pokemon = _myPokemons[0];
                         _myPokemon = _myPokemonArea.Pokemon;
-                        _myPokemonArea.FillPokemonInfo(_myPokemon, true);
 
                         _enemyPokemonArea.FillPokemonInfo(new Pokemon(enemyPokemon), false);
                         _enemyPokemon = _enemyPokemonArea.Pokemon;
 
-                        _usedItem = new Item(itemSumamary);
+                        // UI 생성
+                        MakeUI();
 
-                        _sceneState = BattleSceneState.AFTER_USE_ITEM_UPDATE;
+                        SceneState = BattleSceneState.AFTER_USE_ITEM_UPDATE;
+
+                        _usedItem = new Item(itemSumamary);
                     }
                     else if (packet is S_EnterPokemonBattleScene)
                     {
-                        ScreenChanger.FadeInScene();
+                        _enterEffect.PlayEffect("FadeIn");
                         _playableDirector.Play();
-                        _sceneState = BattleSceneState.INTRO;
 
                         S_EnterPokemonBattleScene enterBattleScenePacket = packet as S_EnterPokemonBattleScene;
 
@@ -158,6 +214,9 @@ public class BattleScene : BaseScene
                         PokemonSummary enemyPokemon = enterBattleScenePacket.EnemyPokemon;
                         IList myPokmeonSums = enterBattleScenePacket.PlayerPokemons;
 
+                        // 포켓몬 및 플레이어 데이터 채우기
+                        _playerInfo = playerInfo;
+
                         _myPokemons = new List<Pokemon>();
 
                         foreach (PokemonSummary pokemonSum in myPokmeonSums)
@@ -165,14 +224,17 @@ public class BattleScene : BaseScene
                             _myPokemons.Add(new Pokemon(pokemonSum));
                         }
 
-                        _playerInfo = playerInfo;
-
+                        // 포켓몬 랜더링
                         _myPokemonArea.FillTrainerImage(playerInfo.PlayerGender);
+
                         _myPokemonArea.Pokemon = _myPokemons[0];
                         _myPokemon = _myPokemonArea.Pokemon;
 
                         _enemyPokemonArea.FillPokemonInfo(new Pokemon(enemyPokemon), false);
                         _enemyPokemon = _enemyPokemonArea.Pokemon;
+
+                        // UI 생성
+                        MakeUI();
                     }
                 }
                 break;
@@ -181,12 +243,10 @@ public class BattleScene : BaseScene
                     S_UsePokemonMove useMovePacket = packet as S_UsePokemonMove;
                     int remainedPP = useMovePacket.RemainedPP;
 
-                    _sceneState = BattleSceneState.ATTACK_INSTRUCTING;
+                    SceneState = BattleSceneState.ATTACK_INSTRUCTING;
                     _loadingPacket = false;
 
                     _attackPKM.SelectedMove.CurPP = remainedPP;
-
-                    ActiveUIBySceneState(_sceneState);
 
                     List<string> scripts = new List<string>()
                     {
@@ -199,7 +259,7 @@ public class BattleScene : BaseScene
             case BattleSceneState.HIT_POKEMON_BLINK:
                 {
                     S_ChangePokemonHp changeHpPacket = packet as S_ChangePokemonHp;
-                    _sceneState = BattleSceneState.CHANGE_POKEMON_HP;
+                    SceneState = BattleSceneState.CHANGE_POKEMON_HP;
 
                     _loadingPacket = false;
 
@@ -214,7 +274,7 @@ public class BattleScene : BaseScene
                 {
                     S_GetEnemyPokemonExp getExpPacket = packet as S_GetEnemyPokemonExp;
                     int exp = getExpPacket.Exp;
-                    _sceneState = BattleSceneState.ENEMY_POKEMON_DIE_SCRIPTING;
+                    SceneState = BattleSceneState.ENEMY_POKEMON_DIE_SCRIPTING;
 
                     _loadingPacket = false;
 
@@ -231,7 +291,7 @@ public class BattleScene : BaseScene
                 break;
             case BattleSceneState.ENEMY_POKEMON_DIE_SCRIPTING:
                 {
-                    _sceneState = BattleSceneState.GETTING_EXP;
+                    SceneState = BattleSceneState.GETTING_EXP;
 
                     _loadingPacket = false;
 
@@ -252,7 +312,7 @@ public class BattleScene : BaseScene
                     int remainLevelExp = changeLevel.PokemonRemainLevelExp;
                     int curExp = changeLevel.PokemonCurExp;
 
-                    _sceneState = BattleSceneState.LEVEL_UP_SCRIPTING;
+                    SceneState = BattleSceneState.LEVEL_UP_SCRIPTING;
 
                     _loadingPacket = false;
 
@@ -274,7 +334,7 @@ public class BattleScene : BaseScene
                 break;
             case BattleSceneState.SHOWING_UPGRADED_STATUS:
                 {
-                    _sceneState = BattleSceneState.GETTING_EXP;
+                    SceneState = BattleSceneState.GETTING_EXP;
 
                     _loadingPacket = false;
 
@@ -284,39 +344,20 @@ public class BattleScene : BaseScene
                     _myPokemon.PokemonExpInfo = expInfo;
 
                     _myPokemonArea.ChangePokemonEXP(_myPokemon.PokemonExpInfo.CurExp);
-
-                    ActiveUIBySceneState(_sceneState);
                 }
                 break;
         }
     }
 
-    protected override void Start()
-    {
-        _playableDirector = GetComponent<PlayableDirector>();
-        _moveInfoTMPs = _moveInfoBox.GetComponentsInChildren<TextMeshProUGUI>();
-
-        {
-            List<string> btnNames = new List<string>();
-            btnNames.Add("Fight");
-            btnNames.Add("Bag");
-            btnNames.Add("Pokemon");
-            btnNames.Add("Run");
-
-            List<object> nameObjs = new List<object>();
-
-            foreach (string name in btnNames)
-                nameObjs.Add(name);
-
-            _actionSelectBox.SetButtonNames(btnNames);
-            _actionSelectBox.SetButtonDatas(nameObjs);
-        }
-    }
-
-    public void TriggerTimelineAction()
+    public override void DoNextAction(object value = null)
     {
         switch (_sceneState)
         {
+            case BattleSceneState.NONE:
+                {
+                    SceneState = BattleSceneState.INTRO;
+                }
+                break;
             case BattleSceneState.INTRO:
                 {
                     _playableDirector.Pause();
@@ -328,174 +369,152 @@ public class BattleScene : BaseScene
                     };
 
                     _scriptBox.BeginScriptTyping(scripts);
-                    _sceneState = BattleSceneState.APPEAR_SCRIPTING;
+                    SceneState = BattleSceneState.APPEAR_SCRIPTING;
+                }
+                break;
+            case BattleSceneState.APPEAR_SCRIPTING:
+                {
+                    _playableDirector.Resume();
+                    SceneState = BattleSceneState.CHANGING_POKEMON;
                 }
                 break;
             case BattleSceneState.CHANGING_POKEMON:
                 {
                     _myPokemonArea.FillPokemonInfo(_myPokemon, true);
-                    _myPokemon = _myPokemonArea.Pokemon;
 
-                    List<string> names = new List<string>();
-
-                    foreach (PokemonMove move in _myPokemon.PokemonMoves)
-                        names.Add(move.MoveName);
-
-                    List<object> movesObjs = new List<object>();
-
-                    foreach (PokemonMove move in _myPokemon.PokemonMoves)
-                        movesObjs.Add(move);
-
-                    _moveSelectBox.SetButtonNames(names);
-                    _moveSelectBox.SetButtonDatas(movesObjs);
-
-                    _sceneState = BattleSceneState.SHOWING_POKEMON;
+                    SceneState = BattleSceneState.SHOWING_POKEMON;
                 }
                 break;
             case BattleSceneState.SHOWING_POKEMON:
                 {
-                    _sceneState = BattleSceneState.SELECTING_ACTION;
-
-                    ActiveUIBySceneState(_sceneState);
+                    SceneState = BattleSceneState.SELECTING_ACTION;
 
                     _scriptBox.SetScriptWihtoutTyping($"What will {_myPokemon.PokemonInfo.NickName} do?");
-
-                }
-                break;
-        }
-    }
-
-    public override void DoNextAction(object value = null)
-    {
-        switch (_sceneState)
-        {
-            case BattleSceneState.APPEAR_SCRIPTING:
-                {
-                    _playableDirector.Resume();
-                    _sceneState = BattleSceneState.CHANGING_POKEMON;
                 }
                 break;
             case BattleSceneState.CANNOT_USE_MOVE:
                 {
-                    _sceneState = BattleSceneState.SELECTING_MOVE;
-
-                    ActiveUIBySceneState(_sceneState);
+                    SceneState = BattleSceneState.SELECTING_MOVE;
                 }
                 break;
             case BattleSceneState.SELECTING_ACTION:
                 {
-                    if (value as string == "Select")
+                    if (value is Define.InputSelectBoxEvent)
                     {
-                        if (_selectedAction == "Fight")
+                        Define.InputSelectBoxEvent inputEvent = (Define.InputSelectBoxEvent)value;
+
+                        if (inputEvent == Define.InputSelectBoxEvent.SELECT)
                         {
-                            // 내 포켓몬에 사용 가능한 기술이 있는 지 확인한다.
-                            List<PokemonMove> myPKMAvailableMoves = FindAvailableMove(_myPokemon);
+                            string selectedAction = _actionSelectBox.GetSelectedBtnData() as string;
 
-                            if (myPKMAvailableMoves.Count > 0)
+                            if (selectedAction == "Fight")
                             {
-                                _sceneState = BattleSceneState.SELECTING_MOVE;
+                                // 내 포켓몬에 사용 가능한 기술이 있는 지 확인한다.
+                                List<PokemonMove> myPKMAvailableMoves = FindAvailableMove(_myPokemon);
 
-                                ActiveUIBySceneState(_sceneState);
+                                if (myPKMAvailableMoves.Count > 0)
+                                {
+                                    SceneState = BattleSceneState.SELECTING_MOVE;
+                                }
+                                else
+                                {
+                                    SceneState = BattleSceneState.ATTACK_INSTRUCTING;
+
+                                    PokemonMoveSummary struggleMove = new PokemonMoveSummary()
+                                    {
+                                        MaxPP = 9999,
+                                        MovePower = 50,
+                                        MoveAccuracy = 100,
+                                        MoveName = "Struggle",
+                                        MoveType = PokemonType.Normal,
+                                        MoveCategory = MoveCategory.Physical,
+                                    };
+
+                                    SetSelectedMove(new PokemonMove(struggleMove));
+
+                                    SetAttackAndDefensePokemonArea(ref _myPokemonArea, ref _enemyPokemonArea);
+
+                                    List<string> scripts = new List<string>()
+                                    {
+                                        $"{_myPokemon.PokemonInfo.NickName} has no move to use!",
+                                        $"{_attackPKM.PokemonInfo.NickName} used {_attackPKM.SelectedMove.MoveName}!"
+                                    };
+
+                                    _scriptBox.BeginScriptTyping(scripts, true);
+
+                                    _enemyPokemon.SelectedMove.CurPP--;
+                                }
                             }
-                            else
+                            else if (selectedAction == "Bag")
                             {
-                                _sceneState = BattleSceneState.ATTACK_INSTRUCTING;
+                                C_EnterPlayerBagScene enterBagPacket = new C_EnterPlayerBagScene();
+                                enterBagPacket.PlayerId = _playerInfo.ObjectInfo.ObjectId;
 
-                                ActiveUIBySceneState(_sceneState);
+                                Managers.Network.SavePacket(enterBagPacket);
 
-                                PokemonMoveSummary struggleMove = new PokemonMoveSummary()
-                                {
-                                    MaxPP = 9999,
-                                    MovePower = 50,
-                                    MoveAccuracy = 100,
-                                    MoveName = "Struggle",
-                                    MoveType = PokemonType.Normal,
-                                    MoveCategory = MoveCategory.Physical,
-                                };
-
-                                SetSelectedMove(new PokemonMove(struggleMove));
-
-                                SetAttackAndDefensePokemonArea(ref _myPokemonArea, ref _enemyPokemonArea);
-
-                                List<string> scripts = new List<string>()
-                                {
-                                    $"{_myPokemon.PokemonInfo.NickName} has no move to use!",
-                                    $"{_attackPKM.PokemonInfo.NickName} used {_attackPKM.SelectedMove.MoveName}!"
-                                };
-
-                                _scriptBox.BeginScriptTyping(scripts, true);
-
-                                _enemyPokemon.SelectedMove.CurPP--;
+                                // Managers.Scene.CurrentScene.ScreenChanger.ChangeAndFadeOutScene(Define.Scene.Bag);
                             }
                         }
-                        else if (_selectedAction == "Bag")
-                        {
-                            C_EnterPlayerBagScene enterBagPacket = new C_EnterPlayerBagScene();
-                            enterBagPacket.PlayerId = _playerInfo.ObjectInfo.ObjectId;
-
-                            Managers.Network.SavePacket(enterBagPacket);
-
-                            Managers.Scene.CurrentScene.ScreenChanger.ChangeAndFadeOutScene(Define.Scene.Bag);
-                        }
-                    }
-                    else
-                    {
-                        _selectedAction = value as string;
                     }
                 }
                 break;
             case BattleSceneState.SELECTING_MOVE:
                 {
-                    if (value as string == "Select")
+                    if (value is Define.InputSelectBoxEvent)
                     {
-                        if (_selectedMove.CurPP == 0)
+                        Define.InputSelectBoxEvent inputEvent = (Define.InputSelectBoxEvent)value;
+
+                        if (inputEvent == Define.InputSelectBoxEvent.SELECT)
                         {
-                            _sceneState = BattleSceneState.CANNOT_USE_MOVE;
-                            ActiveUIBySceneState(_sceneState);
+                            PokemonMove selectedMove = _moveSelectBox.GetSelectedBtnData() as PokemonMove;
 
-                            List<string> scripts = new List<string>()
+                            if (selectedMove.CurPP == 0)
                             {
-                                $"Cannot use this move!"
-                            };
+                                SceneState = BattleSceneState.CANNOT_USE_MOVE;
 
-                            _scriptBox.BeginScriptTyping(scripts);
-                        }
-                        else
-                        {
-                            SetAttackAndDefensePokemonArea(ref _myPokemonArea, ref _enemyPokemonArea);
-                            SetSelectedMove(_selectedMove);
+                                List<string> scripts = new List<string>()
+                                {
+                                    $"Cannot use this move!"
+                                };
 
-                            if (!_loadingPacket)
+                                _scriptBox.BeginScriptTyping(scripts);
+                            }
+                            else
                             {
-                                // 서버에게 기술 사용 요청
-                                C_UsePokemonMove movePacket = new C_UsePokemonMove();
-                                movePacket.PlayerId = _playerInfo.ObjectInfo.ObjectId;
+                                SetAttackAndDefensePokemonArea(ref _myPokemonArea, ref _enemyPokemonArea);
+                                SetSelectedMove(selectedMove);
 
-                                if (_attackPKM == _myPokemon)
-                                    movePacket.PokemonOrder = _myPokemons.FindIndex(pokemon => pokemon == _myPokemon);
-                                else
-                                    movePacket.PokemonOrder = -1;
+                                if (!_loadingPacket)
+                                {
+                                    // 서버에게 기술 사용 요청
+                                    C_UsePokemonMove movePacket = new C_UsePokemonMove();
+                                    movePacket.PlayerId = _playerInfo.ObjectInfo.ObjectId;
 
-                                movePacket.MoveOrder = _attackPKM.PokemonMoves.FindIndex(move => move == _selectedMove);
-                                movePacket.UsedPP = 1;
+                                    if (_attackPKM == _myPokemon)
+                                        movePacket.PokemonOrder = _myPokemons.FindIndex(pokemon => pokemon == _myPokemon);
+                                    else
+                                        movePacket.PokemonOrder = -1;
 
-                                Managers.Network.Send(movePacket);
+                                    movePacket.MoveOrder = _attackPKM.PokemonMoves.FindIndex(move => move == selectedMove);
+                                    movePacket.UsedPP = 1;
 
-                                _loadingPacket = true;
+                                    Managers.Network.Send(movePacket);
+
+                                    _loadingPacket = true;
+                                }
                             }
                         }
-                    }
-                    else if (value as string == "Back")
-                    {
-                        _sceneState = BattleSceneState.SELECTING_ACTION;
-
-                        ActiveUIBySceneState(_sceneState);
+                        else if (inputEvent == Define.InputSelectBoxEvent.BACK)
+                        {
+                            SceneState = BattleSceneState.SELECTING_ACTION;
+                        }
                     }
                     else
                     {
-                        _selectedMove = value as PokemonMove;
-                        _moveInfoTMPs[1].text = $"{_selectedMove.CurPP.ToString()} / {_selectedMove.MaxPP.ToString()}";
-                        _moveInfoTMPs[2].text = $"TYPE / {_selectedMove.MoveType.ToString()}";
+                        PokemonMove selectedMove = _moveSelectBox.GetSelectedBtnData() as PokemonMove;
+
+                        _moveInfoTMPs[1].text = $"{selectedMove.CurPP.ToString()} / {selectedMove.MaxPP.ToString()}";
+                        _moveInfoTMPs[2].text = $"TYPE / {selectedMove.MoveType.ToString()}";
                     }
                 }
                 break;
@@ -503,14 +522,14 @@ public class BattleScene : BaseScene
                 {
                     if (_attackPKM.IsHitByAcc())
                     {
-                        _sceneState = BattleSceneState.FIRST_ATTACK_ANIMATION;
+                        SceneState = BattleSceneState.FIRST_ATTACK_ANIMATION;
 
                         _attackPKMArea.AttackMovePokemonUI();
                         _defensePKMArea.TriggerPokemonHitImage(_attackPKM);
                     }
                     else
                     {
-                        _sceneState = BattleSceneState.FIRST_ATTACK_FAILED;
+                        SceneState = BattleSceneState.FIRST_ATTACK_FAILED;
 
                         List<string> script = new List<string>()
                         {
@@ -532,7 +551,7 @@ public class BattleScene : BaseScene
 
                     if (!_isMyPKMAttack || !_isEnemyPKMAttack)
                     {
-                        _sceneState = BattleSceneState.ATTACK_INSTRUCTING;
+                        SceneState = BattleSceneState.ATTACK_INSTRUCTING;
 
                         Pokemon prevAttackPKM = _attackPKM;
                         BattleArea prevAttackPKMArea = _attackPKMArea;
@@ -552,19 +571,18 @@ public class BattleScene : BaseScene
                     }
                     else
                     {
-                        _sceneState = BattleSceneState.SELECTING_ACTION;
+                        SceneState = BattleSceneState.SELECTING_ACTION;
 
                         _isEnemyPKMAttack = false;
                         _isMyPKMAttack = false;
 
-                        ActiveUIBySceneState(_sceneState);
                         _scriptBox.SetScriptWihtoutTyping($"What will {_myPokemon.PokemonInfo.NickName} do?");
                     }
                 }
                 break;
             case BattleSceneState.FIRST_ATTACK_ANIMATION:
                 {
-                    _sceneState = BattleSceneState.HIT_POKEMON_BLINK;
+                    SceneState = BattleSceneState.HIT_POKEMON_BLINK;
 
                     _defensePKMArea.BlinkPokemonUI();
                 }
@@ -595,7 +613,7 @@ public class BattleScene : BaseScene
                     // 죽은 포켓몬이 내 포켓몬일 경우
                     if (_defensePKM == _myPokemon)
                     {
-                        _sceneState = BattleSceneState.MY_POKEMON_DIE_SCRIPTING;
+                        SceneState = BattleSceneState.MY_POKEMON_DIE_SCRIPTING;
 
                         List<string> scripts = new List<string>()
                         {
@@ -674,13 +692,12 @@ public class BattleScene : BaseScene
                 break;
             case BattleSceneState.LEVEL_UP_SCRIPTING:
                 {
-                    _sceneState = BattleSceneState.UPGRADING_STATUS;
-                    ActiveUIBySceneState(_sceneState);
+                    SceneState = BattleSceneState.UPGRADING_STATUS;
                 }
                 break;
             case BattleSceneState.UPGRADING_STATUS:
                 {
-                    _sceneState = BattleSceneState.SHOWING_UPGRADED_STATUS;
+                    SceneState = BattleSceneState.SHOWING_UPGRADED_STATUS;
                     _statusBox.ShowFinalStat(_myPokemon.PokemonStat);
                 }
                 break;
@@ -707,6 +724,18 @@ public class BattleScene : BaseScene
                     {
                         Debug.Log("Battle Finsh");
                     }
+                }
+                break;
+            case BattleSceneState.AFTER_USE_ITEM_UPDATE:
+                {
+                    List<string> scripts = new List<string>()
+                    {
+                        $"{_playerInfo.PlayerName} used {_usedItem.ItemName}!"
+                    };
+
+                    _scriptBox.BeginScriptTyping(scripts, true);
+
+                    _sceneState = BattleSceneState.ITEM_USE_SCRIPTING;
                 }
                 break;
         }
@@ -739,13 +768,13 @@ public class BattleScene : BaseScene
 
         if (stat.Hp <= 0)
         {
-            _sceneState = BattleSceneState.POKEMON_DIE;
+            SceneState = BattleSceneState.POKEMON_DIE;
 
             _defensePKMArea.PokemonDie();
         }
         else if (!_isMyPKMAttack || !_isEnemyPKMAttack)
         {
-            _sceneState = BattleSceneState.ATTACK_INSTRUCTING;
+            SceneState = BattleSceneState.ATTACK_INSTRUCTING;
 
             Pokemon prevAttackPKM = _attackPKM;
             BattleArea prevAttackPKMArea = _attackPKMArea;
@@ -765,12 +794,11 @@ public class BattleScene : BaseScene
         }
         else
         {
-            _sceneState = BattleSceneState.SELECTING_ACTION;
+            SceneState = BattleSceneState.SELECTING_ACTION;
 
             _isEnemyPKMAttack = false;
             _isMyPKMAttack = false;
 
-            ActiveUIBySceneState(_sceneState);
             _scriptBox.SetScriptWihtoutTyping($"What will {_myPokemon.PokemonInfo.NickName} do?");
         }
     }
@@ -813,33 +841,6 @@ public class BattleScene : BaseScene
             };
 
             _enemyPokemon.SelectedMove = new PokemonMove(struggleMove);
-        }
-    }
-
-    void ActiveUIBySceneState(BattleSceneState state)
-    {
-        if (state == BattleSceneState.SELECTING_ACTION)
-        {
-            _actionSelectBox.ChangeUIState(GridSelectBoxState.SELECTING, true);
-            _moveSelectBox.ChangeUIState(GridSelectBoxState.NONE, false);
-            _moveInfoBox.SetActive(false);
-        }
-        else if (state == BattleSceneState.SELECTING_MOVE)
-        {
-            _actionSelectBox.ChangeUIState(GridSelectBoxState.NONE, false);
-            _moveSelectBox.ChangeUIState(GridSelectBoxState.SELECTING, true);
-            _moveInfoBox.SetActive(true);
-        }
-        else if (state == BattleSceneState.UPGRADING_STATUS)
-        {
-            _statusBox.gameObject.SetActive(true);
-        }
-        else
-        {
-            _actionSelectBox.ChangeUIState(GridSelectBoxState.NONE, false);
-            _moveSelectBox.ChangeUIState(GridSelectBoxState.NONE, false);
-            _moveInfoBox.SetActive(false);
-            _statusBox.gameObject.SetActive(false);
         }
     }
 

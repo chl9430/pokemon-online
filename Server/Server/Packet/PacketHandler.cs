@@ -11,7 +11,7 @@ public class PacketHandler
         C_Move movePacket = packet as C_Move;
         ClientSession clientSession = session as ClientSession;
 
-        // Console.WriteLine($"MoveDir : {movePacket.PosInfo.MoveDir}, ({movePacket.PosInfo.PosX}, {movePacket.PosInfo.PosY}), {movePacket.PosInfo.State}, {movePacket.AnimRate}");
+        // Console.WriteLine($"MoveDir : {movePacket.PosInfo.MoveDir}, ({movePacket.PosInfo.PosX}, {movePacket.PosInfo.PosY})");
 
         Player player = clientSession.MyPlayer;
         if (player == null)
@@ -98,8 +98,7 @@ public class PacketHandler
         Console.WriteLine($"" +
             $"=====================\n" +
             $"C_SwitchPokemon\n" +
-            $"Player({switchPokemonPacket.OwnerId}) wants to switch pokemon order!\n" +
-            $"Pokemon({switchPokemonPacket.PokemonFromIdx}) is going to {switchPokemonPacket.PokemonToIdx}\n" +
+            $"{switchPokemonPacket}\n" +
             $"=====================\n"
             );
 
@@ -126,43 +125,33 @@ public class PacketHandler
 
     public static void C_ReturnGameHandler(PacketSession session, IMessage packet)
     {
-        C_ReturnGame returnGamePacket = packet as C_ReturnGame;
+        C_ReturnGame c_returnGamePacket = packet as C_ReturnGame;
+        int playerId = c_returnGamePacket.PlayerId;
+
         ClientSession clientSession = session as ClientSession;
 
         Console.WriteLine($"" +
             $"=====================\n" +
             $"C_ReturnGame\n" +
-            $"Player(${returnGamePacket.PlayerId}) returns to game!\n" +
+            $"{c_returnGamePacket}\n" +
             $"=====================\n"
             );
 
-        Player player = ObjectManager.Instance.Find(returnGamePacket.PlayerId);
-        var _players = player.Room.Players;
+        Player player = ObjectManager.Instance.Find(playerId);
+        player.PosInfo.State = CreatureState.Idle;
+        var players = player.Room.Players;
 
         S_EnterRoom enterPacket = new S_EnterRoom();
-        PlayerInfo playerInfo = new PlayerInfo()
-        {
-            ObjectInfo = player.Info,
-            PlayerName = player.Name,
-            PlayerGender = player.Gender,
-        };
-        enterPacket.PlayerInfo = playerInfo;
+        enterPacket.PlayerInfo = player.MakePlayerInfo();
 
         player.Session.Send(enterPacket);
 
         S_Spawn spawnPacket = new S_Spawn();
-        foreach (Player p in _players.Values)
+        foreach (Player p in players.Values)
         {
             if (player != p)
             {
-                PlayerInfo info = new PlayerInfo()
-                {
-                    ObjectInfo = p.Info,
-                    PlayerName = p.Name,
-                    PlayerGender = p.Gender,
-                };
-
-                spawnPacket.Players.Add(info);
+                spawnPacket.Players.Add(p.MakePlayerInfo());
             }
         }
         player.Session.Send(spawnPacket);
@@ -191,6 +180,36 @@ public class PacketHandler
         s_AccessPacket.PokemonSum = pokemon.MakePokemonSummary();
 
         player.Session.Send(s_AccessPacket);
+    }
+
+    public static void C_EnterPokemonListSceneHandler(PacketSession session, IMessage packet)
+    {
+        C_EnterPokemonListScene c_enterListScenePacket = packet as C_EnterPokemonListScene;
+        int playerId = c_enterListScenePacket.PlayerId;
+
+        ClientSession clientSession = session as ClientSession;
+
+        Console.WriteLine($"" +
+            $"=====================\n" +
+            $"C_EnterPokemonListScene\n" +
+            $"{c_enterListScenePacket}\n" +
+            $"=====================\n"
+            );
+
+        Player player = ObjectManager.Instance.Find(playerId);
+
+        if (player == null)
+            player = MakeTestPlayer(clientSession);
+
+        S_EnterPokemonListScene s_enterListScenePacket = new S_EnterPokemonListScene();
+        s_enterListScenePacket.PlayerInfo = player.MakePlayerInfo();
+
+        foreach (Pokemon pokemon in player.Pokemons)
+        {
+            s_enterListScenePacket.PokemonSums.Add(pokemon.MakePokemonSummary());
+        }
+
+        player.Session.Send(s_enterListScenePacket);
     }
 
     public static void C_EnterPokemonBattleSceneHandler(PacketSession session, IMessage packet)

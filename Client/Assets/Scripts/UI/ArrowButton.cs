@@ -2,39 +2,18 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class ArrowButton : MonoBehaviour
+public class ArrowButton : DynamicButton
 {
-    object _btnData;
     [SerializeField] Image _arrow;
-    [SerializeField] TextMeshProUGUI _tmp;
 
-    public object BtnData
+    public override void SetSelectedOrNotSelected(bool isSelected)
     {
-        get
-        {
-            return _btnData;
-        }
+        if (_arrow == null)
+            _arrow = Util.FindChild<Image>(gameObject, "Image", true);
 
-        set
-        {
-            _btnData = value;
-        }
-    }
-
-    public void ToggleArrow(bool isSelected)
-    {
         if (isSelected)
-        {
             _arrow.gameObject.SetActive(true);
-        }
         else
-        {
             _arrow.gameObject.SetActive(false);
-        }
-    }
-
-    public void SetButtonName(string btnName)
-    {
-        _tmp.text = btnName;
     }
 }

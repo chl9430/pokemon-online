@@ -70,7 +70,7 @@ public class BaseController : MonoBehaviour
         }
     }
 
-    void Start()
+    protected virtual void Start()
     {
         Init();
     }

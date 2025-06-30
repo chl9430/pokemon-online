@@ -9,6 +9,7 @@ public class Define
         Unknown,
         Login,
         Lobby,
+        Intro,
         Game,
         PokemonList,
         PokemonSummary,
@@ -27,5 +28,12 @@ public class Define
     {
         Click,
         Drag,
+    }
+
+    public enum InputSelectBoxEvent
+    {
+        NONE,
+        SELECT,
+        BACK,
     }
 }

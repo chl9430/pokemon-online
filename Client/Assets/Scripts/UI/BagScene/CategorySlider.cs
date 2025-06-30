@@ -13,19 +13,34 @@ public enum SliderState
 public class CategorySlider : MonoBehaviour
 {
     int _dir;
-    int _curIdx;
     int _moveFinishCnt;
-    SliderState _sliderState = SliderState.NONE;
-    BaseScene _scene;
-    List<SliderContent> _categoryList;
+    List<SliderContent> _sliderContents;
 
-    public SliderState SliderState { get { return _sliderState; } set { _sliderState = value; } }
+    protected SliderState _sliderState = SliderState.NONE;
+    protected int _curIdx;
+    protected BaseScene _scene;
 
-    [SerializeField] SliderContent _sliderContent;
+    public int CurIdx { get { return _curIdx; } }
 
-    void Awake()
-    {
-        _categoryList = new List<SliderContent>();
+    public SliderState SliderState 
+    { 
+        get 
+        { 
+            return _sliderState; 
+        }
+        
+        set 
+        { 
+            _sliderState = value;
+
+            if (_sliderState == SliderState.WAITING_INPUT)
+            {
+                if (_scene == null)
+                    _scene = Managers.Scene.CurrentScene;
+
+                _scene.DoNextAction("SliderMove");
+            }
+        } 
     }
 
     void Start()
@@ -33,78 +48,91 @@ public class CategorySlider : MonoBehaviour
         _scene = Managers.Scene.CurrentScene;
     }
 
-    private void Update()
+    protected virtual void Update()
     {
         switch (_sliderState)
         {
             case SliderState.WAITING_INPUT:
                 {
-                    if (_categoryList.Count == 1)
-                    {
-                        return;
-                    }
-
-                    if (Input.GetKeyDown(KeyCode.LeftArrow))
-                    {
-                        if (_sliderState == SliderState.MOVING)
-                        {
-                            return;
-                        }
-
-                        foreach (SliderContent content in _categoryList)
-                        {
-                            RectTransform rt = content.GetComponent<RectTransform>();
-
-                            if (rt.anchorMax.x == _categoryList.Count)
-                            {
-                                rt.anchorMin = new Vector2(-1, rt.anchorMin.y);
-                                rt.anchorMax = new Vector2(0, rt.anchorMax.y);
-                            }
-                        }
-
-                        _dir = 1;
-                        _curIdx--;
-
-                        if (_curIdx < 0)
-                        {
-                            _curIdx = _categoryList.Count - 1;
-                        }
-
-                        _sliderState = SliderState.MOVING;
-
-                        for (int i = 0; i < _categoryList.Count; i++)
-                        {
-                            SliderContent category = _categoryList[i];
-
-                            category.MoveContent(5f, _dir);
-                        }
-                    }
-                    else if (Input.GetKeyDown(KeyCode.RightArrow))
-                    {
-                        if (_sliderState == SliderState.MOVING)
-                        {
-                            return;
-                        }
-
-                        _dir = -1;
-                        _curIdx++;
-
-                        if (_curIdx == _categoryList.Count)
-                        {
-                            _curIdx = 0;
-                        }
-
-                        _sliderState = SliderState.MOVING;
-
-                        for (int i = 0; i < _categoryList.Count; i++)
-                        {
-                            SliderContent category = _categoryList[i];
-
-                            category.MoveContent(5f, _dir);
-                        }
-                    }
+                    ChooseAction();
                 }
                 break;
+        }
+    }
+
+    protected virtual void ChooseAction()
+    {
+        if (_sliderContents.Count == 1 || _sliderContents.Count == 0)
+        {
+            return;
+        }
+
+        if (Input.GetKeyDown(KeyCode.LeftArrow))
+        {
+            if (_sliderState == SliderState.MOVING)
+            {
+                return;
+            }
+
+            foreach (SliderContent content in _sliderContents)
+            {
+                RectTransform rt = content.GetComponent<RectTransform>();
+
+                if (rt.anchorMax.x == _sliderContents.Count)
+                {
+                    rt.anchorMin = new Vector2(-1, rt.anchorMin.y);
+                    rt.anchorMax = new Vector2(0, rt.anchorMax.y);
+                }
+            }
+
+            _dir = 1;
+            _curIdx--;
+
+            if (_curIdx < 0)
+            {
+                _curIdx = _sliderContents.Count - 1;
+            }
+
+            _sliderState = SliderState.MOVING;
+
+            for (int i = 0; i < _sliderContents.Count; i++)
+            {
+                SliderContent category = _sliderContents[i];
+
+                category.MoveContent(5f, _dir);
+            }
+        }
+        else if (Input.GetKeyDown(KeyCode.RightArrow))
+        {
+            if (_sliderState == SliderState.MOVING)
+            {
+                return;
+            }
+
+            _dir = -1;
+            _curIdx++;
+
+            if (_curIdx == _sliderContents.Count)
+            {
+                _curIdx = 0;
+            }
+
+            _sliderState = SliderState.MOVING;
+
+            for (int i = 0; i < _sliderContents.Count; i++)
+            {
+                SliderContent category = _sliderContents[i];
+
+                category.MoveContent(5f, _dir);
+            }
+        }
+        else if (Input.GetKeyDown(KeyCode.D))
+        {
+            _scene.DoNextAction(Define.InputSelectBoxEvent.SELECT);
+        }
+        else if (Input.GetKeyDown(KeyCode.S))
+        {
+            _scene.DoNextAction(Define.InputSelectBoxEvent.BACK);
         }
     }
 
@@ -112,54 +140,32 @@ public class CategorySlider : MonoBehaviour
     {
         _moveFinishCnt++;
 
-        if (_moveFinishCnt == _categoryList.Count)
+        if (_moveFinishCnt == _sliderContents.Count)
         {
             _moveFinishCnt = 0;
-            _sliderState = SliderState.NONE;
 
             if (_dir == -1)
             {
-                for (int i = 0; i < _categoryList.Count; i++)
+                for (int i = 0; i < _sliderContents.Count; i++)
                 {
-                    SliderContent category = _categoryList[i];
+                    SliderContent category = _sliderContents[i];
                     RectTransform rt = category.GetComponent<RectTransform>();
 
                     if (rt.anchorMax.x == 0)
                     {
-                        rt.anchorMin = new Vector2(_categoryList.Count - 1, rt.anchorMin.y);
-                        rt.anchorMax = new Vector2(_categoryList.Count, rt.anchorMax.y);
+                        rt.anchorMin = new Vector2(_sliderContents.Count - 1, rt.anchorMin.y);
+                        rt.anchorMax = new Vector2(_sliderContents.Count, rt.anchorMax.y);
                     }
                 }
             }
 
-            _scene.DoNextAction(this);
+            SliderState = SliderState.WAITING_INPUT;
         }
     }
 
-    public object GetSelectedContentData()
+    public void UpdateSliderContents(List<SliderContent> sliderContents)
     {
-        return _categoryList[_curIdx].ContentData;
-    }
-
-    public void SetSliderContents(List<object> _sliderContents)
-    {
-        for (int i = 0; i < _sliderContents.Count; i++)
-        {
-            SliderContent sliderContent = GameObject.Instantiate(_sliderContent, gameObject.transform);
-            sliderContent.SetContentName(_sliderContents[i].ToString());
-            sliderContent.SetData(_sliderContents[i]);
-            _categoryList.Add(sliderContent);
-
-            RectTransform rt = sliderContent.GetComponent<RectTransform>();
-
-            rt.anchorMin = new Vector2(i, 0);
-            rt.anchorMax = new Vector2(i + 1, 1);
-            rt.pivot = new Vector2(0.5f, 0.5f);
-            rt.offsetMin = Vector2.zero;
-            rt.offsetMax = Vector2.zero;
-            rt.localScale = Vector3.one;
-        }
-
-        _scene.DoNextAction(this);
+        _curIdx = 0;
+        _sliderContents = sliderContents;
     }
 }

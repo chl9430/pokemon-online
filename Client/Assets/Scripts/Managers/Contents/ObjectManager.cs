@@ -4,8 +4,11 @@ using UnityEngine;
 
 public class ObjectManager
 {
+    PlayerInfo _playerInfo;
     public MyPlayerController MyPlayer { get; set; }
     Dictionary<int, GameObject> _objects = new Dictionary<int, GameObject>();
+
+    public PlayerInfo PlayerInfo { get {  return _playerInfo; } set { _playerInfo = value; } }
 
     public static GameObjectType GetObjectTypeById(int id)
     {
@@ -18,7 +21,12 @@ public class ObjectManager
         GameObjectType objectType = GetObjectTypeById(info.ObjectId);
         if (objectType == GameObjectType.Player)
         {
-            _objects.Add(info.ObjectId, go);
+            if (_objects.TryGetValue(info.ObjectId, out GameObject value))
+            {
+                _objects[info.ObjectId] = go;
+            }
+            else
+                _objects.Add(info.ObjectId, go);
 
             BaseController bc = go.GetComponent<PlayerController>();
             bc.PosInfo = info.PosInfo;
