@@ -59,6 +59,11 @@ public class Pokemon
         _pokemonGenderImg = Managers.Resource.Load<Texture2D>($"Textures/Pokemon/PokemonGender_{_pokemonInfo.Gender}");
     }
 
+    public int GetSelectedMoveIdx()
+    {
+        return _pokemonMoves.IndexOf(_selectedMove);
+    }
+
     public bool IsHitByAcc()
     {
         int ran = Random.Range(0, 100);

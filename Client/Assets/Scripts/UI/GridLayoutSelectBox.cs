@@ -35,6 +35,7 @@ public class GridLayoutSelectBox : MonoBehaviour
     {
         _rt = GetComponent<RectTransform>();
         _gridLayoutGroup = GetComponent<GridLayoutGroup>();
+        _scene = Managers.Scene.CurrentScene;
     }
 
     void Update()

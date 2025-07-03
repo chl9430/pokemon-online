@@ -73,6 +73,15 @@ class PacketManager
 
         _onRecv.Add((ushort)MsgId.SChangePokemonLevel, MakePacket<S_ChangePokemonLevel>);
         _handler.Add((ushort)MsgId.SChangePokemonLevel, PacketHandler.S_ChangePokemonLevelHandler);
+
+        _onRecv.Add((ushort)MsgId.SCheckNewLearnableMove, MakePacket<S_CheckNewLearnableMove>);
+        _handler.Add((ushort)MsgId.SCheckNewLearnableMove, PacketHandler.S_CheckNewLearnableMoveHandler);
+
+        _onRecv.Add((ushort)MsgId.SSwitchBattlePokemon, MakePacket<S_SwitchBattlePokemon>);
+        _handler.Add((ushort)MsgId.SSwitchBattlePokemon, PacketHandler.S_SwitchBattlePokemonHandler);
+
+        _onRecv.Add((ushort)MsgId.SReturnPokemonBattleScene, MakePacket<S_ReturnPokemonBattleScene>);
+        _handler.Add((ushort)MsgId.SReturnPokemonBattleScene, PacketHandler.S_ReturnPokemonBattleSceneHandler);
     }
 
     public void OnRecvPacket(PacketSession session, ArraySegment<byte> buffer)

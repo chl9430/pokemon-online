@@ -124,4 +124,9 @@ public class SelectArea : MonoBehaviour
 
         _btnGrid[_x, _y].SetSelectedOrNotSelected(true);
     }
+
+    public int GetSelectedIdx()
+    {
+        return _x * _col + _y;
+    }
 }

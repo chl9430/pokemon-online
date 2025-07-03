@@ -8,7 +8,6 @@ enum MsgId {
   C_EXIT_GAME = 1;
   S_ENTER_ROOM = 2;
   S_LEAVE_ROOM = 3;
-  C_RETURN_GAME = 4;
   S_SPAWN = 5;
   S_DESPAWN = 6;
   C_MOVE = 7;
@@ -19,12 +18,12 @@ enum MsgId {
   C_SWITCH_POKEMON = 12;
   C_ACCESS_POKEMON_SUMMARY = 13;
   S_ACCESS_POKEMON_SUMMARY = 14;
-  C_ENTER_POKEMON_LIST_SCENE = 30;
-  S_ENTER_POKEMON_LIST_SCENE = 31;
-  C_ENTER_POKEMON_BATTLE_SCENE = 32;
-  S_ENTER_POKEMON_BATTLE_SCENE = 33;
-  C_ENTER_PLAYER_BAG_SCENE = 34;
-  S_ENTER_PLAYER_BAG_SCENE = 35;
+  C_ENTER_POKEMON_LIST_SCENE = 40;
+  S_ENTER_POKEMON_LIST_SCENE = 41;
+  C_ENTER_POKEMON_BATTLE_SCENE = 42;
+  S_ENTER_POKEMON_BATTLE_SCENE = 43;
+  C_ENTER_PLAYER_BAG_SCENE = 44;
+  S_ENTER_PLAYER_BAG_SCENE = 45;
   C_USE_ITEM = 50;
   S_USE_ITEM = 51;
   C_USE_POKEMON_MOVE = 17;
@@ -37,6 +36,14 @@ enum MsgId {
   S_CHANGE_POKEMON_EXP = 24;
   C_CHANGE_POKEMON_LEVEL = 25;
   S_CHANGE_POKEMON_LEVEL = 26;
+  C_CHECK_NEW_LEARNABLE_MOVE = 27;
+  S_CHECK_NEW_LEARNABLE_MOVE = 28;
+  C_SWITCH_BATTLE_POKEMON = 29;
+  S_SWITCH_BATTLE_POKEMON = 30;
+  
+  C_RETURN_GAME = 4;
+  C_RETURN_POKEMON_BATTLE_SCENE = 72;
+  S_RETURN_POKEMON_BATTLE_SCENE = 73;
 }
 
 enum CreatureState {
@@ -151,8 +158,8 @@ message C_EnterPokemonBattleScene
 message S_EnterPokemonBattleScene
 {
     PlayerInfo playerInfo = 1;
-    PokemonSummary enemyPokemon = 2;
-    repeated PokemonSummary playerPokemons = 3;
+    PokemonSummary enemyPokemonSum = 2;
+    PokemonSummary playerPokemonSum = 3;
 }
 
 message C_UseItem
@@ -165,8 +172,8 @@ message C_UseItem
 message S_UseItem
 {
     PlayerInfo playerInfo = 1;
-    PokemonSummary enemyPokemon = 2;
-    repeated PokemonSummary playerPokemons = 3;
+    PokemonSummary enemyPokemonSum = 2;
+    PokemonSummary playerPokemonSum = 3;
     ItemSummary usedItem = 4;
 }
 
@@ -184,22 +191,20 @@ message S_EnterPlayerBagScene
 message C_UsePokemonMove
 {
     int32 playerId = 1;
-    int32 pokemonOrder = 2;
-    int32 moveOrder = 3;
-    int32 usedPP = 4;
+    int32 myMoveOrder = 2;
+    int32 enemyMoveOrder = 3;
 }
 
 message S_UsePokemonMove
 {
-    int32 remainedPP = 1;
+    int32 myRemainedPP = 1;
+    int32 enemyRemainedPP = 2;
 }
 
 message C_ChangePokemonHp
 {
-    MoveCategory moveCategory = 1;
-    int32 movePower = 2;
-    int32 playerId = 3;
-    int32 pokemonOrder = 4;
+    int32 playerId = 1;
+    bool isMyPokemon = 2;
 }
 
 message S_ChangePokemonHp
@@ -210,7 +215,6 @@ message S_ChangePokemonHp
 message C_GetEnemyPokemonExp
 {
     int32 playerId = 1;
-    PokemonInfo enemyPokemonInfo = 2;
 }
 
 message S_GetEnemyPokemonExp
@@ -221,8 +225,7 @@ message S_GetEnemyPokemonExp
 message C_ChangePokemonExp
 {
     int32 playerId = 1;
-    int32 pokemonOrder = 2;
-    int32 exp = 3;
+    int32 exp = 2;
 }
 
 message S_ChangePokemonExp
@@ -233,16 +236,49 @@ message S_ChangePokemonExp
 message C_ChangePokemonLevel
 {
     int32 playerId = 1;
-    int32 pokemonOrder = 2;
 }
 
 message S_ChangePokemonLevel
 {
     int32 pokemonLevel = 1;
     PokemonStat pokemonStat = 2;
-    LevelUpStatusDiff statDiff = 3;
-    int32 pokemonRemainLevelExp = 4;
-    int32 pokemonCurExp = 5;
+    PokemonExpInfo pokemonExp = 3;
+    LevelUpStatusDiff statDiff = 4;
+}
+
+message C_CheckNewLearnableMove
+{
+    int32 playerId = 1;
+}
+
+message S_CheckNewLearnableMove
+{
+    PokemonMoveSummary newMoveSum = 1;
+}
+
+message C_SwitchBattlePokemon
+{
+    int32 playerId = 1;
+    int32 selectedPokemonOrder = 2;
+}
+
+message S_SwitchBattlePokemon
+{
+    PlayerInfo playerInfo = 1;
+    PokemonSummary enemyPokemonSum = 2;
+    PokemonSummary myPokemonSum = 3;
+}
+
+message C_ReturnPokemonBattleScene
+{
+    int32 playerId = 1;
+}
+
+message S_ReturnPokemonBattleScene
+{
+    PlayerInfo playerInfo = 1;
+    PokemonSummary enemyPokemonSum = 2;
+    PokemonSummary playerPokemonSum = 3;
 }
 
 

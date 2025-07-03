@@ -26,9 +26,6 @@ class PacketManager
         _onRecv.Add((ushort)MsgId.CExitGame, MakePacket<C_ExitGame>);
         _handler.Add((ushort)MsgId.CExitGame, PacketHandler.C_ExitGameHandler);
 
-        _onRecv.Add((ushort)MsgId.CReturnGame, MakePacket<C_ReturnGame>);
-        _handler.Add((ushort)MsgId.CReturnGame, PacketHandler.C_ReturnGameHandler);
-
         _onRecv.Add((ushort)MsgId.CMove, MakePacket<C_Move>);
         _handler.Add((ushort)MsgId.CMove, PacketHandler.C_MoveHandler);
 
@@ -70,6 +67,18 @@ class PacketManager
 
         _onRecv.Add((ushort)MsgId.CChangePokemonLevel, MakePacket<C_ChangePokemonLevel>);
         _handler.Add((ushort)MsgId.CChangePokemonLevel, PacketHandler.C_ChangePokemonLevelHandler);
+
+        _onRecv.Add((ushort)MsgId.CCheckNewLearnableMove, MakePacket<C_CheckNewLearnableMove>);
+        _handler.Add((ushort)MsgId.CCheckNewLearnableMove, PacketHandler.C_CheckNewLearnableMoveHandler);
+
+        _onRecv.Add((ushort)MsgId.CSwitchBattlePokemon, MakePacket<C_SwitchBattlePokemon>);
+        _handler.Add((ushort)MsgId.CSwitchBattlePokemon, PacketHandler.C_SwitchBattlePokemonHandler);
+
+        _onRecv.Add((ushort)MsgId.CReturnGame, MakePacket<C_ReturnGame>);
+        _handler.Add((ushort)MsgId.CReturnGame, PacketHandler.C_ReturnGameHandler);
+
+        _onRecv.Add((ushort)MsgId.CReturnPokemonBattleScene, MakePacket<C_ReturnPokemonBattleScene>);
+        _handler.Add((ushort)MsgId.CReturnPokemonBattleScene, PacketHandler.C_ReturnPokemonBattleSceneHandler);
     }
 
     public void OnRecvPacket(PacketSession session, ArraySegment<byte> buffer)

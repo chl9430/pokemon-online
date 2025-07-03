@@ -155,9 +155,8 @@ public class PacketHandler
     public static void S_UsePokemonMoveHandler(PacketSession session, IMessage packet)
     {
         S_UsePokemonMove s_UseMovePacket = packet as S_UsePokemonMove;
-        int remainedPP = s_UseMovePacket.RemainedPP;
 
-        Debug.Log($"S_UsePokemonMove : {s_UseMovePacket.RemainedPP}");
+        Debug.Log($"S_UsePokemonMove : {s_UseMovePacket}");
 
         BaseScene scene = Managers.Scene.CurrentScene;
         scene.UpdateData(s_UseMovePacket);
@@ -202,5 +201,35 @@ public class PacketHandler
 
         BaseScene scene = Managers.Scene.CurrentScene;
         scene.UpdateData(s_ChangeLevelPacket);
+    }
+
+    public static void S_CheckNewLearnableMoveHandler(PacketSession session, IMessage packet)
+    {
+        S_CheckNewLearnableMove s_CheckMovePacket = packet as S_CheckNewLearnableMove;
+
+        Debug.Log($"S_CheckNewLearnableMove : {s_CheckMovePacket}");
+
+        BaseScene scene = Managers.Scene.CurrentScene;
+        scene.UpdateData(s_CheckMovePacket);
+    }
+
+    public static void S_SwitchBattlePokemonHandler(PacketSession session, IMessage packet)
+    {
+        S_SwitchBattlePokemon s_SwitchPokemonPacket = packet as S_SwitchBattlePokemon;
+
+        Debug.Log($"S_SwitchBattlePokemon : {s_SwitchPokemonPacket}");
+
+        BaseScene scene = Managers.Scene.CurrentScene;
+        scene.UpdateData(s_SwitchPokemonPacket);
+    }
+
+    public static void S_ReturnPokemonBattleSceneHandler(PacketSession session, IMessage packet)
+    {
+        S_ReturnPokemonBattleScene s_ReturnBattleScenePacket = packet as S_ReturnPokemonBattleScene;
+
+        Debug.Log($"S_ReturnPokemonBattleScene : {s_ReturnBattleScenePacket}");
+
+        BaseScene scene = Managers.Scene.CurrentScene;
+        scene.UpdateData(s_ReturnBattleScenePacket);
     }
 }

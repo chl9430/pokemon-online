@@ -7,52 +7,42 @@ using UnityEngine.UI;
 public class BattleArea : MonoBehaviour
 {
     bool _isMyPokemon;
-    Pokemon _pokemon;
-    [SerializeField] Image _pokemonImage;
-    [SerializeField] Image _pokemonHitImage;
+    GameObject _battlePokemon;
+    Image _pokemonImage;
+    Image _pokemonHitImage;
+    Animator _pokemonAnim;
+
+    [SerializeField] Animator _trainerAnim;
+    [SerializeField] Image _trainerImage;
+    [SerializeField] Transform _battlePokemonZone;
     [SerializeField] TextMeshProUGUI _pokemonNickName;
     [SerializeField] TextMeshProUGUI _pokemonLevel;
     [SerializeField] Image _pokemonGender;
     [SerializeField] GaugeUI _hpGauge;
     [SerializeField] GaugeUI _expGauge;
-    [SerializeField] Animator _pokemonAnim;
-
-    public Pokemon Pokemon { get { return _pokemon; } set { _pokemon = value; } }
-
-    void LoadComponent()
-    {
-        if (_pokemonImage == null)
-            _pokemonImage = Util.FindChild<Image>(gameObject, "PokemonImage", true);
-        if (_pokemonHitImage == null)
-            _pokemonHitImage = Util.FindChild<Image>(gameObject, "PokemonHitImage", true);
-        if (_pokemonNickName == null)
-            _pokemonNickName = Util.FindChild<TextMeshProUGUI>(gameObject, "PokemonNickName", true);
-        if (_pokemonLevel == null)
-            _pokemonLevel = Util.FindChild<TextMeshProUGUI>(gameObject, "PokemonLevel", true);
-        if (_pokemonGender == null)
-            _pokemonGender = Util.FindChild<Image>(gameObject, "PokemonGender", true);
-        if (_hpGauge == null)
-            _hpGauge = Util.FindChild<GaugeUI>(gameObject, "HPGauge", true);
-    }
 
     public void FillTrainerImage(PlayerGender gender)
     {
-        LoadComponent();
-
         Texture2D image = Managers.Resource.Load<Texture2D>($"Textures/BattleScene/Trainer_Back_{gender.ToString()}");
 
-        _pokemonImage.sprite = Sprite.Create(image, new Rect(0, 0, image.width, image.height), Vector2.one * 0.5f);
-        _pokemonImage.SetNativeSize();
+        _trainerImage.sprite = Sprite.Create(image, new Rect(0, 0, image.width, image.height), Vector2.one * 0.5f);
+        _trainerImage.SetNativeSize();
     }
 
+    public void MakeBattlePokemon(Pokemon pokemon, bool isMyPokemon)
+    {
+        _battlePokemon = Managers.Resource.Instantiate("UI/BattleScene/BattlePokemon", _battlePokemonZone);
 
+        _pokemonAnim = _battlePokemon.GetComponent<Animator>();
+        _pokemonImage = Util.FindChild<Image>(_battlePokemon, "Image", false);
+        _pokemonHitImage = Util.FindChild<Image>(_battlePokemon, "HitImage", true);
+
+        FillPokemonInfo(pokemon, isMyPokemon);
+    }
 
     public void FillPokemonInfo(Pokemon pokemon, bool isMyPokemon)
     {
-        LoadComponent();
-
         _isMyPokemon = isMyPokemon;
-        _pokemon = pokemon;
 
         PokemonInfo pokemonInfo = pokemon.PokemonInfo;
         PokemonStat pokemonStat = pokemon.PokemonStat;
@@ -83,6 +73,11 @@ public class BattleArea : MonoBehaviour
             _expGauge.SetGauge(expInfo.CurExp, expInfo.RemainExpToNextLevel);
     }
 
+    public void SetActiveTrainer(bool isActive)
+    {
+        _trainerAnim.gameObject.SetActive(isActive);
+    }
+
     public void ChangePokemonHP(int destHP)
     {
         _hpGauge.ChangeGauge(destHP, 0.01f);
@@ -93,32 +88,23 @@ public class BattleArea : MonoBehaviour
         _expGauge.ChangeGauge(destExp, 0.01f);
     }
 
-    public void AttackMovePokemonUI()
+    public void PlayTrainerAnim(string name)
     {
-        if (_isMyPokemon)
-            _pokemonAnim.Play("BattlePokemon_RightAttack");
-        else
-            _pokemonAnim.Play("BattlePokemon_LeftAttack");
+        _trainerAnim.Play(name);
     }
 
-    public void BlinkPokemonUI()
+    public void PlayBattlePokemonAnim(string name)
     {
-        _pokemonAnim.Play("BattlePokemon_Hit");
+        _pokemonAnim.Play(name);
     }
 
-    public void TriggerPokemonHitImage(Pokemon attackingPKM)
-    {
-        StartCoroutine(ShowHitEffect(attackingPKM));
-    }
-
-    IEnumerator ShowHitEffect(Pokemon attackingPKM)
+    public IEnumerator BlinkPokemonHitEffect(Texture2D texture)
     {
         Color colorToVisible = _pokemonHitImage.color;
         colorToVisible.a = 255f;
         _pokemonHitImage.color = colorToVisible;
 
-        Texture2D image = attackingPKM.SelectedMove.HitEffectImage;
-        _pokemonHitImage.sprite = Sprite.Create(image, new Rect(0, 0, image.width, image.height), Vector2.one * 0.5f);
+        _pokemonHitImage.sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), Vector2.one * 0.5f);
         _pokemonHitImage.SetNativeSize();
 
         yield return new WaitForSeconds(0.25f);
@@ -128,8 +114,10 @@ public class BattleArea : MonoBehaviour
         _pokemonHitImage.color = colorToUnvisible;
     }
 
-    public void PokemonDie()
+    public void TriggerPokemonHitImage(Pokemon attackingPKM)
     {
-        _pokemonAnim.Play("BattlePokemon_Die");
+        Texture2D texture = attackingPKM.SelectedMove.HitEffectImage;
+        StartCoroutine(BlinkPokemonHitEffect(texture));
     }
+
 }

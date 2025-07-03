@@ -16,23 +16,31 @@ public enum BattleSceneState
     APPEAR_SCRIPTING = 2,
     CHANGING_POKEMON = 3,
     SHOWING_POKEMON = 4,
-    SELECTING_ACTION = 5,
-    SELECTING_MOVE = 6,
-    CANNOT_USE_MOVE = 7,
-    ATTACK_INSTRUCTING = 8,
-    FIRST_ATTACK_ANIMATION = 9,
-    FIRST_ATTACK_FAILED = 10,
-    HIT_POKEMON_BLINK = 11,
-    CHANGE_POKEMON_HP = 12,
-    POKEMON_DIE = 13,
-    MY_POKEMON_DIE_SCRIPTING = 14,
-    ENEMY_POKEMON_DIE_SCRIPTING = 15,
-    GETTING_EXP = 16,
-    LEVEL_UP_SCRIPTING = 17,
-    UPGRADING_STATUS = 18,
-    SHOWING_UPGRADED_STATUS = 19,
-    AFTER_USE_ITEM_UPDATE = 20,
-    ITEM_USE_SCRIPTING = 21,
+    SHOWING_UI = 5,
+    SELECTING_ACTION = 6,
+    SELECTING_MOVE = 7,
+    CANNOT_USE_MOVE = 8,
+    ATTACK_INSTRUCTING = 9,
+    FIRST_ATTACK_ANIMATION = 10,
+    FIRST_ATTACK_FAILED = 11,
+    HIT_POKEMON_BLINK = 12,
+    CHANGE_POKEMON_HP = 13,
+    POKEMON_DIE = 14,
+    MY_POKEMON_DIE_SCRIPTING = 15,
+    ENEMY_POKEMON_DIE_SCRIPTING = 16,
+    GETTING_EXP = 17,
+    LEVEL_UP_SCRIPTING = 18,
+    UPGRADING_STATUS = 19,
+    SHOWING_UPGRADED_STATUS = 20,
+    NEW_MOVE_LEARN_SCRIPTING = 21,
+    ASKING_TO_LEARN_NEW_MOVE = 22,
+    ANSWERING_TO_LEARN_NEW_MOVE = 23,
+    NEW_MOVE_NOT_LEARN_SCRIPTING = 24,
+    SWITCH_POKEMON_SCRIPTING = 25,
+    AFTER_USE_ITEM_UPDATE = 26,
+    ITEM_USE_SCRIPTING = 27,
+    MOVING_TO_BAG_SCENE = 90,
+    MOVING_TO_POKEMON_SCENE = 91,
 }
 
 public class BattleScene : BaseScene
@@ -41,10 +49,10 @@ public class BattleScene : BaseScene
     TextMeshProUGUI[] _moveInfoTMPs;
     PlayableDirector _playableDirector;
     PlayerInfo _playerInfo;
-    List<Pokemon> _myPokemons;
 
     Pokemon _myPokemon;
     Pokemon _enemyPokemon;
+    PokemonMove _newLearnableMove;
     Item _usedItem;
 
     Pokemon _attackPKM;
@@ -54,19 +62,20 @@ public class BattleScene : BaseScene
     bool _isMyPKMAttack = false;
     bool _isEnemyPKMAttack = false;
     bool _loadingPacket = false;
-
     int _remainEXPToGet;
 
     [SerializeField] ScriptBoxUI _scriptBox;
     [SerializeField] GridLayoutSelectBox _actionSelectBox;
     [SerializeField] List<DynamicButton> _actionBtns;
     [SerializeField] GridLayoutSelectBox _moveSelectBox;
-    [SerializeField] DynamicButton _moveBtn;
     List<DynamicButton> _moveBtns;
+    [SerializeField] DynamicButton _moveBtn;
     [SerializeField] GameObject _moveInfoBox;
     [SerializeField] BattleArea _enemyPokemonArea;
     [SerializeField] BattleArea _myPokemonArea;
     [SerializeField] StatusBox _statusBox;
+    [SerializeField] GridLayoutSelectBox _yesOrNoSelectBox;
+    [SerializeField] List<DynamicButton> _yesOrNoBtns;
 
     public BattleSceneState SceneState
     {
@@ -79,6 +88,11 @@ public class BattleScene : BaseScene
             {
                 _actionSelectBox.gameObject.SetActive(true);
                 _actionSelectBox.UIState = GridLayoutSelectBoxState.SELECTING;
+            }
+            else if (_sceneState == BattleSceneState.MOVING_TO_BAG_SCENE)
+            {
+                _actionSelectBox.gameObject.SetActive(true);
+                _actionSelectBox.UIState = GridLayoutSelectBoxState.NONE;
             }
             else
             {
@@ -107,9 +121,25 @@ public class BattleScene : BaseScene
             {
                 _statusBox.gameObject.SetActive(true);
             }
+            else if (_sceneState == BattleSceneState.SHOWING_UPGRADED_STATUS)
+            {
+                _statusBox.gameObject.SetActive(true);
+            }
             else
             {
                 _statusBox.gameObject.SetActive(false);
+            }
+
+            // 예 아니오 버튼
+            if (_sceneState == BattleSceneState.ANSWERING_TO_LEARN_NEW_MOVE)
+            {
+                _yesOrNoSelectBox.gameObject.SetActive(true);
+                _yesOrNoSelectBox.UIState = GridLayoutSelectBoxState.SELECTING;
+            }
+            else
+            {
+                _yesOrNoSelectBox.gameObject.SetActive(false);
+                _yesOrNoSelectBox.UIState = GridLayoutSelectBoxState.NONE;
             }
         }
     }
@@ -158,6 +188,13 @@ public class BattleScene : BaseScene
             _moveBtns[i].BtnData = _myPokemon.PokemonMoves[i];
         }
         _moveSelectBox.SetSelectBoxContent(_moveBtns, 2, 2);
+
+        // 예, 아니오 버튼 데이터 채우기
+        for (int i = 0; i < _yesOrNoBtns.Count; i++)
+        {
+            _yesOrNoBtns[i].BtnData = Util.FindChild<TextMeshProUGUI>(_yesOrNoBtns[i].gameObject, "ContentText", true).text;
+        }
+        _yesOrNoSelectBox.SetSelectBoxContent(_yesOrNoBtns, 2, 2);
     }
 
     public override void UpdateData(IMessage packet)
@@ -166,42 +203,85 @@ public class BattleScene : BaseScene
         {
             case BattleSceneState.NONE:
                 {
-                    if (packet is S_UseItem)
+                    if (packet is S_ReturnPokemonBattleScene)
                     {
                         _enterEffect.PlayEffect("FadeIn");
+                        _myPokemonArea.SetActiveTrainer(false);
+
+                        S_ReturnPokemonBattleScene returnBattleScenePacket = packet as S_ReturnPokemonBattleScene;
+
+                        PlayerInfo playerInfo = returnBattleScenePacket.PlayerInfo;
+                        PokemonSummary enemyPokemonSum = returnBattleScenePacket.EnemyPokemonSum;
+                        PokemonSummary myPokemonSum = returnBattleScenePacket.PlayerPokemonSum;
+
+                        // 포켓몬 및 플레이어 데이터 채우기
+                        _playerInfo = playerInfo;
+                        _enemyPokemon = new Pokemon(enemyPokemonSum);
+                        _myPokemon = new Pokemon(myPokemonSum);
+
+                        // 포켓몬 랜더링
+                        _enemyPokemonArea.MakeBattlePokemon(_enemyPokemon, false);
+                        _myPokemonArea.MakeBattlePokemon(_myPokemon, true);
+
+                        // UI 생성
+                        MakeUI();
+
+                        SceneState = BattleSceneState.SELECTING_ACTION;
+                    }
+                    else if (packet is S_SwitchBattlePokemon)
+                    {
+                        _enterEffect.PlayEffect("FadeIn");
+                        _myPokemonArea.SetActiveTrainer(false);
+
+                        S_SwitchBattlePokemon switchPokemonPacket = packet as S_SwitchBattlePokemon;
+                        PlayerInfo playerInfo = switchPokemonPacket.PlayerInfo;
+                        PokemonSummary enemyPokemonSum = switchPokemonPacket.EnemyPokemonSum;
+                        PokemonSummary myPokemonSum = switchPokemonPacket.MyPokemonSum;
+
+                        // 포켓몬 및 플레이어 데이터 채우기
+                        _playerInfo = playerInfo;
+                        _myPokemon = new Pokemon(myPokemonSum);
+                        _enemyPokemon = new Pokemon(enemyPokemonSum);
+
+                        // 포켓몬 랜더링
+                        _enemyPokemonArea.MakeBattlePokemon(_enemyPokemon, false);
+
+                        // UI 생성
+                        MakeUI();
+
+                        SceneState = BattleSceneState.SWITCH_POKEMON_SCRIPTING;
+
+                        List<string> scripts = new List<string>()
+                        {
+                            $"Go {_myPokemon.PokemonInfo.NickName}!"
+                        };
+                        _scriptBox.BeginScriptTyping(scripts, true);
+                    }
+                    else if (packet is S_UseItem)
+                    {
+                        _enterEffect.PlayEffect("FadeIn");
+                        _myPokemonArea.SetActiveTrainer(false);
 
                         S_UseItem useItemPacket = packet as S_UseItem;
-
                         PlayerInfo playerInfo = useItemPacket.PlayerInfo;
-                        PokemonSummary enemyPokemon = useItemPacket.EnemyPokemon;
-                        IList myPokmeonSums = useItemPacket.PlayerPokemons;
+                        PokemonSummary enemyPokemonSum = useItemPacket.EnemyPokemonSum;
+                        PokemonSummary myPokemonSum = useItemPacket.PlayerPokemonSum;
                         ItemSummary itemSumamary = useItemPacket.UsedItem;
 
                         // 포켓몬 및 플레이어 데이터 채우기
                         _playerInfo = playerInfo;
-
-                        _myPokemons = new List<Pokemon>();
-
-                        foreach (PokemonSummary pokemonSum in myPokmeonSums)
-                        {
-                            _myPokemons.Add(new Pokemon(pokemonSum));
-                        }
+                        _enemyPokemon = new Pokemon(enemyPokemonSum);
+                        _myPokemon = new Pokemon(myPokemonSum);
+                        _usedItem = new Item(itemSumamary);
 
                         // 포켓몬 랜더링
-                        _myPokemonArea.FillPokemonInfo(_myPokemon, true);
-
-                        _myPokemonArea.Pokemon = _myPokemons[0];
-                        _myPokemon = _myPokemonArea.Pokemon;
-
-                        _enemyPokemonArea.FillPokemonInfo(new Pokemon(enemyPokemon), false);
-                        _enemyPokemon = _enemyPokemonArea.Pokemon;
+                        _enemyPokemonArea.MakeBattlePokemon(_enemyPokemon, false);
+                        _myPokemonArea.MakeBattlePokemon(_myPokemon, true);
 
                         // UI 생성
                         MakeUI();
 
                         SceneState = BattleSceneState.AFTER_USE_ITEM_UPDATE;
-
-                        _usedItem = new Item(itemSumamary);
                     }
                     else if (packet is S_EnterPokemonBattleScene)
                     {
@@ -209,29 +289,20 @@ public class BattleScene : BaseScene
                         _playableDirector.Play();
 
                         S_EnterPokemonBattleScene enterBattleScenePacket = packet as S_EnterPokemonBattleScene;
-
                         PlayerInfo playerInfo = enterBattleScenePacket.PlayerInfo;
-                        PokemonSummary enemyPokemon = enterBattleScenePacket.EnemyPokemon;
-                        IList myPokmeonSums = enterBattleScenePacket.PlayerPokemons;
+                        PokemonSummary enemyPokemonSum = enterBattleScenePacket.EnemyPokemonSum;
+                        PokemonSummary myPokemonSum = enterBattleScenePacket.PlayerPokemonSum;
 
                         // 포켓몬 및 플레이어 데이터 채우기
                         _playerInfo = playerInfo;
-
-                        _myPokemons = new List<Pokemon>();
-
-                        foreach (PokemonSummary pokemonSum in myPokmeonSums)
-                        {
-                            _myPokemons.Add(new Pokemon(pokemonSum));
-                        }
+                        _enemyPokemon = new Pokemon(enemyPokemonSum);
+                        _myPokemon = new Pokemon(myPokemonSum);
 
                         // 포켓몬 랜더링
                         _myPokemonArea.FillTrainerImage(playerInfo.PlayerGender);
 
-                        _myPokemonArea.Pokemon = _myPokemons[0];
-                        _myPokemon = _myPokemonArea.Pokemon;
-
-                        _enemyPokemonArea.FillPokemonInfo(new Pokemon(enemyPokemon), false);
-                        _enemyPokemon = _enemyPokemonArea.Pokemon;
+                        _enemyPokemonArea.MakeBattlePokemon(_enemyPokemon, false);
+                        _enemyPokemonArea.PlayBattlePokemonAnim("BattlePokemon_Default");
 
                         // UI 생성
                         MakeUI();
@@ -240,20 +311,22 @@ public class BattleScene : BaseScene
                 break;
             case BattleSceneState.SELECTING_MOVE:
                 {
-                    S_UsePokemonMove useMovePacket = packet as S_UsePokemonMove;
-                    int remainedPP = useMovePacket.RemainedPP;
-
-                    SceneState = BattleSceneState.ATTACK_INSTRUCTING;
                     _loadingPacket = false;
 
-                    _attackPKM.SelectedMove.CurPP = remainedPP;
+                    S_UsePokemonMove useMovePacket = packet as S_UsePokemonMove;
+                    int myRemainedPP = useMovePacket.MyRemainedPP;
+                    int enemyRemainedPP = useMovePacket.EnemyRemainedPP;
+
+                    _myPokemon.SelectedMove.CurPP = myRemainedPP;
+                    _enemyPokemon.SelectedMove.CurPP = enemyRemainedPP;
 
                     List<string> scripts = new List<string>()
                     {
                         $"{_attackPKM.PokemonInfo.NickName} used {_attackPKM.SelectedMove.MoveName}!"
                     };
-
                     _scriptBox.BeginScriptTyping(scripts, true);
+
+                    SceneState = BattleSceneState.ATTACK_INSTRUCTING;
                 }
                 break;
             case BattleSceneState.HIT_POKEMON_BLINK:
@@ -308,21 +381,19 @@ public class BattleScene : BaseScene
                     S_ChangePokemonLevel changeLevel = packet as S_ChangePokemonLevel;
                     int pokemonLevel = changeLevel.PokemonLevel;
                     PokemonStat stat = changeLevel.PokemonStat;
+                    PokemonExpInfo expInfo = changeLevel.PokemonExp;
                     LevelUpStatusDiff statDiff = changeLevel.StatDiff;
-                    int remainLevelExp = changeLevel.PokemonRemainLevelExp;
-                    int curExp = changeLevel.PokemonCurExp;
-
-                    SceneState = BattleSceneState.LEVEL_UP_SCRIPTING;
 
                     _loadingPacket = false;
 
                     _myPokemon.PokemonInfo.Level = pokemonLevel;
                     _myPokemon.PokemonStat = stat;
-                    _myPokemon.PokemonExpInfo.RemainExpToNextLevel = remainLevelExp;
-                    _myPokemon.PokemonExpInfo.CurExp = curExp;
+                    _myPokemon.PokemonExpInfo = expInfo;
 
                     _myPokemonArea.FillPokemonInfo(_myPokemon, true);
                     _statusBox.SetStatusDiffRate(statDiff);
+
+                    SceneState = BattleSceneState.LEVEL_UP_SCRIPTING;
 
                     List<string> scripts = new List<string>()
                     {
@@ -333,6 +404,64 @@ public class BattleScene : BaseScene
                 }
                 break;
             case BattleSceneState.SHOWING_UPGRADED_STATUS:
+                {
+                    _loadingPacket = false;
+
+                    S_CheckNewLearnableMove checkMovePacket = packet as S_CheckNewLearnableMove;
+                    PokemonMoveSummary newLearnableMove = checkMovePacket.NewMoveSum;
+
+                    if (newLearnableMove != null)
+                    {
+                        if (_myPokemon.PokemonMoves.Count < 4)
+                        {
+                            PokemonMove move = new PokemonMove(newLearnableMove);
+                            _myPokemon.PokemonMoves.Add(move);
+
+                            List<string> scripts = new List<string>()
+                            {
+                                $"{_myPokemon.PokemonInfo.NickName} learned {move.MoveName}!"
+                            };
+                            _scriptBox.BeginScriptTyping(scripts);
+
+                            SceneState = BattleSceneState.NEW_MOVE_LEARN_SCRIPTING;
+                        }
+                        else
+                        {
+                            _newLearnableMove = new PokemonMove(checkMovePacket.NewMoveSum);
+
+                            List<string> scripts = new List<string>()
+                            {
+                                $"{_myPokemon.PokemonInfo.NickName} wants to learn the move {_newLearnableMove.MoveName}.",
+                                $"However, {_myPokemon.PokemonInfo.NickName} already knows four moves.",
+                                $"Sould a move be deleted and replaced with {_newLearnableMove.MoveName}?",
+                            };
+                            _scriptBox.BeginScriptTyping(scripts);
+
+                            SceneState = BattleSceneState.ASKING_TO_LEARN_NEW_MOVE;
+                        }
+                    }
+                    else
+                    {
+                        SceneState = BattleSceneState.NEW_MOVE_LEARN_SCRIPTING;
+                        DoNextAction();
+                    }
+                }
+                break;
+            case BattleSceneState.NEW_MOVE_LEARN_SCRIPTING:
+                {
+                    SceneState = BattleSceneState.GETTING_EXP;
+
+                    _loadingPacket = false;
+
+                    S_ChangePokemonExp changeExpPacket = packet as S_ChangePokemonExp;
+                    PokemonExpInfo expInfo = changeExpPacket.PokemonExpInfo;
+
+                    _myPokemon.PokemonExpInfo = expInfo;
+
+                    _myPokemonArea.ChangePokemonEXP(_myPokemon.PokemonExpInfo.CurExp);
+                }
+                break;
+            case BattleSceneState.NEW_MOVE_NOT_LEARN_SCRIPTING:
                 {
                     SceneState = BattleSceneState.GETTING_EXP;
 
@@ -374,18 +503,25 @@ public class BattleScene : BaseScene
                 break;
             case BattleSceneState.APPEAR_SCRIPTING:
                 {
-                    _playableDirector.Resume();
+                    _myPokemonArea.PlayTrainerAnim("Trainer_LeftAppear");
                     SceneState = BattleSceneState.CHANGING_POKEMON;
                 }
                 break;
             case BattleSceneState.CHANGING_POKEMON:
                 {
-                    _myPokemonArea.FillPokemonInfo(_myPokemon, true);
-
+                    _myPokemonArea.MakeBattlePokemon(_myPokemon, true);
+                    _myPokemonArea.PlayBattlePokemonAnim("BattlePokemon_RightAppear");
                     SceneState = BattleSceneState.SHOWING_POKEMON;
                 }
                 break;
             case BattleSceneState.SHOWING_POKEMON:
+                {
+                    _playableDirector.Resume();
+
+                    SceneState = BattleSceneState.SHOWING_UI;
+                }
+                break;
+            case BattleSceneState.SHOWING_UI:
                 {
                     SceneState = BattleSceneState.SELECTING_ACTION;
 
@@ -432,7 +568,7 @@ public class BattleScene : BaseScene
 
                                     SetSelectedMove(new PokemonMove(struggleMove));
 
-                                    SetAttackAndDefensePokemonArea(ref _myPokemonArea, ref _enemyPokemonArea);
+                                    SetAttackAndDefensePokemonArea();
 
                                     List<string> scripts = new List<string>()
                                     {
@@ -445,6 +581,17 @@ public class BattleScene : BaseScene
                                     _enemyPokemon.SelectedMove.CurPP--;
                                 }
                             }
+                            else if (selectedAction == "Pokemon")
+                            {
+                                C_EnterPokemonListScene enterPokemonPacket = new C_EnterPokemonListScene();
+                                enterPokemonPacket.PlayerId = _playerInfo.ObjectInfo.ObjectId;
+
+                                Managers.Network.SavePacket(enterPokemonPacket);
+
+                                _enterEffect.PlayEffect("FadeOut");
+
+                                SceneState = BattleSceneState.MOVING_TO_POKEMON_SCENE;
+                            }
                             else if (selectedAction == "Bag")
                             {
                                 C_EnterPlayerBagScene enterBagPacket = new C_EnterPlayerBagScene();
@@ -452,7 +599,9 @@ public class BattleScene : BaseScene
 
                                 Managers.Network.SavePacket(enterBagPacket);
 
-                                // Managers.Scene.CurrentScene.ScreenChanger.ChangeAndFadeOutScene(Define.Scene.Bag);
+                                _enterEffect.PlayEffect("FadeOut");
+
+                                SceneState = BattleSceneState.MOVING_TO_BAG_SCENE;
                             }
                         }
                     }
@@ -481,7 +630,7 @@ public class BattleScene : BaseScene
                             }
                             else
                             {
-                                SetAttackAndDefensePokemonArea(ref _myPokemonArea, ref _enemyPokemonArea);
+                                SetAttackAndDefensePokemonArea();
                                 SetSelectedMove(selectedMove);
 
                                 if (!_loadingPacket)
@@ -489,14 +638,8 @@ public class BattleScene : BaseScene
                                     // 서버에게 기술 사용 요청
                                     C_UsePokemonMove movePacket = new C_UsePokemonMove();
                                     movePacket.PlayerId = _playerInfo.ObjectInfo.ObjectId;
-
-                                    if (_attackPKM == _myPokemon)
-                                        movePacket.PokemonOrder = _myPokemons.FindIndex(pokemon => pokemon == _myPokemon);
-                                    else
-                                        movePacket.PokemonOrder = -1;
-
-                                    movePacket.MoveOrder = _attackPKM.PokemonMoves.FindIndex(move => move == selectedMove);
-                                    movePacket.UsedPP = 1;
+                                    movePacket.MyMoveOrder = _myPokemon.GetSelectedMoveIdx();
+                                    movePacket.EnemyMoveOrder = _enemyPokemon.GetSelectedMoveIdx();
 
                                     Managers.Network.Send(movePacket);
 
@@ -524,7 +667,11 @@ public class BattleScene : BaseScene
                     {
                         SceneState = BattleSceneState.FIRST_ATTACK_ANIMATION;
 
-                        _attackPKMArea.AttackMovePokemonUI();
+                        if (_attackPKM == _myPokemon)
+                            _attackPKMArea.PlayBattlePokemonAnim("BattlePokemon_RightAttack");
+                        else
+                            _attackPKMArea.PlayBattlePokemonAnim("BattlePokemon_LeftAttack");
+
                         _defensePKMArea.TriggerPokemonHitImage(_attackPKM);
                     }
                     else
@@ -584,7 +731,7 @@ public class BattleScene : BaseScene
                 {
                     SceneState = BattleSceneState.HIT_POKEMON_BLINK;
 
-                    _defensePKMArea.BlinkPokemonUI();
+                    _defensePKMArea.PlayBattlePokemonAnim("BattlePokemon_Hit");
                 }
                 break;
             case BattleSceneState.HIT_POKEMON_BLINK:
@@ -592,10 +739,8 @@ public class BattleScene : BaseScene
                     if (!_loadingPacket)
                     {
                         C_ChangePokemonHp changeHpPacket = new C_ChangePokemonHp();
-                        changeHpPacket.MoveCategory = _attackPKM.SelectedMove.MoveCategory;
-                        changeHpPacket.MovePower = _attackPKM.SelectedMove.MovePower;
                         changeHpPacket.PlayerId = _playerInfo.ObjectInfo.ObjectId;
-                        changeHpPacket.PokemonOrder = _myPokemons.FindIndex(pokemon => pokemon == _defensePKM);
+                        changeHpPacket.IsMyPokemon = _attackPKM == _myPokemon ? false : true;
 
                         Managers.Network.Send(changeHpPacket);
 
@@ -617,13 +762,11 @@ public class BattleScene : BaseScene
 
                         List<string> scripts = new List<string>()
                         {
-                            $"{_defensePKM.PokemonInfo.NickName} fell down!"
+                            $"{_defensePKM.PokemonInfo.NickName} fell down!",
+                            $"There is no more pokemon to fight!",
+                            $"......",
+                            $"I took the injured Pokemon to the nearby Pokemon Center in a hurry."
                         };
-
-                        scripts.Add($"There is no more pokemon to fight!");
-                        scripts.Add($"......");
-                        scripts.Add($"I took the injured Pokemon to the nearby Pokemon Center in a hurry.");
-
                         _scriptBox.BeginScriptTyping(scripts);
                     }
                     else
@@ -634,7 +777,6 @@ public class BattleScene : BaseScene
                             {
                                 C_GetEnemyPokemonExp getExpPacket = new C_GetEnemyPokemonExp();
                                 getExpPacket.PlayerId = _playerInfo.ObjectInfo.ObjectId;
-                                getExpPacket.EnemyPokemonInfo = _enemyPokemon.PokemonInfo;
 
                                 Managers.Network.Send(getExpPacket);
 
@@ -655,7 +797,6 @@ public class BattleScene : BaseScene
                             // 서버에도 포켓몬 경험치 획득 요청
                             C_ChangePokemonExp changeExpPacket = new C_ChangePokemonExp();
                             changeExpPacket.PlayerId = _playerInfo.ObjectInfo.ObjectId;
-                            changeExpPacket.PokemonOrder = _myPokemons.FindIndex(pokemon => pokemon == _myPokemon);
                             changeExpPacket.Exp = finalExp;
 
                             Managers.Network.Send(changeExpPacket);
@@ -677,7 +818,6 @@ public class BattleScene : BaseScene
                         {
                             C_ChangePokemonLevel changeLevelPacket = new C_ChangePokemonLevel();
                             changeLevelPacket.PlayerId = _playerInfo.ObjectInfo.ObjectId;
-                            changeLevelPacket.PokemonOrder = _myPokemons.FindIndex(pokemon => pokemon == _myPokemon);
 
                             Managers.Network.Send(changeLevelPacket);
 
@@ -703,6 +843,20 @@ public class BattleScene : BaseScene
                 break;
             case BattleSceneState.SHOWING_UPGRADED_STATUS:
                 {
+                    // 배울 수 있는 기술이 있는 지 확인
+                    if (!_loadingPacket)
+                    {
+                        C_CheckNewLearnableMove changeMovePacket = new C_CheckNewLearnableMove();
+                        changeMovePacket.PlayerId = _playerInfo.ObjectInfo.ObjectId;
+
+                        Managers.Network.Send(changeMovePacket);
+
+                        _loadingPacket = true;
+                    }
+                }
+                break;
+            case BattleSceneState.NEW_MOVE_LEARN_SCRIPTING:
+                {
                     if (_remainEXPToGet != 0)
                     {
                         if (!_loadingPacket)
@@ -712,7 +866,6 @@ public class BattleScene : BaseScene
                             // 서버에도 포켓몬 경험치 획득 요청
                             C_ChangePokemonExp changeExpPacket = new C_ChangePokemonExp();
                             changeExpPacket.PlayerId = _playerInfo.ObjectInfo.ObjectId;
-                            changeExpPacket.PokemonOrder = _myPokemons.FindIndex(pokemon => pokemon == _myPokemon);
                             changeExpPacket.Exp = finalExp;
 
                             Managers.Network.Send(changeExpPacket);
@@ -726,6 +879,68 @@ public class BattleScene : BaseScene
                     }
                 }
                 break;
+            case BattleSceneState.ASKING_TO_LEARN_NEW_MOVE:
+                {
+                    SceneState = BattleSceneState.ANSWERING_TO_LEARN_NEW_MOVE;
+                }
+                break;
+            case BattleSceneState.ANSWERING_TO_LEARN_NEW_MOVE:
+                {
+                    if (value is Define.InputSelectBoxEvent)
+                    {
+                        Define.InputSelectBoxEvent inputEvent = (Define.InputSelectBoxEvent)value;
+
+                        if (inputEvent == Define.InputSelectBoxEvent.SELECT)
+                        {
+                            string answer = _yesOrNoSelectBox.GetSelectedBtnData() as string;
+
+                            if (answer == "YES")
+                            {
+                                Debug.Log("Yes!");
+                            }
+                            else if (answer == "NO")
+                            {
+                                List<string> scripts = new List<string>()
+                                {
+                                    $"{_myPokemon.PokemonInfo.NickName} did not learn the move {_newLearnableMove.MoveName}.",
+                                };
+                                _scriptBox.BeginScriptTyping(scripts);
+
+                                SceneState = BattleSceneState.NEW_MOVE_NOT_LEARN_SCRIPTING;
+                            }
+                        }
+                    }
+                }
+                break;
+            case BattleSceneState.NEW_MOVE_NOT_LEARN_SCRIPTING:
+                {
+                    if (_remainEXPToGet != 0)
+                    {
+                        if (!_loadingPacket)
+                        {
+                            int finalExp = SetAndApplyFinalEXP();
+
+                            // 서버에도 포켓몬 경험치 획득 요청
+                            C_ChangePokemonExp changeExpPacket = new C_ChangePokemonExp();
+                            changeExpPacket.PlayerId = _playerInfo.ObjectInfo.ObjectId;
+                            changeExpPacket.Exp = finalExp;
+
+                            Managers.Network.Send(changeExpPacket);
+
+                            _loadingPacket = true;
+                        }
+                    }
+                    else
+                    {
+                        Debug.Log("Battle Finsh");
+                    }
+                }
+                break;
+            case BattleSceneState.SWITCH_POKEMON_SCRIPTING:
+                {
+                    _myPokemonArea.MakeBattlePokemon(_myPokemon, true);
+                }
+                break;
             case BattleSceneState.AFTER_USE_ITEM_UPDATE:
                 {
                     List<string> scripts = new List<string>()
@@ -736,6 +951,18 @@ public class BattleScene : BaseScene
                     _scriptBox.BeginScriptTyping(scripts, true);
 
                     _sceneState = BattleSceneState.ITEM_USE_SCRIPTING;
+                }
+                break;
+            case BattleSceneState.MOVING_TO_BAG_SCENE:
+                {
+                    // 씬 변경
+                    Managers.Scene.LoadScene(Define.Scene.Bag);
+                }
+                break;
+            case BattleSceneState.MOVING_TO_POKEMON_SCENE:
+                {
+                    // 씬 변경
+                    Managers.Scene.LoadScene(Define.Scene.PokemonList);
                 }
                 break;
         }
@@ -770,7 +997,7 @@ public class BattleScene : BaseScene
         {
             SceneState = BattleSceneState.POKEMON_DIE;
 
-            _defensePKMArea.PokemonDie();
+            _defensePKMArea.PlayBattlePokemonAnim("BattlePokemon_Die");
         }
         else if (!_isMyPKMAttack || !_isEnemyPKMAttack)
         {
@@ -844,29 +1071,26 @@ public class BattleScene : BaseScene
         }
     }
 
-    void SetAttackAndDefensePokemonArea(ref BattleArea firstAttackPKMArea, ref BattleArea secondAttackPKMArea)
+    void SetAttackAndDefensePokemonArea()
     {
-        Pokemon firstPokemon = firstAttackPKMArea.Pokemon;
-        Pokemon secondPokemon = secondAttackPKMArea.Pokemon;
+        int myPokemonSpeed = _myPokemon.PokemonStat.Speed;
+        int enemyPokemonSpeed = _enemyPokemon.PokemonStat.Speed;
 
-        int firstPkmSpeed = firstPokemon.PokemonStat.Speed;
-        int secondPkmSpeed = secondPokemon.PokemonStat.Speed;
-
-        if (firstPkmSpeed > secondPkmSpeed)
+        if (myPokemonSpeed > enemyPokemonSpeed)
         {
-            _attackPKM = firstPokemon;
-            _attackPKMArea = firstAttackPKMArea;
+            _attackPKM = _myPokemon;
+            _attackPKMArea = _myPokemonArea;
 
-            _defensePKM = secondPokemon;
-            _defensePKMArea = secondAttackPKMArea;
+            _defensePKM = _enemyPokemon;
+            _defensePKMArea = _enemyPokemonArea;
         }
-        else if (firstPkmSpeed < secondPkmSpeed)
+        else if (myPokemonSpeed < enemyPokemonSpeed)
         {
-            _attackPKM = secondPokemon;
-            _attackPKMArea = secondAttackPKMArea;
+            _attackPKM = _enemyPokemon;
+            _attackPKMArea = _enemyPokemonArea;
 
-            _defensePKM = firstPokemon;
-            _defensePKMArea = firstAttackPKMArea;
+            _defensePKM = _myPokemon;
+            _defensePKMArea = _myPokemonArea;
         }
         else
         {
@@ -874,19 +1098,19 @@ public class BattleScene : BaseScene
 
             if (ran >= 50)
             {
-                _attackPKM = firstPokemon;
-                _attackPKMArea = firstAttackPKMArea;
+                _attackPKM = _myPokemon;
+                _attackPKMArea = _myPokemonArea;
 
-                _defensePKM = secondPokemon;
-                _defensePKMArea = secondAttackPKMArea;
+                _defensePKM = _enemyPokemon;
+                _defensePKMArea = _enemyPokemonArea;
             }
             else
             {
-                _attackPKM = secondPokemon;
-                _attackPKMArea = secondAttackPKMArea;
+                _attackPKM = _enemyPokemon;
+                _attackPKMArea = _enemyPokemonArea;
 
-                _defensePKM = firstPokemon;
-                _defensePKMArea = firstAttackPKMArea;
+                _defensePKM = _myPokemon;
+                _defensePKMArea = _myPokemonArea;
             }
         }
     }

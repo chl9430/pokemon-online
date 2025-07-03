@@ -10,7 +10,6 @@ namespace Server
 {
     public class PrivateBattleRoom
     {
-        // 67퍼
         Player _player;
         Pokemon _myPokemon;
         Pokemon _wildPokemon;
@@ -69,41 +68,49 @@ namespace Server
             }
         }
 
-        public int UseMyPokemonMove(int moveOrder, int amount)
+        public void UseBattlePokemonMove(int myMoveOrder, int enemyMoveOrder)
         {
-            _myPokemon.PokemonMoves[moveOrder].CurPP -= amount;
+            if (myMoveOrder != -1)
+            {
+                _myPokemon.SelectedMove = _myPokemon.PokemonMoves[myMoveOrder];
+                _myPokemon.SelectedMove.CurPP--;
+            }
 
-            return _myPokemon.PokemonMoves[moveOrder].CurPP;
+            if (enemyMoveOrder != -1)
+            {
+                _wildPokemon.SelectedMove = _wildPokemon.PokemonMoves[enemyMoveOrder];
+                _wildPokemon.SelectedMove.CurPP--;
+            }
         }
 
-        public int UseWildPokemonMove(int moveOrder, int amount)
+        public void ChangeBattlePokemonHp(bool isMyPokemon)
         {
-            _wildPokemon.PokemonMoves[moveOrder].CurPP -= amount;
+            MoveCategory moveCategory;
+            int movePower;
+            int finalDamage = 0;
 
-            return _wildPokemon.PokemonMoves[moveOrder].CurPP;
-        }
+            if (isMyPokemon)
+            {
+                moveCategory = _wildPokemon.SelectedMove.MoveCategory;
+                movePower = _wildPokemon.SelectedMove.MovePower;
+                finalDamage = CalFinalDamage(moveCategory, _wildPokemon.PokemonInfo.Level, _wildPokemon.PokemonStat, _myPokemon.PokemonStat, movePower);
 
-        public int ChangeMyPokemonHp(MoveCategory moveCategory, int movePower)
-        {
-            // 데미지 계산
-            int finalDamage = CalFinalDamage(moveCategory, _wildPokemon.PokemonInfo.Level, _wildPokemon.PokemonStat, _myPokemon.PokemonStat, movePower);
+                _myPokemon.GetDamage(finalDamage);
+            }
+            else
+            {
+                moveCategory = _myPokemon.SelectedMove.MoveCategory;
+                movePower = _myPokemon.SelectedMove.MovePower;
+                finalDamage = CalFinalDamage(moveCategory, _myPokemon.PokemonInfo.Level, _myPokemon.PokemonStat, _wildPokemon.PokemonStat, movePower);
 
-            _myPokemon.GetDamage(finalDamage);
-            return _myPokemon.PokemonStat.Hp;
-        }
-
-        public int ChangeWildPokemonHp(MoveCategory moveCategory, int movePower)
-        {
-            // 데미지 계산
-            int finalDamage = CalFinalDamage(moveCategory, _myPokemon.PokemonInfo.Level, _myPokemon.PokemonStat, _wildPokemon.PokemonStat, movePower);
-
-            _wildPokemon.GetDamage(finalDamage);
-            return _wildPokemon.PokemonStat.Hp;
+                _wildPokemon.GetDamage(finalDamage);
+            }
         }
 
         public int GetExp()
         {
-            int exp = (112 * _wildPokemon.PokemonInfo.Level) / 7;
+            // int exp = (112 * _wildPokemon.PokemonInfo.Level) / 7;
+            int exp = 1000;
 
             return exp;
         }

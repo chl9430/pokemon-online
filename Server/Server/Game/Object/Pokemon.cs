@@ -9,8 +9,9 @@ namespace Server
         PokemonStat _pokemonStat;
         PokemonExpInfo _expInfo;
         List<PokemonMove> _pokemonMoves;
+        PokemonMove _selectedMove;
+        PokemonMove _newLearnableMove;
         PokemonSummaryDictData _summaryDictData;
-        PokemonMoveDictData _moveDictData;
 
         public PokemonInfo PokemonInfo
         {
@@ -30,6 +31,12 @@ namespace Server
         public List<PokemonMove> PokemonMoves
         {
             get { return _pokemonMoves; }
+        }
+
+        public PokemonMove SelectedMove
+        {
+            set { _selectedMove = value; }
+            get { return _selectedMove; }
         }
 
         public Pokemon(string pokemonName, string pokemonNickName, int level, string ownerName, int ownerId, int remainHp = -1)
@@ -153,9 +160,9 @@ namespace Server
                         continue;
                     }
 
-                    if (DataManager.PokemonMoveDict.TryGetValue(moveNames[i], out _moveDictData))
+                    if (DataManager.PokemonMoveDict.TryGetValue(moveNames[i], out PokemonMoveDictData moveDictData))
                     {
-                        PokemonMove move = new PokemonMove(_moveDictData.maxPP, _moveDictData.movePower, _moveDictData.moveAccuracy, _moveDictData.moveName, _moveDictData.moveType, _moveDictData.moveCategory);
+                        PokemonMove move = new PokemonMove(moveDictData.maxPP, moveDictData.movePower, moveDictData.moveAccuracy, moveDictData.moveName, moveDictData.moveType, moveDictData.moveCategory);
 
                         _pokemonMoves.Add(move);
                     }
@@ -254,6 +261,47 @@ namespace Server
             {
                 return null;
             }
+        }
+
+        public PokemonMoveSummary CheckNewLearnableMove()
+        {
+            LearnableMoveData[] moveDatas = _summaryDictData.learnableMoves;
+            string foundMoveName = "";
+            PokemonMoveSummary moveSum = null;
+
+            for (int i = 0; i < moveDatas.Length; i++)
+            {
+                if (_pokemonInfo.Level > moveDatas[i].learnLevel)
+                    continue;
+                else if (_pokemonInfo.Level == moveDatas[i].learnLevel)
+                    foundMoveName = moveDatas[i].moveName;
+                else if (_pokemonInfo.Level < moveDatas[i].learnLevel)
+                    break;
+            }
+
+            if (foundMoveName != "")
+            {
+                if (DataManager.PokemonMoveDict.TryGetValue(foundMoveName, out PokemonMoveDictData moveDictData))
+                {
+                    PokemonMove move = new PokemonMove(moveDictData.maxPP, moveDictData.movePower, moveDictData.moveAccuracy, moveDictData.moveName, moveDictData.moveType, moveDictData.moveCategory);
+
+                    if (_pokemonMoves.Count < 4)
+                    {
+                        _pokemonMoves.Add(move);
+                    }
+                    else if (_pokemonMoves.Count == 4)
+                        _newLearnableMove = move;
+
+                    moveSum = new PokemonMoveSummary();
+                    moveSum = move.MakePokemonMoveSummary();
+                }
+                else
+                {
+                    Console.WriteLine("Cannot find Pokemon Move Data!");
+                }
+            }
+
+            return moveSum;
         }
 
         public void UpdateStat()

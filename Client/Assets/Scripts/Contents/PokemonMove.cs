@@ -23,7 +23,7 @@ public class PokemonMove
 
     public PokemonMove(PokemonMoveSummary moveSum)
     {
-        _curPp = moveSum.MaxPP;
+        _curPp = moveSum.CurPP;
         _maxPp = moveSum.MaxPP;
         _movePower = moveSum.MovePower;
         _moveAccuracy = moveSum.MoveAccuracy;

@@ -25,6 +25,14 @@
             "moveType": "Electr"
         },
         {
+            "moveName": "Slam",
+            "movePower": "80",
+            "moveAccuracy": "75",
+            "maxPP": "20",
+            "moveCategory": "Physical",
+            "moveType": "Normal"
+        },
+        {
             "moveName": "Tackle",
             "movePower": "35",
             "moveAccuracy": "95",

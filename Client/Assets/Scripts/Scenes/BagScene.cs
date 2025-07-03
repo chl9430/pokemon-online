@@ -168,6 +168,11 @@ public class BagScene : BaseScene
                             {
                                 _enterEffect.PlayEffect("FadeOut");
 
+                                C_ReturnPokemonBattleScene returnBattleScenePacket = new C_ReturnPokemonBattleScene();
+                                returnBattleScenePacket.PlayerId = _playerInfo.ObjectInfo.ObjectId;
+
+                                Managers.Network.SavePacket(returnBattleScenePacket);
+
                                 _sceneState = BagSceneState.MOVING_TO_BATTLE_SCENE;
                                 ActiveUIBySceneState(_sceneState);
                             }
