@@ -39,7 +39,7 @@ public class PokemonSummaryUI : MonoBehaviour
         FillText(level, $"Lv. {pokemon.PokemonInfo.Level}");
         FillText(owner, $"{pokemon.PokemonInfo.OwnerName} (ID : {pokemon.PokemonInfo.OwnerId})");
         FillText(nature, $"{pokemon.PokemonInfo.Nature} nature,");
-        FillText(metLevel, $"met at Lv.{pokemon.PokemonInfo.MetLevel}, MOON FIELD.");
+        FillText(metLevel, $"met at Lv. {pokemon.PokemonInfo.MetLevel}, MOON FIELD.");
 
         FillImage(pokemon);
         FillImage(pokemon);

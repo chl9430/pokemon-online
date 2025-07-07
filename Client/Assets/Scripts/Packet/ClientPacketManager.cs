@@ -65,6 +65,9 @@ class PacketManager
         _onRecv.Add((ushort)MsgId.SChangePokemonHp, MakePacket<S_ChangePokemonHp>);
         _handler.Add((ushort)MsgId.SChangePokemonHp, PacketHandler.S_ChangePokemonHpHandler);
 
+        _onRecv.Add((ushort)MsgId.SPokemonFaint, MakePacket<S_PokemonFaint>);
+        _handler.Add((ushort)MsgId.SPokemonFaint, PacketHandler.S_PokemonFaintHandler);
+
         _onRecv.Add((ushort)MsgId.SGetEnemyPokemonExp, MakePacket<S_GetEnemyPokemonExp>);
         _handler.Add((ushort)MsgId.SGetEnemyPokemonExp, PacketHandler.S_GetEnemyPokemonExpHandler);
 

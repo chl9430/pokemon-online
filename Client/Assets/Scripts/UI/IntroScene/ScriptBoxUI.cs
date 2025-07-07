@@ -141,8 +141,8 @@ public class ScriptBoxUI : MonoBehaviour
             if (_autoSkip)
                 yield return new WaitForSeconds(_autoSkipTime);
 
-            _scene.DoNextAction();
             _uiState = ScriptBoxUIState.NONE;
+            _scene.DoNextAction();
             yield break;
         }
 

@@ -173,6 +173,16 @@ public class PacketHandler
         scene.UpdateData(s_changeHpPacket);
     }
 
+    public static void S_PokemonFaintHandler(PacketSession session, IMessage packet)
+    {
+        S_PokemonFaint s_PokemonFaint = packet as S_PokemonFaint;
+
+        Debug.Log($"S_PokemonFaint : {s_PokemonFaint}");
+
+        BaseScene scene = Managers.Scene.CurrentScene;
+        scene.UpdateData(s_PokemonFaint);
+    }
+
     public static void S_GetEnemyPokemonExpHandler(PacketSession session, IMessage packet)
     {
         S_GetEnemyPokemonExp s_GetExpPacket = packet as S_GetEnemyPokemonExp;

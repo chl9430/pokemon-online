@@ -30,16 +30,17 @@ enum MsgId {
   S_USE_POKEMON_MOVE = 18;
   C_CHANGE_POKEMON_HP = 19;
   S_CHANGE_POKEMON_HP = 20;
-  C_GET_ENEMY_POKEMON_EXP = 21;
-  S_GET_ENEMY_POKEMON_EXP = 22;
-  C_CHANGE_POKEMON_EXP = 23;
-  S_CHANGE_POKEMON_EXP = 24;
-  C_CHANGE_POKEMON_LEVEL = 25;
-  S_CHANGE_POKEMON_LEVEL = 26;
-  C_CHECK_NEW_LEARNABLE_MOVE = 27;
-  S_CHECK_NEW_LEARNABLE_MOVE = 28;
-  C_SWITCH_BATTLE_POKEMON = 29;
-  S_SWITCH_BATTLE_POKEMON = 30;
+  S_POKEMON_FAINT = 21;
+  C_GET_ENEMY_POKEMON_EXP = 22;
+  S_GET_ENEMY_POKEMON_EXP = 23;
+  C_CHANGE_POKEMON_EXP = 24;
+  S_CHANGE_POKEMON_EXP = 25;
+  C_CHANGE_POKEMON_LEVEL = 26;
+  S_CHANGE_POKEMON_LEVEL = 27;
+  C_CHECK_NEW_LEARNABLE_MOVE = 28;
+  S_CHECK_NEW_LEARNABLE_MOVE = 29;
+  C_SWITCH_BATTLE_POKEMON = 30;
+  S_SWITCH_BATTLE_POKEMON = 31;
   
   C_RETURN_GAME = 4;
   C_RETURN_POKEMON_BATTLE_SCENE = 72;
@@ -159,7 +160,7 @@ message S_EnterPokemonBattleScene
 {
     PlayerInfo playerInfo = 1;
     PokemonSummary enemyPokemonSum = 2;
-    PokemonSummary playerPokemonSum = 3;
+    repeated PokemonSummary playerPokemonSums = 3;
 }
 
 message C_UseItem
@@ -191,14 +192,13 @@ message S_EnterPlayerBagScene
 message C_UsePokemonMove
 {
     int32 playerId = 1;
-    int32 myMoveOrder = 2;
-    int32 enemyMoveOrder = 3;
+    bool isMyPokemon = 2;
+    int32 moveOrder = 3;
 }
 
 message S_UsePokemonMove
 {
-    int32 myRemainedPP = 1;
-    int32 enemyRemainedPP = 2;
+    int32 remainedPP = 1;
 }
 
 message C_ChangePokemonHp
@@ -210,6 +210,12 @@ message C_ChangePokemonHp
 message S_ChangePokemonHp
 {
     int32 remainedHp = 1;
+}
+
+message S_PokemonFaint
+{
+    int32 remainedHp = 1;
+    PokemonStatusCondition pokemonStatus = 2;
 }
 
 message C_GetEnemyPokemonExp
@@ -266,7 +272,7 @@ message S_SwitchBattlePokemon
 {
     PlayerInfo playerInfo = 1;
     PokemonSummary enemyPokemonSum = 2;
-    PokemonSummary myPokemonSum = 3;
+    repeated PokemonSummary myPokemonSums = 3;
 }
 
 message C_ReturnPokemonBattleScene
@@ -278,7 +284,7 @@ message S_ReturnPokemonBattleScene
 {
     PlayerInfo playerInfo = 1;
     PokemonSummary enemyPokemonSum = 2;
-    PokemonSummary playerPokemonSum = 3;
+    repeated PokemonSummary myPokemonSums = 3;
 }
 
 
@@ -307,6 +313,7 @@ message PokemonSummary
     PokemonStat pokemonStat = 2;
     PokemonExpInfo pokemonExpInfo = 3;
     repeated PokemonMoveSummary pokemonMoves = 4;
+    PokemonMoveSummary noPPMove = 5;
 }
 
 message PokemonInfo
@@ -322,11 +329,12 @@ message PokemonInfo
     int32 ownerId = 7;
     PokemonType type1 = 8;
     PokemonType type2 = 9;
+    PokemonStatusCondition pokemonStatus = 10;
 
     // Ability ability;
 
-    PokemonNature nature = 10;
-    int32 metLevel = 11;
+    PokemonNature nature = 11;
+    int32 metLevel = 12;
     // string metMapName;
 }
 
@@ -418,6 +426,12 @@ enum PokemonNature
     TIMID = 20;
     JOLLY = 22;
     SERIOUS = 24;
+}
+
+enum PokemonStatusCondition
+{
+    STATUS_NONE = 0;
+    FAINTING = 1;
 }
 
 enum MoveCategory

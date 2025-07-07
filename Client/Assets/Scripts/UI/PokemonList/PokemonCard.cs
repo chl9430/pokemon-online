@@ -25,6 +25,7 @@ public class PokemonCard : MonoBehaviour
     PokemonListSelectArea _pokemonSelectingZone;
 
     [SerializeField] Image _pokemonImg;
+    [SerializeField] Image _pokemonStatusImg;
     [SerializeField] TextMeshProUGUI _pokemonNickname;
     [SerializeField] TextMeshProUGUI _pokemonLevel;
     [SerializeField] Image _pokemonGenderImg;
@@ -57,6 +58,26 @@ public class PokemonCard : MonoBehaviour
 
         _pokemonImg.sprite = Sprite.Create(image, new Rect(0, 0, image.width, image.height), Vector2.one * 0.5f);
         _pokemonImg.SetNativeSize();
+
+        image = pokemon.PokemonStatusImage;
+
+        if (image == null)
+        {
+            Color color = _pokemonStatusImg.color;
+            color.a = 0f;
+
+            _pokemonStatusImg.color = color;
+        }
+        else
+        {
+            Color color = _pokemonStatusImg.color;
+            color.a = 1f;
+
+            _pokemonStatusImg.color = color;
+
+            _pokemonStatusImg.sprite = Sprite.Create(image, new Rect(0, 0, image.width, image.height), Vector2.one * 0.5f);
+            _pokemonImg.SetNativeSize();
+        }
 
         image = pokemon.PokemonGenderImage;
 

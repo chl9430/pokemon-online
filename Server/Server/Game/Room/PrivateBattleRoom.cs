@@ -1,6 +1,7 @@
 ﻿using Google.Protobuf.Protocol;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
 using System.Text;
@@ -10,15 +11,24 @@ namespace Server
 {
     public class PrivateBattleRoom
     {
+        List<Pokemon> _pokemons;
         Player _player;
         Pokemon _myPokemon;
         Pokemon _wildPokemon;
 
-        public PrivateBattleRoom(Player player)
+        public PrivateBattleRoom(Player player, List<Pokemon> pokemons)
         {
             _player = player;
+            _pokemons = new List<Pokemon>();
             player.BattleRoom = this;
+
+            foreach (Pokemon pokemon in pokemons)
+            {
+                _pokemons.Add(pokemon);
+            }
         }
+
+        public List<Pokemon> Pokemons {  get { return _pokemons; } }
         public Pokemon MyPokemon { get { return _myPokemon; } set { _myPokemon = value; } }
 
         public Pokemon WildPokemon { get { return _wildPokemon; } }
@@ -68,22 +78,54 @@ namespace Server
             }
         }
 
-        public void UseBattlePokemonMove(int myMoveOrder, int enemyMoveOrder)
+        public void SwitchBattlePokemon(int from, int to)
         {
-            if (myMoveOrder != -1)
+            if (from == to)
             {
-                _myPokemon.SelectedMove = _myPokemon.PokemonMoves[myMoveOrder];
-                _myPokemon.SelectedMove.CurPP--;
+                Console.WriteLine("Cannot change with same pokemons");
+                return;
             }
 
-            if (enemyMoveOrder != -1)
+            Pokemon temp = _pokemons[from];
+            _pokemons[from] = _pokemons[to];
+            _pokemons[to] = temp;
+
+            _myPokemon = _pokemons[0];
+        }
+
+        public int UseBattlePokemonMove(int moveOrder, bool isMyPokemon)
+        {
+            if (isMyPokemon)
             {
-                _wildPokemon.SelectedMove = _wildPokemon.PokemonMoves[enemyMoveOrder];
-                _wildPokemon.SelectedMove.CurPP--;
+                if (moveOrder != -1)
+                {
+                    _myPokemon.SelectedMove = _myPokemon.PokemonMoves[moveOrder];
+                    _myPokemon.SelectedMove.CurPP--;
+                }
+                else
+                {
+                    _myPokemon.SetNoPPMove();
+                }
+
+                return _myPokemon.SelectedMove.CurPP;
+            }
+            else
+            {
+                if (moveOrder != -1)
+                {
+                    _wildPokemon.SelectedMove = _wildPokemon.PokemonMoves[moveOrder];
+                    _wildPokemon.SelectedMove.CurPP--;
+                }
+                else
+                {
+                    _wildPokemon.SetNoPPMove();
+                }
+
+                return _wildPokemon.SelectedMove.CurPP;
             }
         }
 
-        public void ChangeBattlePokemonHp(bool isMyPokemon)
+        public bool ChangeBattlePokemonHp(bool isMyPokemon)
         {
             MoveCategory moveCategory;
             int movePower;
@@ -96,6 +138,11 @@ namespace Server
                 finalDamage = CalFinalDamage(moveCategory, _wildPokemon.PokemonInfo.Level, _wildPokemon.PokemonStat, _myPokemon.PokemonStat, movePower);
 
                 _myPokemon.GetDamage(finalDamage);
+
+                if (_myPokemon.PokemonInfo.PokemonStatus == PokemonStatusCondition.Fainting)
+                    return true;
+                else
+                    return false;
             }
             else
             {
@@ -104,6 +151,11 @@ namespace Server
                 finalDamage = CalFinalDamage(moveCategory, _myPokemon.PokemonInfo.Level, _myPokemon.PokemonStat, _wildPokemon.PokemonStat, movePower);
 
                 _wildPokemon.GetDamage(finalDamage);
+
+                if (_wildPokemon.PokemonInfo.PokemonStatus == PokemonStatusCondition.Fainting)
+                    return true;
+                else
+                    return false;
             }
         }
 

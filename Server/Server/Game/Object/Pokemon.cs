@@ -10,6 +10,7 @@ namespace Server
         PokemonExpInfo _expInfo;
         List<PokemonMove> _pokemonMoves;
         PokemonMove _selectedMove;
+        PokemonMove _noPPMove;
         PokemonMove _newLearnableMove;
         PokemonSummaryDictData _summaryDictData;
 
@@ -45,6 +46,7 @@ namespace Server
             _pokemonStat = new PokemonStat();
             _expInfo = new PokemonExpInfo();
             _pokemonMoves = new List<PokemonMove>();
+            _noPPMove = new PokemonMove(1, 30, 100, "Struggle", PokemonType.Normal, MoveCategory.Physical);
 
             Random random = new Random();
 
@@ -201,12 +203,20 @@ namespace Server
             return resultIndex;
         }
 
+        public void SetNoPPMove()
+        {
+            _selectedMove = _noPPMove;
+        }
+
         public void GetDamage(int damage)
         {
             _pokemonStat.Hp -= damage;
 
             if (_pokemonStat.Hp < 0)
+            {
                 _pokemonStat.Hp = 0;
+                _pokemonInfo.PokemonStatus = PokemonStatusCondition.Fainting;
+            }
         }
 
         public void GetExp(int exp)
@@ -337,6 +347,7 @@ namespace Server
             {
                 pokemonSum.PokemonMoves.Add(move.MakePokemonMoveSummary());
             }
+            pokemonSum.NoPPMove = _noPPMove.MakePokemonMoveSummary();
 
             return pokemonSum;
         }

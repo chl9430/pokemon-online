@@ -162,7 +162,19 @@ public class PokemonListScene : BaseScene
 
                         if (inputEvent == Define.InputSelectBoxEvent.BACK)
                         {
-                            if (_playerInfo.ObjectInfo.PosInfo.State == CreatureState.WatchMenu)
+                            if (_playerInfo.ObjectInfo.PosInfo.State == CreatureState.Fight)
+                            {
+                                C_ReturnPokemonBattleScene returnBattleScene = new C_ReturnPokemonBattleScene();
+                                returnBattleScene.PlayerId = _playerInfo.ObjectInfo.ObjectId;
+
+                                Managers.Network.SavePacket(returnBattleScene);
+
+                                _enterEffect.PlayEffect("FadeOut");
+
+                                _sceneState = PokemonListSceneState.MOVING_TO_BATTLE_SCENE;
+                                ActiveUIBySceneState(_sceneState);
+                            }
+                            else
                             {
                                 _enterEffect.PlayEffect("FadeOut");
 
@@ -179,10 +191,25 @@ public class PokemonListScene : BaseScene
                             }
                             else if (_pokemonBtns[_selectedPokemonIdx].BtnData as string == "CANCEL")
                             {
-                                _enterEffect.PlayEffect("FadeOut");
+                                if (_playerInfo.ObjectInfo.PosInfo.State == CreatureState.Fight)
+                                {
+                                    C_ReturnPokemonBattleScene returnBattleScene = new C_ReturnPokemonBattleScene();
+                                    returnBattleScene.PlayerId = _playerInfo.ObjectInfo.ObjectId;
 
-                                _sceneState = PokemonListSceneState.MOVING_TO_GAME_SCENE;
-                                ActiveUIBySceneState(_sceneState);
+                                    Managers.Network.SavePacket(returnBattleScene);
+
+                                    _enterEffect.PlayEffect("FadeOut");
+
+                                    _sceneState = PokemonListSceneState.MOVING_TO_BATTLE_SCENE;
+                                    ActiveUIBySceneState(_sceneState);
+                                }
+                                else
+                                {
+                                    _enterEffect.PlayEffect("FadeOut");
+
+                                    _sceneState = PokemonListSceneState.MOVING_TO_GAME_SCENE;
+                                    ActiveUIBySceneState(_sceneState);
+                                }
                             }
                         }
                     }
@@ -226,11 +253,20 @@ public class PokemonListScene : BaseScene
                             }
                             else if (selectedAction == "Send Out")
                             {
-                                C_SwitchBattlePokemon switchPokemonPacket = new C_SwitchBattlePokemon();
-                                switchPokemonPacket.PlayerId = _playerInfo.ObjectInfo.ObjectId;
-                                switchPokemonPacket.SelectedPokemonOrder = _pokemonSelectingZone.GetSelectedIdx();
+                                int selectedIdx = _pokemonSelectingZone.GetSelectedIdx();
 
-                                Managers.Network.SavePacket(switchPokemonPacket);
+                                if (selectedIdx == 0 || _myPokemons[selectedIdx].PokemonInfo.PokemonStatus == PokemonStatusCondition.Fainting)
+                                {
+                                    return;
+                                }
+
+                                C_SwitchPokemon switchPokemon = new C_SwitchPokemon();
+                                switchPokemon.OwnerId = _playerInfo.ObjectInfo.ObjectId;
+                                switchPokemon.PokemonFromIdx = 0;
+                                switchPokemon.PokemonToIdx = selectedIdx;
+
+                                Managers.Network.SavePacket(switchPokemon);
+                                Managers.Scene.Data = _myPokemons[0];
 
                                 _enterEffect.PlayEffect("FadeOut");
 
