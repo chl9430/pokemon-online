@@ -132,6 +132,26 @@ public class PacketHandler
         scene.UpdateData(s_EnterBattleScenePacket);
     }
 
+    public static void S_CheckAndApplyRemainedExpHandler(PacketSession session, IMessage packet)
+    {
+        S_CheckAndApplyRemainedExp s_CheckAndApplyExpPacket = packet as S_CheckAndApplyRemainedExp;
+
+        Debug.Log($"S_CheckAndApplyRemainedExp : {s_CheckAndApplyExpPacket}");
+
+        BaseScene scene = Managers.Scene.CurrentScene;
+        scene.UpdateData(s_CheckAndApplyExpPacket);
+    }
+
+    public static void S_EscapeFromWildPokemonHandler(PacketSession session, IMessage packet)
+    {
+        S_EscapeFromWildPokemon s_EscapePacket = packet as S_EscapeFromWildPokemon;
+
+        Debug.Log($"S_EscapeFromWildPokemon : {s_EscapePacket}");
+
+        BaseScene scene = Managers.Scene.CurrentScene;
+        scene.UpdateData(s_EscapePacket);
+    }
+
     public static void S_UseItemHandler(PacketSession session, IMessage packet)
     {
         S_UseItem s_useItemPacket = packet as S_UseItem;
@@ -162,25 +182,14 @@ public class PacketHandler
         scene.UpdateData(s_UseMovePacket);
     }
 
-    public static void S_ChangePokemonHpHandler(PacketSession session, IMessage packet)
+    public static void S_SetBattlePokemonMoveHandler(PacketSession session, IMessage packet)
     {
-        S_ChangePokemonHp s_changeHpPacket = packet as S_ChangePokemonHp;
-        int remainedHp = s_changeHpPacket.RemainedHp;
+        S_SetBattlePokemonMove s_SetMovePacket = packet as S_SetBattlePokemonMove;
 
-        Debug.Log($"S_ChangePokemonHp : {remainedHp}");
+        Debug.Log($"S_SetBattlePokemonMove : {s_SetMovePacket}");
 
         BaseScene scene = Managers.Scene.CurrentScene;
-        scene.UpdateData(s_changeHpPacket);
-    }
-
-    public static void S_PokemonFaintHandler(PacketSession session, IMessage packet)
-    {
-        S_PokemonFaint s_PokemonFaint = packet as S_PokemonFaint;
-
-        Debug.Log($"S_PokemonFaint : {s_PokemonFaint}");
-
-        BaseScene scene = Managers.Scene.CurrentScene;
-        scene.UpdateData(s_PokemonFaint);
+        scene.UpdateData(s_SetMovePacket);
     }
 
     public static void S_GetEnemyPokemonExpHandler(PacketSession session, IMessage packet)
@@ -191,36 +200,6 @@ public class PacketHandler
 
         BaseScene scene = Managers.Scene.CurrentScene;
         scene.UpdateData(s_GetExpPacket);
-    }
-
-    public static void S_ChangePokemonExpHandler(PacketSession session, IMessage packet)
-    {
-        S_ChangePokemonExp s_ChangeExpPacket = packet as S_ChangePokemonExp;
-
-        Debug.Log($"s_ChangeExpPacket : {s_ChangeExpPacket}");
-
-        BaseScene scene = Managers.Scene.CurrentScene;
-        scene.UpdateData(s_ChangeExpPacket);
-    }
-
-    public static void S_ChangePokemonLevelHandler(PacketSession session, IMessage packet)
-    {
-        S_ChangePokemonLevel s_ChangeLevelPacket = packet as S_ChangePokemonLevel;
-
-        Debug.Log($"s_ChangeLevelPacket : {s_ChangeLevelPacket}");
-
-        BaseScene scene = Managers.Scene.CurrentScene;
-        scene.UpdateData(s_ChangeLevelPacket);
-    }
-
-    public static void S_CheckNewLearnableMoveHandler(PacketSession session, IMessage packet)
-    {
-        S_CheckNewLearnableMove s_CheckMovePacket = packet as S_CheckNewLearnableMove;
-
-        Debug.Log($"S_CheckNewLearnableMove : {s_CheckMovePacket}");
-
-        BaseScene scene = Managers.Scene.CurrentScene;
-        scene.UpdateData(s_CheckMovePacket);
     }
 
     public static void S_SwitchBattlePokemonHandler(PacketSession session, IMessage packet)

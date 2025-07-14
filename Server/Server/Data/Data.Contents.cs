@@ -5,6 +5,18 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+public struct EffectivenessData
+{
+    public string targetType;
+    public float multiplier;
+}
+
+public struct TypeEffectivenessDictData
+{
+    public string type;
+    public EffectivenessData[] effectiveness;
+}
+
 public struct PokeBallDictData
 {
     public string itemName;
@@ -133,6 +145,24 @@ namespace Server
             foreach (PokeBallDictData itemData in pokeBallItems)
             {
                 dict.Add(itemData.itemName, itemData);
+            }
+            return dict;
+        }
+    }
+    #endregion
+
+    #region TypeEffectiveness
+    [Serializable]
+    public class TypeEffectiveness : ILoader<PokemonType, EffectivenessData[]>
+    {
+        public List<TypeEffectivenessDictData> pokemonTypeEffectiveness = new List<TypeEffectivenessDictData>();
+
+        public Dictionary<PokemonType, EffectivenessData[]> MakeDict()
+        {
+            Dictionary<PokemonType, EffectivenessData[]> dict = new Dictionary<PokemonType, EffectivenessData[]>();
+            foreach (TypeEffectivenessDictData effectivenessData in pokemonTypeEffectiveness)
+            {
+                dict.Add((PokemonType)Enum.Parse(typeof(PokemonType), effectivenessData.type), effectivenessData.effectiveness);
             }
             return dict;
         }

@@ -160,4 +160,9 @@ public class GridLayoutSelectBox : MonoBehaviour
     {
         return _btnGrid[_x, _y].BtnData;
     }
+
+    public int GetSelectedIdx()
+    {
+        return _x * _col + _y;
+    }
 }

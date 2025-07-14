@@ -203,29 +203,70 @@ namespace Server
             return resultIndex;
         }
 
-        public void SetNoPPMove()
+        public int GetSelectedMoveIdx()
+        {
+            return _pokemonMoves.IndexOf(_selectedMove);
+        }
+
+        public bool DidSelectedMoveHit()
+        {
+            _selectedMove.CurPP--;
+
+            Random random = new Random();
+            int ran = random.Next(1, 101);
+
+            if (ran > _selectedMove.MoveAccuracy)
+            {
+                return false;
+            }
+            else
+            {
+                return true;
+            }
+        }
+
+        public void SetSelectedMove(int moveOrder)
+        {
+            _selectedMove = _pokemonMoves[moveOrder];
+        }
+
+        public void SetNoPPMoveToSelectedMove()
         {
             _selectedMove = _noPPMove;
         }
 
-        public void GetDamage(int damage)
+        public void GetDamaged(int damage)
         {
             _pokemonStat.Hp -= damage;
 
-            if (_pokemonStat.Hp < 0)
+            if (_pokemonStat.Hp <= 0)
             {
                 _pokemonStat.Hp = 0;
                 _pokemonInfo.PokemonStatus = PokemonStatusCondition.Fainting;
             }
         }
 
-        public void GetExp(int exp)
+        public void GetExp(int exp, S_CheckAndApplyRemainedExp expPacket)
         {
             if (_expInfo.RemainExpToNextLevel >= exp)
             {
                 _expInfo.CurExp += exp;
                 _expInfo.TotalExp += exp;
                 _expInfo.RemainExpToNextLevel -= exp;
+
+                if (_expInfo.RemainExpToNextLevel == 0)
+                {
+                    expPacket.StatDiff = LevelUp();
+                    expPacket.NewMoveSum = CheckNewLearnableMove();
+
+                    expPacket.ExpInfo = _expInfo;
+                    expPacket.PokemonLevel = _pokemonInfo.Level;
+                    expPacket.PokemonStat = _pokemonStat;
+                }
+                else
+                {
+                    expPacket.ExpInfo = _expInfo;
+                }
             }
             else
             {

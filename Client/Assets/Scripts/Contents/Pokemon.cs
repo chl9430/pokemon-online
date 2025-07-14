@@ -33,6 +33,7 @@ public class Pokemon
     }
 
     public PokemonMove SelectedMove { set { _selectedMove = value; } get { return _selectedMove; } }
+    public PokemonMove NoPPMove { get {  return _noPPMove; } }
     public PokemonInfo PokemonInfo { get { return _pokemonInfo; } set { _pokemonInfo = value; } }
     public PokemonStat PokemonStat { get { return _pokemonStat; } set { _pokemonStat = value; } }
     public PokemonExpInfo PokemonExpInfo { get { return _pokemonExpInfo; } set { _pokemonExpInfo = value; } }
@@ -65,34 +66,11 @@ public class Pokemon
         _pokemonStatusImg = Managers.Resource.Load<Texture2D>($"Textures/UI/{_pokemonInfo.PokemonStatus}_Icon");
     }
 
-    public int GetSelectedMoveIdx()
+    public void SetSelectedMove(int moveOrder)
     {
-        return _pokemonMoves.IndexOf(_selectedMove);
-    }
-
-    public void SetNoPPMove()
-    {
-        _selectedMove = _noPPMove;
-    }
-
-    public bool IsHitByAcc()
-    {
-        int ran = Random.Range(0, 100);
-
-        if (ran > _selectedMove.MoveAccuracy)
-        {
-            return false;
-        }
+        if (moveOrder != -1)
+            _selectedMove = _pokemonMoves[moveOrder];
         else
-        {
-            return true;
-        }
-    }
-
-    public void SetPokemonStatus(PokemonStatusCondition status)
-    {
-        PokemonInfo.PokemonStatus = status;
-
-        _pokemonStatusImg = Managers.Resource.Load<Texture2D>($"Textures/UI/{status}_Icon");
+            _selectedMove = _noPPMove;
     }
 }

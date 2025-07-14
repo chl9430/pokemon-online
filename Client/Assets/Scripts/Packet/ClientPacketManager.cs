@@ -62,29 +62,23 @@ class PacketManager
         _onRecv.Add((ushort)MsgId.SUsePokemonMove, MakePacket<S_UsePokemonMove>);
         _handler.Add((ushort)MsgId.SUsePokemonMove, PacketHandler.S_UsePokemonMoveHandler);
 
-        _onRecv.Add((ushort)MsgId.SChangePokemonHp, MakePacket<S_ChangePokemonHp>);
-        _handler.Add((ushort)MsgId.SChangePokemonHp, PacketHandler.S_ChangePokemonHpHandler);
-
-        _onRecv.Add((ushort)MsgId.SPokemonFaint, MakePacket<S_PokemonFaint>);
-        _handler.Add((ushort)MsgId.SPokemonFaint, PacketHandler.S_PokemonFaintHandler);
-
-        _onRecv.Add((ushort)MsgId.SGetEnemyPokemonExp, MakePacket<S_GetEnemyPokemonExp>);
-        _handler.Add((ushort)MsgId.SGetEnemyPokemonExp, PacketHandler.S_GetEnemyPokemonExpHandler);
-
-        _onRecv.Add((ushort)MsgId.SChangePokemonExp, MakePacket<S_ChangePokemonExp>);
-        _handler.Add((ushort)MsgId.SChangePokemonExp, PacketHandler.S_ChangePokemonExpHandler);
-
-        _onRecv.Add((ushort)MsgId.SChangePokemonLevel, MakePacket<S_ChangePokemonLevel>);
-        _handler.Add((ushort)MsgId.SChangePokemonLevel, PacketHandler.S_ChangePokemonLevelHandler);
-
-        _onRecv.Add((ushort)MsgId.SCheckNewLearnableMove, MakePacket<S_CheckNewLearnableMove>);
-        _handler.Add((ushort)MsgId.SCheckNewLearnableMove, PacketHandler.S_CheckNewLearnableMoveHandler);
+        _onRecv.Add((ushort)MsgId.SSetBattlePokemonMove, MakePacket<S_SetBattlePokemonMove>);
+        _handler.Add((ushort)MsgId.SSetBattlePokemonMove, PacketHandler.S_SetBattlePokemonMoveHandler);
 
         _onRecv.Add((ushort)MsgId.SSwitchBattlePokemon, MakePacket<S_SwitchBattlePokemon>);
         _handler.Add((ushort)MsgId.SSwitchBattlePokemon, PacketHandler.S_SwitchBattlePokemonHandler);
 
         _onRecv.Add((ushort)MsgId.SReturnPokemonBattleScene, MakePacket<S_ReturnPokemonBattleScene>);
         _handler.Add((ushort)MsgId.SReturnPokemonBattleScene, PacketHandler.S_ReturnPokemonBattleSceneHandler);
+
+        _onRecv.Add((ushort)MsgId.SGetEnemyPokemonExp, MakePacket<S_GetEnemyPokemonExp>);
+        _handler.Add((ushort)MsgId.SGetEnemyPokemonExp, PacketHandler.S_GetEnemyPokemonExpHandler);
+
+        _onRecv.Add((ushort)MsgId.SCheckAndApplyRemainedExp, MakePacket<S_CheckAndApplyRemainedExp>);
+        _handler.Add((ushort)MsgId.SCheckAndApplyRemainedExp, PacketHandler.S_CheckAndApplyRemainedExpHandler);
+
+        _onRecv.Add((ushort)MsgId.SEscapeFromWildPokemon, MakePacket<S_EscapeFromWildPokemon>);
+        _handler.Add((ushort)MsgId.SEscapeFromWildPokemon, PacketHandler.S_EscapeFromWildPokemonHandler);
     }
 
     public void OnRecvPacket(PacketSession session, ArraySegment<byte> buffer)

@@ -56,7 +56,7 @@ public class BattleArea : MonoBehaviour
         _hpGauge.SetGauge(pokemonStat.Hp, pokemonStat.MaxHp);
 
         if (_expGauge != null)
-            _expGauge.SetGauge(expInfo.CurExp, expInfo.RemainExpToNextLevel);
+            _expGauge.SetGauge(expInfo.CurExp, expInfo.CurExp + expInfo.RemainExpToNextLevel);
     }
 
     public void SetActiveTrainer(bool isActive)

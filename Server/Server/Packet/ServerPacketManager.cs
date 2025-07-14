@@ -56,29 +56,17 @@ class PacketManager
         _onRecv.Add((ushort)MsgId.CUsePokemonMove, MakePacket<C_UsePokemonMove>);
         _handler.Add((ushort)MsgId.CUsePokemonMove, PacketHandler.C_UsePokemonMoveHandler);
 
-        _onRecv.Add((ushort)MsgId.CChangePokemonHp, MakePacket<C_ChangePokemonHp>);
-        _handler.Add((ushort)MsgId.CChangePokemonHp, PacketHandler.C_ChangePokemonHpHandler);
-
-        _onRecv.Add((ushort)MsgId.CGetEnemyPokemonExp, MakePacket<C_GetEnemyPokemonExp>);
-        _handler.Add((ushort)MsgId.CGetEnemyPokemonExp, PacketHandler.C_GetEnemyPokemonExpHandler);
-
-        _onRecv.Add((ushort)MsgId.CChangePokemonExp, MakePacket<C_ChangePokemonExp>);
-        _handler.Add((ushort)MsgId.CChangePokemonExp, PacketHandler.C_ChangePokemonExpHandler);
-
-        _onRecv.Add((ushort)MsgId.CChangePokemonLevel, MakePacket<C_ChangePokemonLevel>);
-        _handler.Add((ushort)MsgId.CChangePokemonLevel, PacketHandler.C_ChangePokemonLevelHandler);
-
-        _onRecv.Add((ushort)MsgId.CCheckNewLearnableMove, MakePacket<C_CheckNewLearnableMove>);
-        _handler.Add((ushort)MsgId.CCheckNewLearnableMove, PacketHandler.C_CheckNewLearnableMoveHandler);
-
-        _onRecv.Add((ushort)MsgId.CSwitchBattlePokemon, MakePacket<C_SwitchBattlePokemon>);
-        _handler.Add((ushort)MsgId.CSwitchBattlePokemon, PacketHandler.C_SwitchBattlePokemonHandler);
+        _onRecv.Add((ushort)MsgId.CSetBattlePokemonMove, MakePacket<C_SetBattlePokemonMove>);
+        _handler.Add((ushort)MsgId.CSetBattlePokemonMove, PacketHandler.C_SetBattlePokemonMoveHandler);
 
         _onRecv.Add((ushort)MsgId.CReturnGame, MakePacket<C_ReturnGame>);
         _handler.Add((ushort)MsgId.CReturnGame, PacketHandler.C_ReturnGameHandler);
 
         _onRecv.Add((ushort)MsgId.CReturnPokemonBattleScene, MakePacket<C_ReturnPokemonBattleScene>);
         _handler.Add((ushort)MsgId.CReturnPokemonBattleScene, PacketHandler.C_ReturnPokemonBattleSceneHandler);
+
+        _onRecv.Add((ushort)MsgId.CRequestDataById, MakePacket<C_RequestDataById>);
+        _handler.Add((ushort)MsgId.CRequestDataById, PacketHandler.C_RequestDataByIdHandler);
     }
 
     public void OnRecvPacket(PacketSession session, ArraySegment<byte> buffer)
