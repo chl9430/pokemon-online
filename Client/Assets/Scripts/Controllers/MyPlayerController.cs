@@ -4,12 +4,12 @@ using UnityEngine.Tilemaps;
 
 public class MyPlayerController : PlayerController
 {
-    bool _isLocked = true;
+    bool _isLoading = false;
     float moveTimerLimit = 0.15f;
     BaseScene _scene;
     PokemonAppearanceTile _pokemonTile;
 
-    public bool IsLocked { set { _isLocked = value; } }
+    public bool IsLoading { set {  _isLoading = value; } }
     public PokemonAppearanceTile PokemonTile {  set { _pokemonTile = value; } }
 
     protected override void Start()
@@ -17,6 +17,12 @@ public class MyPlayerController : PlayerController
         base.Start();
 
         _scene = Managers.Scene.CurrentScene;
+    }
+
+    protected override void Init()
+    {
+        base.Init();
+        Application.wantsToQuit += OnApplicationWantsToQuit;
     }
 
     void LateUpdate()
@@ -28,7 +34,7 @@ public class MyPlayerController : PlayerController
     {
         // base.UpdateController();
 
-        if (_isLocked)
+        if (_isLoading)
             return;
 
         switch (State)
@@ -37,6 +43,7 @@ public class MyPlayerController : PlayerController
                 ChangeDir();
                 ChangeToWalk();
                 ToggleMenu(true);
+                BeginTalk();
                 break;
             case CreatureState.Walk:
                 MoveToNextPos();
@@ -45,15 +52,12 @@ public class MyPlayerController : PlayerController
                 ToggleMenu(false);
                 break;
             case CreatureState.Fight:
-
+                break;
+            case CreatureState.Talk:
                 break;
         }
-    }
 
-    protected override void Init()
-    {
-        base.Init();
-        Application.wantsToQuit += OnApplicationWantsToQuit;
+        CheckUpdatedFlag();
     }
 
     void ChangeDir()
@@ -127,6 +131,7 @@ public class MyPlayerController : PlayerController
 
         if (Input.GetKey(KeyCode.UpArrow))
         {
+            Dir = MoveDir.Up;
             moveTimer += Time.deltaTime;
 
             if (moveTimer > moveTimerLimit)
@@ -138,6 +143,7 @@ public class MyPlayerController : PlayerController
         }
         else if (Input.GetKey(KeyCode.DownArrow))
         {
+            Dir = MoveDir.Down;
             moveTimer += Time.deltaTime;
 
             if (moveTimer > moveTimerLimit)
@@ -149,6 +155,7 @@ public class MyPlayerController : PlayerController
         }
         else if (Input.GetKey(KeyCode.LeftArrow))
         {
+            Dir = MoveDir.Left;
             moveTimer += Time.deltaTime;
 
             if (moveTimer > moveTimerLimit)
@@ -160,6 +167,7 @@ public class MyPlayerController : PlayerController
         }
         else if (Input.GetKey(KeyCode.RightArrow))
         {
+            Dir = MoveDir.Right;
             moveTimer += Time.deltaTime;
 
             if (moveTimer > moveTimerLimit)
@@ -182,20 +190,31 @@ public class MyPlayerController : PlayerController
             if (toggle)
             {
                 State = CreatureState.WatchMenu;
-                C_Move movePacket = new C_Move();
-                movePacket.PosInfo = PosInfo;
-                Managers.Network.Send(movePacket);
 
                 _scene.DoNextAction(State);
             }
             else
             {
                 State = CreatureState.Idle;
-                C_Move movePacket = new C_Move();
-                movePacket.PosInfo = PosInfo;
-                Managers.Network.Send(movePacket);
 
                 _scene.DoNextAction(State);
+            }
+        }
+    }
+
+    void BeginTalk()
+    {
+        if (Input.GetKeyDown(KeyCode.D))
+        {
+            if (!_isLoading)
+            {
+                _isLoading = true;
+
+                C_RequestDataById c_RequestDataPacket = new C_RequestDataById();
+                c_RequestDataPacket.PlayerId = Managers.Object.MyPlayer.Id;
+                c_RequestDataPacket.RequestType = RequestType.CheckObjectInMap;
+
+                Managers.Network.Send(c_RequestDataPacket);
             }
         }
     }
@@ -224,7 +243,7 @@ public class MyPlayerController : PlayerController
             moveTimer = 0f;
             transform.position = destPos;
 
-            // 몬스터 스폰
+            // 몬스터 스폰 (풀숲도 그리드 방식으로 수정이 필요)
             if (_pokemonTile != null)
             {
                 if (_pokemonTile.AppearPokemon())
@@ -258,7 +277,6 @@ public class MyPlayerController : PlayerController
             else
             {
                 State = CreatureState.Idle;
-                SendPosInfoPacket();
             }
         }
     }
@@ -291,8 +309,6 @@ public class MyPlayerController : PlayerController
                 CellPos = destPos;
             }
         }
-
-        CheckUpdatedFlag();
     }
 
     protected override void CheckUpdatedFlag()

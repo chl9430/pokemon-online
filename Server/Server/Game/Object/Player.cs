@@ -14,6 +14,7 @@ namespace Server
         string _name;
         List<Pokemon> pokemons;
         Dictionary<ItemCategory, List<Item>> _items;
+        Player _talkPlayer;
         PrivateBattleRoom _battleRoom;
         PlayerGender _gender;
 
@@ -34,6 +35,8 @@ namespace Server
             get { return _items; }
         }
 
+        public Player TalkPlayer { get { return _talkPlayer; } set { _talkPlayer = value; } }
+
         public PrivateBattleRoom BattleRoom { get { return _battleRoom; } set { _battleRoom = value; } }
 
         public Player()
@@ -47,6 +50,48 @@ namespace Server
             _items.Add(ItemCategory.TechnicalMachine, new List<Item>());
             _items.Add(ItemCategory.Berry, new List<Item>());
             _items.Add(ItemCategory.KeyItem, new List<Item>());
+        }
+
+        public GameObject FindObject()
+        {
+            Vector2Int objPos = CellPos;
+
+            if (PosInfo.MoveDir == MoveDir.Up)
+                objPos += Vector2Int.up;
+            else if (PosInfo.MoveDir == MoveDir.Down)
+                objPos += Vector2Int.down;
+            else if (PosInfo.MoveDir == MoveDir.Left)
+                objPos += Vector2Int.left;
+            else if (PosInfo.MoveDir == MoveDir.Right)
+                objPos += Vector2Int.right;
+
+            GameObject obj = Room.Map.Find(objPos);
+
+            return obj;
+        }
+
+        public void TalkWithPlayer(Player otherPlayer)
+        {
+            _talkPlayer = otherPlayer;
+            otherPlayer.TalkPlayer = this;
+
+            Vector2Int playerPos = new Vector2Int(PosInfo.PosX, PosInfo.PosY);
+            Vector2Int otherPlayerPos = new Vector2Int(otherPlayer.Info.PosInfo.PosX, otherPlayer.Info.PosInfo.PosY);
+
+            Vector2Int posDiff = playerPos - otherPlayerPos;
+
+            MoveDir otherPlayerDir;
+
+            if (posDiff.x == 1)
+                otherPlayerDir = MoveDir.Right;
+            else if (posDiff.x == -1)
+                otherPlayerDir = MoveDir.Left;
+            else if (posDiff.y == 1)
+                otherPlayerDir = MoveDir.Up;
+            else
+                otherPlayerDir = MoveDir.Down;
+
+            otherPlayer.Info.PosInfo.MoveDir = otherPlayerDir;
         }
 
         public void AddPokemon(Pokemon pokemon)

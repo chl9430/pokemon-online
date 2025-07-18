@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -19,6 +20,8 @@ public class GridLayoutSelectBox : MonoBehaviour
     GridLayoutGroup _gridLayoutGroup;
     DynamicButton[,] _btnGrid;
     GridLayoutSelectBoxState _uiState = GridLayoutSelectBoxState.NONE;
+
+    [SerializeField] DynamicButton _btn;
 
     public GridLayoutSelectBoxState UIState
     {
@@ -149,6 +152,89 @@ public class GridLayoutSelectBox : MonoBehaviour
                 {
                     if (i * _row + j < btns.Count)
                         _btnGrid[i, j] = btns[i * _row + j];
+                }
+            }
+        }
+
+        _btnGrid[_x, _y].SetSelectedOrNotSelected(true);
+    }
+
+    public void CreateButtons(List<string> btnName, int row, int col, int btnWidth, int btnHeight, object btnData = null)
+    {
+        // 기존에 있던 버튼들 삭제
+        if (_btnGrid != null)
+        {
+            for (int i = 0; i < _btnGrid.GetLength(0); i++)
+            {
+                for (int j = 0; j < _btnGrid.GetLength(1); j++)
+                {
+                    Destroy(_btnGrid[i, j].gameObject);
+                }
+            }
+        }
+
+        if (_scene == null)
+            _scene = Managers.Scene.CurrentScene;
+
+        if (_gridLayoutGroup == null)
+            _gridLayoutGroup = GetComponent<GridLayoutGroup>();
+
+        if (_rt == null)
+            _rt = GetComponent<RectTransform>();
+
+        _gridLayoutGroup.cellSize = new Vector2(btnWidth, btnHeight);
+        _rt.sizeDelta = new Vector2(btnWidth * col, btnHeight * row + (btnHeight / 2));
+
+        GridLayoutGroup.Constraint constraint = _gridLayoutGroup.constraint;
+
+        if (constraint == GridLayoutGroup.Constraint.FixedColumnCount)
+        {
+            _row = row;
+            _col = _gridLayoutGroup.constraintCount;
+        }
+        else if (constraint == GridLayoutGroup.Constraint.FixedRowCount)
+        {
+            _row = _gridLayoutGroup.constraintCount;
+            _col = col;
+        }
+        else
+        {
+            _row = row;
+            _col = col;
+        }
+
+        DynamicButton[,] btnGrid = new DynamicButton[_row, _col];
+        _btnGrid = btnGrid;
+
+        _x = 0;
+        _y = 0;
+
+        for (int i = 0; i < _btnGrid.GetLength(0); i++)
+        {
+            for (int j = 0; j < _btnGrid.GetLength(1); j++)
+            {
+                if (_row > _col)
+                {
+                    if (i * _col + j < btnName.Count)
+                    {
+                        DynamicButton btn = GameObject.Instantiate(_btn, gameObject.transform);
+                        btn.BtnData = btnName[i * _col + j];
+                        _btnGrid[i, j] = btn;
+
+                        TextMeshProUGUI tmp = Util.FindChild<TextMeshProUGUI>(btn.gameObject, "ContentText", true);
+                        tmp.text = btnName[i * _col + j];
+                    }
+                }
+                else
+                {
+                    if (i * _row + j < btnName.Count)
+                    {
+                        DynamicButton btn = GameObject.Instantiate(_btn, gameObject.transform);
+                        _btnGrid[i, j] = btn;
+
+                        TextMeshProUGUI tmp = Util.FindChild<TextMeshProUGUI>(btn.gameObject, "ContentText", true);
+                        tmp.text = btnName[i * _row + j];
+                    }
                 }
             }
         }

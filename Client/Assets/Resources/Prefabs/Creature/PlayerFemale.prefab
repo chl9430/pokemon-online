@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 1619642885117763785}
   - component: {fileID: 1568175500262470470}
   - component: {fileID: -2383151736049083032}
+  - component: {fileID: 1395341533973669859}
   m_Layer: 0
   m_Name: PlayerFemale
   m_TagString: Untagged
@@ -121,5 +122,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9f55b0ee6c7bd86419cf6d21cacadea7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &1395341533973669859
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6335551314966943287}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0b298df903c7e3c4f954c3167f52dad2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 

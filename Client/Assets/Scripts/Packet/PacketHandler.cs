@@ -92,6 +92,26 @@ public class PacketHandler
         bc.PosInfo = movePacket.PosInfo;
     }
 
+    public static void S_SendTalkHandler(PacketSession session, IMessage packet)
+    {
+        S_SendTalk s_TalkPacket = packet as S_SendTalk;
+
+        Debug.Log($"S_SendTalk : {s_TalkPacket}");
+
+        BaseScene scene = Managers.Scene.CurrentScene;
+        scene.UpdateData(s_TalkPacket);
+    }
+
+    public static void S_ReceiveTalkHandler(PacketSession session, IMessage packet)
+    {
+        S_ReceiveTalk s_TalkPacket = packet as S_ReceiveTalk;
+
+        Debug.Log($"S_ReceiveTalkHandler : {s_TalkPacket}");
+
+        BaseScene scene = Managers.Scene.CurrentScene;
+        scene.UpdateData(s_TalkPacket);
+    }
+
     public static void S_AddPokemonHandler(PacketSession session, IMessage packet)
     {
         S_AddPokemon s_ServerPokemonPacket = packet as S_AddPokemon;
@@ -200,6 +220,16 @@ public class PacketHandler
 
         BaseScene scene = Managers.Scene.CurrentScene;
         scene.UpdateData(s_GetExpPacket);
+    }
+
+    public static void S_SendTalkRequestHandler(PacketSession session, IMessage packet)
+    {
+        S_SendTalkRequest s_SendTalkPacket = packet as S_SendTalkRequest;
+
+        Debug.Log($"S_SendTalkRequest : {s_SendTalkPacket}");
+
+        BaseScene scene = Managers.Scene.CurrentScene;
+        scene.UpdateData(s_SendTalkPacket);
     }
 
     public static void S_SwitchBattlePokemonHandler(PacketSession session, IMessage packet)

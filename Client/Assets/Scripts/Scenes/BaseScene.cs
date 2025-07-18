@@ -10,7 +10,7 @@ public abstract class BaseScene : MonoBehaviour
     protected ScreenEffecter _enterEffect;
 
     [SerializeField] Transform _screenEffecterZone;
-    public ScreenEffecter ScreenEffecter { set { _enterEffect = value; } }
+    public ScreenEffecter ScreenEffecter { set { _enterEffect = value; } get { return _enterEffect; } }
     public Transform ScreenEffecterZone { get { return _screenEffecterZone; } }
     public Define.Scene SceneType { get; protected set; } = Define.Scene.Unknown;
 
@@ -39,6 +39,10 @@ public abstract class BaseScene : MonoBehaviour
 
     // 씬 진입 후 서버로부터 패킷을 받아 렌더링 정보를 업데이트하는 함수
     public virtual void UpdateData(IMessage packet)
+    {
+    }
+
+    public virtual void FinishContents()
     {
     }
 

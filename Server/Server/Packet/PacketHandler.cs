@@ -292,6 +292,54 @@ public class PacketHandler
 
         switch (requestType)
         {
+            case RequestType.CheckObjectInMap:
+                {
+                    GameRoom room = player.Room;
+                    GameObject obj = player.FindObject();
+
+                    if (obj == null)
+                    {
+                        S_SendTalk s_TalkPacket = new S_SendTalk();
+
+                        player.Session.Send(s_TalkPacket);
+                    }
+                    else
+                    {
+                        if (obj.ObjectType == GameObjectType.Player)
+                        {
+                            Player otherPlayer = obj as Player;
+
+                            // 말 건 사람은 상대방의 정보를 받는다.
+                            S_SendTalk s_SendTalkPacket = new S_SendTalk();
+                            s_SendTalkPacket.OtherPlayerInfo = otherPlayer.MakePlayerInfo();
+
+                            player.Session.Send(s_SendTalkPacket);
+
+                            if (otherPlayer.Info.PosInfo.State != CreatureState.Idle)
+                                return;
+
+                            // 상대방은 말 건 사람을 향해 바라본다.
+                            player.TalkWithPlayer(otherPlayer);
+
+                            // 타인한테 정보 전송
+                            S_Move movePacket = new S_Move();
+                            movePacket.ObjectId = otherPlayer.Info.ObjectId;
+                            movePacket.PosInfo = otherPlayer.PosInfo;
+
+                            foreach (Player p in room.Players.Values)
+                            {
+                                p.Session.Send(movePacket);
+                            }
+
+                            // 상대방은 말 건 사람의 정보를 받는다.
+                            S_ReceiveTalk s_ReceiveTalkPacket = new S_ReceiveTalk();
+                            s_ReceiveTalkPacket.PlayerInfo = player.MakePlayerInfo();
+
+                            otherPlayer.Session.Send(s_ReceiveTalkPacket);
+                        }
+                    }
+                }
+                break;
             case RequestType.GetEnemyPokemonExp:
                 {
                     S_GetEnemyPokemonExp s_GetExpPacket = new S_GetEnemyPokemonExp();
@@ -318,6 +366,29 @@ public class PacketHandler
                 }
                 break;
         }
+    }
+
+    public static void C_PlayerTalkHandler(PacketSession session, IMessage packet)
+    {
+        C_PlayerTalk c_TalkPacket = packet as C_PlayerTalk;
+        int playerId = c_TalkPacket.PlayerId;
+        TalkRequestType talkRequestType = c_TalkPacket.TalkRequestType;
+
+        Console.WriteLine($"" +
+            $"=====================\n" +
+            $"C_PlayerTalk\n" +
+            $"PlayerId : {playerId}, RequestType : {talkRequestType}\n" +
+            $"=====================\n"
+            );
+
+        Player player = ObjectManager.Instance.Find(playerId);
+
+        Player talkPlayer = player.TalkPlayer;
+
+        S_SendTalkRequest s_SendTalkPacket = new S_SendTalkRequest();
+        s_SendTalkPacket.TalkRequestType = talkRequestType;
+
+        talkPlayer.Session.Send(s_SendTalkPacket);
     }
 
     public static void C_UseItemHandler(PacketSession session, IMessage packet)

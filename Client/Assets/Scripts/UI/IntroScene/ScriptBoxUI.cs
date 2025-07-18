@@ -25,7 +25,11 @@ public class ScriptBoxUI : MonoBehaviour
 
     TextMeshProUGUI _tmp;
     Image _nextBtn;
+
     [SerializeField] float _typeSpeed = 0.05f;
+    [SerializeField] GridLayoutSelectBox _selectBox;
+
+    public GridLayoutSelectBox ScriptSelectBox { get { return _selectBox; } }
 
     void Start()
     {
@@ -56,6 +60,20 @@ public class ScriptBoxUI : MonoBehaviour
                 WaitToTheNextSentence();
                 break;
         }
+    }
+
+    public void CreateSelectBox(List<string> btnNames, int row, int col, int btnWidth, int btnHeight)
+    {
+        _selectBox.CreateButtons(btnNames, row, col, btnWidth, btnHeight);
+
+        _selectBox.gameObject.SetActive(true);
+        _selectBox.UIState = GridLayoutSelectBoxState.SELECTING;
+    }
+
+    public void HideSelectBox()
+    {
+        _selectBox.gameObject.SetActive(false);
+        _selectBox.UIState = GridLayoutSelectBoxState.NONE;
     }
 
     public void SetScriptWihtoutTyping(string script)

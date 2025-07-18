@@ -13,6 +13,8 @@ enum MsgId {
   C_MOVE = 7;
   S_MOVE = 8;
   C_CREATE_PLAYER = 9;
+  S_SEND_TALK = 15;
+  S_RECEIVE_TALK = 16;
   C_ADD_POKEMON = 10;
   S_ADD_POKEMON = 11;
   C_SWITCH_POKEMON = 12;
@@ -38,6 +40,9 @@ enum MsgId {
   C_RETURN_POKEMON_BATTLE_SCENE = 72;
   S_RETURN_POKEMON_BATTLE_SCENE = 73;
 
+  C_PLAYER_TALK = 70;
+  S_SEND_TALK_REQUEST = 71;
+
   C_REQUEST_DATA_BY_ID = 60;
   S_GET_ENEMY_POKEMON_EXP = 61;
   S_CHECK_AND_APPLY_REMAINED_EXP = 62;
@@ -51,6 +56,7 @@ enum CreatureState {
   RUN = 3;
   WATCH_MENU = 4;
   FIGHT = 5;
+  TALK = 6;
 }
 
 enum MoveDir {
@@ -105,6 +111,16 @@ message S_Move {
 message C_CreatePlayer {
     PlayerGender gender = 1;
     string name = 2;
+}
+
+message S_SendTalk
+{
+    PlayerInfo otherPlayerInfo = 1;
+}
+
+message S_ReceiveTalk
+{
+    PlayerInfo playerInfo = 1;
 }
 
 message C_AddPokemon {
@@ -166,11 +182,33 @@ message C_RequestDataById
     RequestType requestType = 2;
 }
 
+message C_PlayerTalk
+{
+    int32 playerId = 1;
+    TalkRequestType talkRequestType = 2;
+}
+
+message S_SendTalkRequest
+{
+    TalkRequestType talkRequestType = 1;
+}
+
 enum RequestType
 {
-    GET_ENEMY_POKEMON_EXP = 0;
-    CHECK_AND_APPLY_REMAINED_EXP = 1;
-    ESCAPE_FROM_WILD_POKEMON = 2;
+    CHECK_OBJECT_IN_MAP = 0;
+    GET_ENEMY_POKEMON_EXP = 1;
+    CHECK_AND_APPLY_REMAINED_EXP = 2;
+    ESCAPE_FROM_WILD_POKEMON = 3;
+}
+
+enum TalkRequestType
+{
+    REQUEST_BATTLE = 0;
+    REQUEST_EXCHANGE = 1;
+    ACCEPT_BATTLE = 2;
+    ACCEPT_EXCHANGE = 3;
+    REJECT = 4;
+    CANCEL_TALK = 5;
 }
 
 message C_UseItem

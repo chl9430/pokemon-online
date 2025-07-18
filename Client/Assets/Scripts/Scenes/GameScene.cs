@@ -19,6 +19,7 @@ public class GameScene : BaseScene
 {
     int _selectedMenuBtnIdx;
     GameSceneState _sceneState = GameSceneState.NONE;
+    ObjectContents _contents;
 
     [SerializeField] GridLayoutSelectBox _menuSelectBox;
     [SerializeField] List<DynamicButton> _menuBtns;
@@ -53,6 +54,35 @@ public class GameScene : BaseScene
 
     public override void UpdateData(IMessage packet)
     {
+        if (_contents == null)
+        {
+            if (packet is S_SendTalk)
+            {
+                Managers.Object.MyPlayer.IsLoading = false;
+                S_SendTalk sendTalkPacket = packet as S_SendTalk;
+                PlayerInfo otherPlayer = sendTalkPacket.OtherPlayerInfo;
+
+                _contents = Managers.Object.FindById(otherPlayer.ObjectInfo.ObjectId).GetComponent<PlayerContents>();
+
+                _contents.UpdateData(packet);
+            }
+            else if (packet is S_ReceiveTalk)
+            {
+                Managers.Object.MyPlayer.IsLoading = false;
+                S_ReceiveTalk receiveTalkPacket = packet as S_ReceiveTalk;
+                PlayerInfo otherPlayer = receiveTalkPacket.PlayerInfo;
+
+                _contents = Managers.Object.FindById(otherPlayer.ObjectInfo.ObjectId).GetComponent<PlayerContents>();
+
+                _contents.UpdateData(packet);
+            }
+        }
+        else
+        {
+            _contents.UpdateData(packet);
+            return;
+        }
+
         switch (_sceneState)
         {
             case GameSceneState.NONE:
@@ -61,6 +91,8 @@ public class GameScene : BaseScene
 
                     S_EnterRoom s_enterRoomPacket = packet as S_EnterRoom;
                     PlayerInfo playerInfo = s_enterRoomPacket.PlayerInfo;
+
+                    Managers.Object.PlayerInfo = playerInfo;
 
                     // 내 플레이어 생성
                     GameObject myPlayer = null;
@@ -93,6 +125,13 @@ public class GameScene : BaseScene
 
     public override void DoNextAction(object value = null)
     {
+        // 게임 메뉴도 콘텐츠 방식으로 수정 필요
+        if (_contents != null)
+        {
+            _contents.SetNextAction(value);
+            return;
+        }
+
         Debug.Log(value);
         switch (_sceneState)
         {
@@ -101,7 +140,7 @@ public class GameScene : BaseScene
                     // 씬 상태 변경
                     _sceneState = GameSceneState.MOVING_PLAYER;
                     ActiveUIBySceneState(_sceneState);
-                    Managers.Object.MyPlayer.IsLocked = false;
+                    Managers.Object.MyPlayer.IsLoading = false;
                 }
                 break;
             case GameSceneState.MOVING_PLAYER:
@@ -218,6 +257,11 @@ public class GameScene : BaseScene
             _menuSelectBox.gameObject.SetActive(false);
             _menuSelectBox.UIState = GridLayoutSelectBoxState.NONE;
         }
+    }
+
+    public override void FinishContents()
+    {
+        _contents = null;
     }
 
     public override void Clear()

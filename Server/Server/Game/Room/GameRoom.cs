@@ -79,7 +79,10 @@ namespace Server
 
                 foreach (Player p in _players.Values)
                 {
-                    if (p.Id != gameObject.Id)
+                    // 포켓몬 리스트 씬에 있는 플레이어들 등
+                    // 게임씬에 존재는 하지만 다른 화면을 보고 있는 플레이어들은 보내면 안된다.
+                    // 수정필요
+                    if (p.Id != gameObject.Id && p.Info.PosInfo.State != CreatureState.Fight)
                         p.Session.Send(spawnPacket);
                 }
             }
@@ -109,7 +112,7 @@ namespace Server
             
             foreach (Player p in _players.Values)
             {
-                if (p.Id != objectId)
+                if (p.Id != objectId && p.Info.PosInfo.State != CreatureState.Fight)
                     p.Session.Send(despawnPacket);
             }
         }
@@ -151,7 +154,7 @@ namespace Server
         {
             foreach (Player p in _players.Values)
             {
-                if (p.Id != player.Id)
+                if (p.Id != player.Id && p.Info.PosInfo.State != CreatureState.Fight)
                     p.Session.Send(packet);
             }
         }

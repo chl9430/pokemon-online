@@ -27,7 +27,7 @@ namespace Server
         public PokemonType MoveType { get { return _moveType; } }
         public MoveCategory MoveCategory { get { return _moveCategory; } }
 
-        public PokemonMove(int maxPp, int movePower, int moveAccuracy, string moveName, PokemonType moveType, MoveCategory moveCategory, float criticalRate = 50f)
+        public PokemonMove(int maxPp, int movePower, int moveAccuracy, string moveName, PokemonType moveType, MoveCategory moveCategory, float criticalRate = 6.25f)
         {
             _curPp = maxPp;
             _maxPp = maxPp;
