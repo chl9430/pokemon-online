@@ -62,9 +62,11 @@ public class GameScene : BaseScene
                 S_SendTalk sendTalkPacket = packet as S_SendTalk;
                 PlayerInfo otherPlayer = sendTalkPacket.OtherPlayerInfo;
 
-                _contents = Managers.Object.FindById(otherPlayer.ObjectInfo.ObjectId).GetComponent<PlayerContents>();
-
-                _contents.UpdateData(packet);
+                if (otherPlayer != null)
+                {
+                    _contents = Managers.Object.FindById(otherPlayer.ObjectInfo.ObjectId).GetComponent<PlayerContents>();
+                    _contents.UpdateData(packet);
+                }
             }
             else if (packet is S_ReceiveTalk)
             {
@@ -72,9 +74,11 @@ public class GameScene : BaseScene
                 S_ReceiveTalk receiveTalkPacket = packet as S_ReceiveTalk;
                 PlayerInfo otherPlayer = receiveTalkPacket.PlayerInfo;
 
-                _contents = Managers.Object.FindById(otherPlayer.ObjectInfo.ObjectId).GetComponent<PlayerContents>();
-
-                _contents.UpdateData(packet);
+                if (otherPlayer != null)
+                {
+                    _contents = Managers.Object.FindById(otherPlayer.ObjectInfo.ObjectId).GetComponent<PlayerContents>();
+                    _contents.UpdateData(packet);
+                }
             }
         }
         else

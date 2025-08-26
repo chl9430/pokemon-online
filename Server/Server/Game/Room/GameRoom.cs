@@ -47,55 +47,50 @@ namespace Server
 
                 Map.ApplyMove(player, new Vector2Int(player.CellPos.x, player.CellPos.y));
 
-                // 본인한테 정보 전송
-                S_EnterRoom enterPacket = new S_EnterRoom();
-
-                PlayerInfo playerInfo = player.MakePlayerInfo();
-                
-                enterPacket.PlayerInfo = playerInfo;
-
-                player.Session.Send(enterPacket);
-
-                // 본인한테 타인 정보 전송
-                S_Spawn spawnPacket = new S_Spawn();
-                foreach (Player p in _players.Values)
+                if (player.PosInfo.State != CreatureState.WatchMenu && player.PosInfo.State != CreatureState.Exchanging)
                 {
-                    if (player != p)
-                    {
-                        spawnPacket.Players.Add(p.MakePlayerInfo());
-                    }
-                }
+                    // 본인한테 정보 전송
+                    S_EnterRoom enterPacket = new S_EnterRoom();
 
-                player.Session.Send(spawnPacket);
+                    PlayerInfo playerInfo = player.MakePlayerInfo();
+
+                    enterPacket.PlayerInfo = playerInfo;
+
+                    player.Session.Send(enterPacket);
+
+                    // 본인한테 타인 정보 전송
+                    S_Spawn spawnPacket = new S_Spawn();
+                    foreach (Player p in _players.Values)
+                    {
+                        if (player != p)
+                        {
+                            spawnPacket.Players.Add(p.MakePlayerInfo());
+                        }
+                    }
+
+                    player.Session.Send(spawnPacket);
+                }
             }
 
-            // 타인한테 본인 정보 전송
             {
                 Player player = gameObject as Player;
 
+                // 타인한테 본인 정보 전송
                 S_Spawn spawnPacket = new S_Spawn();
-
                 spawnPacket.Players.Add(player.MakePlayerInfo());
 
-                foreach (Player p in _players.Values)
-                {
-                    // 포켓몬 리스트 씬에 있는 플레이어들 등
-                    // 게임씬에 존재는 하지만 다른 화면을 보고 있는 플레이어들은 보내면 안된다.
-                    // 수정필요
-                    if (p.Id != gameObject.Id && p.Info.PosInfo.State != CreatureState.Fight)
-                        p.Session.Send(spawnPacket);
-                }
+                Broadcast(player, spawnPacket);
             }
         }
 
-        public void LeaveRoom(int objectId)
+        public void LeaveRoom(GameObject gameObject)
         {
-            GameObjectType type = ObjectManager.GetObjectTypeById(objectId);
+            GameObjectType type = ObjectManager.GetObjectTypeById(gameObject.Id);
 
             if (type == GameObjectType.Player)
             {
                 Player player = null;
-                if (_players.Remove(objectId, out player) == false)
+                if (_players.Remove(gameObject.Id, out player) == false)
                     return;
 
                 Map.ApplyLeave(player);
@@ -106,14 +101,14 @@ namespace Server
                 player.Session.Send(leavePacket);
             }
 
-            // 타인한테 정보 전송
-            S_Despawn despawnPacket = new S_Despawn();
-            despawnPacket.ObjectIds.Add(objectId);
-            
-            foreach (Player p in _players.Values)
             {
-                if (p.Id != objectId && p.Info.PosInfo.State != CreatureState.Fight)
-                    p.Session.Send(despawnPacket);
+                Player player = gameObject as Player;
+
+                // 타인한테 정보 전송
+                S_Despawn despawnPacket = new S_Despawn();
+                despawnPacket.ObjectIds.Add(player.Id);
+
+                Broadcast(player, despawnPacket);
             }
         }
 
@@ -154,7 +149,8 @@ namespace Server
         {
             foreach (Player p in _players.Values)
             {
-                if (p.Id != player.Id && p.Info.PosInfo.State != CreatureState.Fight)
+                // 게임 맵에 있지 않은 플레이어들에겐 브로드캐스트를 할 필요가 없다.
+                if (p.Id != player.Id && p.Info.PosInfo.State != CreatureState.Fight && p.Info.PosInfo.State != CreatureState.Exchanging)
                     p.Session.Send(packet);
             }
         }

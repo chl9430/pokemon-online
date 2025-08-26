@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 
 public class SelectArea : MonoBehaviour
@@ -118,7 +119,20 @@ public class SelectArea : MonoBehaviour
         {
             for (int j = 0; j < _btnGrid.GetLength(1); j++)
             {
-                _btnGrid[i, j] = btns[j * _row + i];
+                if (_row > _col)
+                {
+                    if (i * _col + j < btns.Count)
+                    {
+                        _btnGrid[i, j] = btns[i * _col + j];
+                    }
+                }
+                else
+                {
+                    if (i * _row + j < btns.Count)
+                    {
+                        _btnGrid[i, j] = btns[i * _row + j];
+                    }
+                }
             }
         }
 

@@ -192,6 +192,56 @@ public class PacketHandler
         scene.UpdateData(s_EnterPlayerBagScenePacket);
     }
 
+    public static void S_EnterPokemonExchangeSceneHandler(PacketSession session, IMessage packet)
+    {
+        S_EnterPokemonExchangeScene s_EnterPokemonExchangeScenePacket = packet as S_EnterPokemonExchangeScene;
+
+        Debug.Log($"S_EnterPokemonExchangeScene : {s_EnterPokemonExchangeScenePacket}");
+
+        BaseScene scene = Managers.Scene.CurrentScene;
+        scene.UpdateData(s_EnterPokemonExchangeScenePacket);
+    }
+
+    public static void S_ChooseExchangePokemonHandler(PacketSession session, IMessage packet)
+    {
+        S_ChooseExchangePokemon chooseExchangePacket = packet as S_ChooseExchangePokemon;
+
+        Debug.Log($"S_ChooseExchangePokemon : {chooseExchangePacket}");
+
+        BaseScene scene = Managers.Scene.CurrentScene;
+        scene.UpdateData(chooseExchangePacket);
+    }
+
+    public static void S_FinalAnswerToExchangeHandler(PacketSession session, IMessage packet)
+    {
+        S_FinalAnswerToExchange finalAnswerPacket = packet as S_FinalAnswerToExchange;
+
+        Debug.Log($"S_FinalAnswerToExchange : {finalAnswerPacket}");
+
+        BaseScene scene = Managers.Scene.CurrentScene;
+        scene.UpdateData(finalAnswerPacket);
+    }
+
+    public static void S_ExitPokemonExchangeSceneHandler(PacketSession session, IMessage packet)
+    {
+        S_ExitPokemonExchangeScene exitExchangePacket = packet as S_ExitPokemonExchangeScene;
+
+        Debug.Log($"S_ExitPokemonExchangeScene : {exitExchangePacket}");
+
+        BaseScene scene = Managers.Scene.CurrentScene;
+        scene.UpdateData(exitExchangePacket);
+    }
+
+    public static void S_MoveExchangeCursorHandler(PacketSession session, IMessage packet)
+    {
+        S_MoveExchangeCursor s_MoveCursorPacket = packet as S_MoveExchangeCursor;
+
+        Debug.Log($"S_MoveExchangeCursor : {s_MoveCursorPacket}");
+
+        BaseScene scene = Managers.Scene.CurrentScene;
+        scene.UpdateData(s_MoveCursorPacket);
+    }
+
     public static void S_UsePokemonMoveHandler(PacketSession session, IMessage packet)
     {
         S_UsePokemonMove s_UseMovePacket = packet as S_UsePokemonMove;

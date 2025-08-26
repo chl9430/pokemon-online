@@ -9,7 +9,8 @@ namespace Server
 {
     public class JobSerializer
     {
-        JobTimer _timer = new JobTimer();
+        System.Timers.Timer _timer;
+        JobTimer _jobTimer = new JobTimer();
         Queue<IJob> _jobQueue = new Queue<IJob>();
         object _lock = new object();
         bool _flush = false;
@@ -19,12 +20,13 @@ namespace Server
 
         public void PushAfter(int tickAfter, IJob job)
         {
-            _timer.Push(job, tickAfter);
+            _jobTimer.Push(job, tickAfter);
         }
 
         public void Push(Action action) { Push(new Job(action)); }
         public void Push<T1>(Action<T1> action, T1 t1) { Push(new Job<T1>(action, t1)); }
         public void Push<T1, T2>(Action<T1, T2> action, T1 t1, T2 t2) { Push(new Job<T1, T2>(action, t1, t2)); }
+        public void Push<T1, T2, T3>(Action<T1, T2, T3> action, T1 t1, T2 t2, T3 t3) { Push(new Job<T1, T2, T3>(action, t1, t2, t3)); }
 
         public void Push(IJob job)
         {
@@ -36,7 +38,7 @@ namespace Server
 
         public void Flush()
         {
-            _timer.Flush();
+            _jobTimer.Flush();
 
             while (true)
             {
@@ -59,6 +61,17 @@ namespace Server
                 }
                 return _jobQueue.Dequeue();
             }
+        }
+
+        public void TickRoom(int tick = 100)
+        {
+            var timer = new System.Timers.Timer();
+            timer.Interval = tick;
+            timer.Elapsed += ((s, e) => { Flush(); });
+            timer.AutoReset = true;
+            timer.Enabled = true;
+
+            _timer = timer;
         }
     }
 }

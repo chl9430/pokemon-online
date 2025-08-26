@@ -40,7 +40,7 @@ namespace Server
         public override void OnDisconnected(EndPoint endPoint)
         {
             GameRoom room = RoomManager.Instance.Find(1);
-            room.Push(room.LeaveRoom, MyPlayer.Info.ObjectId);
+            room.Push(room.LeaveRoom, MyPlayer);
 
             SessionManager.Instance.Remove(this);
 

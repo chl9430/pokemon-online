@@ -11,8 +11,12 @@ namespace Server
         public static RoomManager Instance { get; } = new RoomManager();
 
         object _lock = new object();
+
         Dictionary<int, GameRoom> _rooms = new Dictionary<int, GameRoom>();
+        Dictionary<int, PokemonExchangeRoom> _exchangeRooms = new Dictionary<int, PokemonExchangeRoom>();
+
         int _roomId = 1;
+        int _exchangeRoomId = 1;
 
         public GameRoom Add(int mapId)
         {
@@ -29,11 +33,33 @@ namespace Server
             return gameRoom;
         }
 
+        public PokemonExchangeRoom Add()
+        {
+            PokemonExchangeRoom exchangeRoom = new PokemonExchangeRoom();
+
+            lock (_lock)
+            {
+                exchangeRoom.RoomId = _exchangeRoomId;
+                _exchangeRooms.Add(_exchangeRoomId, exchangeRoom);
+                _exchangeRoomId++;
+            }
+
+            return exchangeRoom;
+        }
+
         public bool Remove(int roomId)
         {
             lock (_lock)
             {
                 return _rooms.Remove(roomId);
+            }
+        }
+
+        public bool RemoveExchangeRoom(int exchangeRoomId)
+        {
+            lock (_lock)
+            {
+                return _exchangeRooms.Remove(exchangeRoomId);
             }
         }
 
@@ -43,6 +69,18 @@ namespace Server
             {
                 GameRoom room = null;
                 if (_rooms.TryGetValue(roomId, out room))
+                    return room;
+
+                return null;
+            }
+        }
+
+        public PokemonExchangeRoom FindPokemonExchangeRoom(int roomId)
+        {
+            lock (_lock)
+            {
+                PokemonExchangeRoom room = null;
+                if (_exchangeRooms.TryGetValue(roomId, out room))
                     return room;
 
                 return null;

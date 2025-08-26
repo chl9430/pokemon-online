@@ -64,7 +64,7 @@ public class ScriptBoxUI : MonoBehaviour
 
     public void CreateSelectBox(List<string> btnNames, int row, int col, int btnWidth, int btnHeight)
     {
-        _selectBox.CreateButtons(btnNames, row, col, btnWidth, btnHeight);
+        _selectBox.CreateButtons(btnNames, col, btnWidth, btnHeight);
 
         _selectBox.gameObject.SetActive(true);
         _selectBox.UIState = GridLayoutSelectBoxState.SELECTING;
@@ -85,6 +85,9 @@ public class ScriptBoxUI : MonoBehaviour
 
     public void BeginScriptTyping(List<string> scripts, bool autoSkip = false, float autoSkipTime = 1f)
     {
+        if (gameObject.activeSelf == false)
+            gameObject.SetActive(true);
+
         LoadComponent();
 
         _uiState = ScriptBoxUIState.TEXT_TYPING;

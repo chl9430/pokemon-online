@@ -17,7 +17,10 @@ public class DynamicButton : MonoBehaviour
         if (_btnName == null)
             _btnName = Util.FindChild<TextMeshProUGUI>(gameObject, "ContentText", true);
 
-        _btnName.text = name;
-        _btnData = name;
+        if (_btnName != null)
+        {
+            _btnName.text = name;
+            _btnData = name;
+        }
     }
 }

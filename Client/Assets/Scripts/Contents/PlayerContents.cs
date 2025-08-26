@@ -375,6 +375,11 @@ public class PlayerContents : ObjectContents
                 break;
             case PlayerContentState.RECEIVER_ACCEPT_TO_EXCHANGE:
                 {
+                    C_EnterPokemonExchangeScene enterExchangePacket = new C_EnterPokemonExchangeScene();
+                    enterExchangePacket.PlayerId = Managers.Object.PlayerInfo.ObjectInfo.ObjectId;
+
+                    Managers.Network.SavePacket(enterExchangePacket);
+
                     _scene.ScreenEffecter.PlayEffect("FadeOut");
 
                     _state = PlayerContentState.MOVING_TO_THE_EXCHANGE_SCENE;
@@ -419,7 +424,8 @@ public class PlayerContents : ObjectContents
                 break;
             case PlayerContentState.MOVING_TO_THE_EXCHANGE_SCENE:
                 {
-                    Debug.Log("Exchange Begin");
+                    // ¾À º¯°æ
+                    Managers.Scene.LoadScene(Define.Scene.PokemonExchange);
                 }
                 break;
         }

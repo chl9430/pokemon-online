@@ -8,6 +8,24 @@ enum MsgId {
   C_EXIT_GAME = 1;
   S_ENTER_ROOM = 2;
   S_LEAVE_ROOM = 3;
+  C_ENTER_POKEMON_LIST_SCENE = 40;
+  S_ENTER_POKEMON_LIST_SCENE = 41;
+  C_ENTER_POKEMON_BATTLE_SCENE = 42;
+  S_ENTER_POKEMON_BATTLE_SCENE = 43;
+  C_ENTER_PLAYER_BAG_SCENE = 44;
+  S_ENTER_PLAYER_BAG_SCENE = 45;
+
+  C_ENTER_POKEMON_EXCHANGE_SCENE = 400;
+  S_ENTER_POKEMON_EXCHANGE_SCENE = 410;
+  C_MOVE_EXCHANGE_CURSOR = 420;
+  S_MOVE_EXCHANGE_CURSOR = 430;
+  C_CHOOSE_EXCHANGE_POKEMON = 440;
+  S_CHOOSE_EXCHANGE_POKEMON = 450;
+  C_FINAL_ANSWER_TO_EXCHANGE = 460;
+  S_FINAL_ANSWER_TO_EXCHANGE = 470;
+  C_EXIT_POKEMON_EXCHANGE_SCENE = 480;
+  S_EXIT_POKEMON_EXCHANGE_SCENE = 490;
+
   S_SPAWN = 5;
   S_DESPAWN = 6;
   C_MOVE = 7;
@@ -20,12 +38,7 @@ enum MsgId {
   C_SWITCH_POKEMON = 12;
   C_ACCESS_POKEMON_SUMMARY = 13;
   S_ACCESS_POKEMON_SUMMARY = 14;
-  C_ENTER_POKEMON_LIST_SCENE = 40;
-  S_ENTER_POKEMON_LIST_SCENE = 41;
-  C_ENTER_POKEMON_BATTLE_SCENE = 42;
-  S_ENTER_POKEMON_BATTLE_SCENE = 43;
-  C_ENTER_PLAYER_BAG_SCENE = 44;
-  S_ENTER_PLAYER_BAG_SCENE = 45;
+  
   C_USE_ITEM = 50;
   S_USE_ITEM = 51;
   C_USE_POKEMON_MOVE = 17;
@@ -57,6 +70,7 @@ enum CreatureState {
   WATCH_MENU = 4;
   FIGHT = 5;
   TALK = 6;
+  EXCHANGING = 7;
 }
 
 enum MoveDir {
@@ -174,6 +188,68 @@ message S_EnterPokemonBattleScene
     PlayerInfo playerInfo = 1;
     PokemonSummary enemyPokemonSum = 2;
     repeated PokemonSummary playerPokemonSums = 3;
+}
+
+message C_EnterPokemonExchangeScene
+{
+    int32 playerId = 1;
+}
+
+message S_EnterPokemonExchangeScene
+{
+    PlayerInfo playerInfo = 1;
+    PlayerInfo otherPlayerInfo = 2;
+    repeated PokemonSummary myPokemonSums = 3;
+    repeated PokemonSummary otherPokemonSums = 4;
+    ExchangeCursorPos myCursorPos = 5;
+    ExchangeCursorPos otherCursorPos = 6;
+    PokemonSummary otherPokemonSum = 7;
+}
+
+message C_ChooseExchangePokemon
+{
+    int32 playerId = 1;
+    int32 pokemonOrder = 2;
+}
+
+message S_ChooseExchangePokemon
+{
+    PokemonSummary otherPokemonSum = 1;
+}
+
+message C_FinalAnswerToExchange
+{
+    int32 playerId = 1;
+    bool finalAnswer = 2;
+}
+
+message S_FinalAnswerToExchange
+{
+    PokemonSummary myPokemonSum = 1;
+    PokemonSummary otherPokemonSum = 2;
+}
+
+message C_MoveExchangeCursor
+{
+    int32 playerId = 1;
+    int32 x = 2;
+    int32 y = 3;
+}
+
+message S_MoveExchangeCursor
+{
+    int32 x = 1;
+    int32 y = 2;
+}
+
+message C_ExitPokemonExchangeScene
+{
+    int32 playerId = 1;
+}
+
+message S_ExitPokemonExchangeScene
+{
+    PlayerInfo exitPlayerInfo = 1;
 }
 
 message C_RequestDataById
@@ -324,6 +400,12 @@ message PositionInfo {
 	MoveDir moveDir = 2;
 	int32 posX = 3;
 	int32 posY = 4;
+}
+
+message ExchangeCursorPos
+{
+    int32 x = 1;
+    int32 y = 2;
 }
 
 message PokemonSummary

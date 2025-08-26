@@ -40,7 +40,7 @@ public class PacketHandler
 
         if (c_CreatePlayerPacket.Name == "TEST")
         {
-            player = MakeTestPlayer(clientSession);
+            player = MakeTestPlayer(clientSession, CreatureState.Idle);
         }
         else
         {
@@ -219,7 +219,7 @@ public class PacketHandler
         Player player = ObjectManager.Instance.Find(playerId);
 
         if (player == null)
-            player = MakeTestPlayer(clientSession);
+            player = MakeTestPlayer(clientSession, CreatureState.WatchMenu);
 
         S_EnterPokemonListScene s_enterListScenePacket = new S_EnterPokemonListScene();
         s_enterListScenePacket.PlayerInfo = player.MakePlayerInfo();
@@ -258,7 +258,7 @@ public class PacketHandler
         // 테스트용 플레이어
         if (player == null)
         {
-            player = MakeTestPlayer(clientSession);
+            player = MakeTestPlayer(clientSession, CreatureState.Fight);
         }
 
         player.Info.PosInfo.State = CreatureState.Fight;
@@ -273,6 +273,169 @@ public class PacketHandler
             s_EnterBattleScenePacket.PlayerPokemonSums.Add(pokemon.MakePokemonSummary());
 
         player.Session.Send(s_EnterBattleScenePacket);
+    }
+
+    public static void C_EnterPokemonExchangeSceneHandler(PacketSession session, IMessage packet)
+    {
+        C_EnterPokemonExchangeScene c_EnterExchangePacket = packet as C_EnterPokemonExchangeScene;
+        int playerId = c_EnterExchangePacket.PlayerId;
+
+        ClientSession clientSession = session as ClientSession;
+
+        Console.WriteLine($"" +
+            $"=====================\n" +
+            $"C_EnterPokemonExchangeScene\n" +
+            $"{c_EnterExchangePacket}\n" +
+            $"=====================\n"
+            );
+
+        GameRoom room = RoomManager.Instance.Find(1);
+        Player player = ObjectManager.Instance.Find(playerId);
+
+        // 테스트용 플레이어
+        if (player == null)
+        {
+            player = MakeTestPlayer(clientSession, CreatureState.Exchanging);
+
+            room.Push(room.EnterRoom, player);
+
+            int roomId = 1;
+
+            while (true)
+            {
+                PokemonExchangeRoom exchangeRoom = RoomManager.Instance.FindPokemonExchangeRoom(roomId);
+
+                if (exchangeRoom == null)
+                {
+                    exchangeRoom = RoomManager.Instance.Add();
+                    exchangeRoom.TickRoom(50);
+
+                    player.ExchangeRoom = exchangeRoom;
+                    exchangeRoom.Push(exchangeRoom.EnterRoom, player);
+                    break;
+                }
+                else
+                {
+                    if (exchangeRoom.ExchangePlayers.Count == exchangeRoom.MaxPlayerCount)
+                    {
+                        roomId++;
+                    }
+                    else
+                    {
+                        player.ExchangeRoom = exchangeRoom;
+
+                        exchangeRoom.Push(exchangeRoom.EnterRoom, player);
+                        break;
+                    }
+                }
+            }
+        }
+        else
+        {
+            if (player.ExchangeRoom == null)
+                player.TalkRoom.CreatePokmeonExchangeRoom(player);
+
+            if (player.PosInfo.State == CreatureState.Exchanging)
+            {
+                PokemonExchangeRoom exchangeRoom = player.ExchangeRoom;
+                exchangeRoom.Push(exchangeRoom.ReturnRoom, player);
+            }
+        }
+
+        player.PosInfo.State = CreatureState.Exchanging;
+
+        S_Move movePacket = new S_Move();
+        movePacket.ObjectId = player.Info.ObjectId;
+        movePacket.PosInfo = player.PosInfo;
+
+        room.Push(room.Broadcast, player, movePacket);
+    }
+
+    public static void C_ChooseExchangePokemonHandler(PacketSession session, IMessage packet)
+    {
+        C_ChooseExchangePokemon choosePacket = packet as C_ChooseExchangePokemon;
+        int playerId = choosePacket.PlayerId;
+        int selectedOrder = choosePacket.PokemonOrder;
+
+        ClientSession clientSession = session as ClientSession;
+
+        Console.WriteLine($"" +
+            $"=====================\n" +
+            $"C_ChooseExchangePokemon\n" +
+            $"{choosePacket}\n" +
+            $"=====================\n"
+            );
+
+        GameRoom room = RoomManager.Instance.Find(1);
+        Player player = ObjectManager.Instance.Find(playerId);
+
+        PokemonExchangeRoom exchangeRoom = player.ExchangeRoom;
+
+        exchangeRoom.Push(exchangeRoom.SetSelectedPokemonOrder, player, selectedOrder);
+    }
+
+    public static void C_FinalAnswerToExchangeHandler(PacketSession session, IMessage packet)
+    {
+        C_FinalAnswerToExchange finalAnswerPacket = packet as C_FinalAnswerToExchange;
+        int playerId = finalAnswerPacket.PlayerId;
+        bool finalAnswer = finalAnswerPacket.FinalAnswer;
+
+        ClientSession clientSession = session as ClientSession;
+
+        Console.WriteLine($"" +
+            $"=====================\n" +
+            $"C_FinalAnswerToExchange\n" +
+            $"{finalAnswerPacket}\n" +
+            $"=====================\n"
+            );
+
+        Player player = ObjectManager.Instance.Find(playerId);
+
+        PokemonExchangeRoom exchangeRoom = player.ExchangeRoom;
+
+        exchangeRoom.Push(exchangeRoom.SetFinalAnswer, player, finalAnswer);
+    }
+
+    public static void C_MoveExchangeCursorHandler(PacketSession session, IMessage packet)
+    {
+        C_MoveExchangeCursor c_moveCursorePacket = packet as C_MoveExchangeCursor;
+        int playerId = c_moveCursorePacket.PlayerId;
+        int x = c_moveCursorePacket.X;
+        int y = c_moveCursorePacket.Y;
+
+        ClientSession clientSession = session as ClientSession;
+
+        Console.WriteLine($"" +
+            $"=====================\n" +
+            $"C_MoveExchangeCursor\n" +
+            $"{c_moveCursorePacket}\n" +
+            $"=====================\n"
+            );
+
+        Player player = ObjectManager.Instance.Find(playerId);
+        PokemonExchangeRoom exchangeRoom = player.ExchangeRoom;
+
+        exchangeRoom.Push(exchangeRoom.HandlerCursorMove, player, x, y);
+    }
+
+    public static void C_ExitPokemonExchangeSceneHandler(PacketSession session, IMessage packet)
+    {
+        C_ExitPokemonExchangeScene exitExchangePacket = packet as C_ExitPokemonExchangeScene;
+        int playerId = exitExchangePacket.PlayerId;
+
+        ClientSession clientSession = session as ClientSession;
+
+        Console.WriteLine($"" +
+            $"=====================\n" +
+            $"C_ExitPokemonExchangeScene\n" +
+            $"{exitExchangePacket}\n" +
+            $"=====================\n"
+            );
+
+        Player player = ObjectManager.Instance.Find(playerId);
+        PokemonExchangeRoom exchangeRoom = player.ExchangeRoom;
+
+        exchangeRoom.Push(exchangeRoom.ExitExchangeRoom, player);
     }
 
     public static void C_RequestDataByIdHandler(PacketSession session, IMessage packet)
@@ -299,6 +462,7 @@ public class PacketHandler
 
                     if (obj == null)
                     {
+                        // 수정 필요
                         S_SendTalk s_TalkPacket = new S_SendTalk();
 
                         player.Session.Send(s_TalkPacket);
@@ -383,7 +547,7 @@ public class PacketHandler
 
         Player player = ObjectManager.Instance.Find(playerId);
 
-        Player talkPlayer = player.TalkPlayer;
+        Player talkPlayer = player.TalkRoom.GetAnotherPlayer(player);
 
         S_SendTalkRequest s_SendTalkPacket = new S_SendTalkRequest();
         s_SendTalkPacket.TalkRequestType = talkRequestType;
@@ -437,7 +601,7 @@ public class PacketHandler
         // 테스트용 플레이어
         if (player == null)
         {
-            player = MakeTestPlayer(clientSession);
+            player = MakeTestPlayer(clientSession, CreatureState.WatchMenu);
         }
 
         S_EnterPlayerBagScene s_EnterBagScenePacket = new S_EnterPlayerBagScene();
@@ -532,8 +696,25 @@ public class PacketHandler
         player.Session.Send(s_CheckMovePacket);
     }
 
-    public static Player MakeTestPlayer(ClientSession clientSession)
+    public static Player MakeTestPlayer(ClientSession clientSession, CreatureState state)
     {
+        Random _random = new Random();
+        int ran = _random.Next(11);
+        string randomName = "";
+
+        if (ran == 0) randomName = "MESSI";
+        else if (ran == 1) randomName = "VILLA";
+        else if (ran == 2) randomName = "PEDRO";
+        else if (ran == 3) randomName = "XAVI";
+        else if (ran == 4) randomName = "INIES";
+        else if (ran == 5) randomName = "SERGI";
+        else if (ran == 6) randomName = "ALVES";
+        else if (ran == 7) randomName = "PUYOL";
+        else if (ran == 8) randomName = "PIQUE";
+        else if (ran == 9) randomName = "ERIC";
+        else if (ran == 10) randomName = "VALDES";
+
+
         Player player = ObjectManager.Instance.Add<Player>();
         {
             player.Info.PosInfo.State = CreatureState.Idle;
@@ -545,7 +726,7 @@ public class PacketHandler
         }
 
         // 플레이어 정보
-        player.Name = "TEST";
+        player.Name = randomName;
         player.Gender = PlayerGender.PlayerFemale;
 
         // 플레이어 포켓몬

@@ -14,8 +14,9 @@ namespace Server
         string _name;
         List<Pokemon> pokemons;
         Dictionary<ItemCategory, List<Item>> _items;
-        Player _talkPlayer;
+        PlayerTalkRoom _talkRoom;
         PrivateBattleRoom _battleRoom;
+        PokemonExchangeRoom _exchangeRoom;
         PlayerGender _gender;
 
         public ClientSession Session { get; set; }
@@ -35,9 +36,10 @@ namespace Server
             get { return _items; }
         }
 
-        public Player TalkPlayer { get { return _talkPlayer; } set { _talkPlayer = value; } }
+        public PlayerTalkRoom TalkRoom { get { return _talkRoom; } set { _talkRoom = value; } }
 
         public PrivateBattleRoom BattleRoom { get { return _battleRoom; } set { _battleRoom = value; } }
+        public PokemonExchangeRoom ExchangeRoom { get { return _exchangeRoom; } set { _exchangeRoom = value; } }
 
         public Player()
         {
@@ -72,8 +74,8 @@ namespace Server
 
         public void TalkWithPlayer(Player otherPlayer)
         {
-            _talkPlayer = otherPlayer;
-            otherPlayer.TalkPlayer = this;
+            _talkRoom = new PlayerTalkRoom(this, otherPlayer);
+            otherPlayer.TalkRoom = _talkRoom;
 
             Vector2Int playerPos = new Vector2Int(PosInfo.PosX, PosInfo.PosY);
             Vector2Int otherPlayerPos = new Vector2Int(otherPlayer.Info.PosInfo.PosX, otherPlayer.Info.PosInfo.PosY);
