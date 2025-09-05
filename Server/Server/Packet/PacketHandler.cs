@@ -110,14 +110,7 @@ public class PacketHandler
         if (player.Info.PosInfo.State == CreatureState.Fight)
         {
             PrivateBattleRoom battleRoom = player.BattleRoom;
-            battleRoom.SwitchBattlePokemon(fromIdx, toIdx);
-
-            S_SwitchBattlePokemon s_SwitchPokemonPacket = new S_SwitchBattlePokemon();
-            s_SwitchPokemonPacket.PlayerInfo = player.MakePlayerInfo();
-            s_SwitchPokemonPacket.EnemyPokemonSum = battleRoom.WildPokemon.MakePokemonSummary();
-
-            foreach (Pokemon pokemon in battleRoom.Pokemons)
-                s_SwitchPokemonPacket.MyPokemonSums.Add(pokemon.MakePokemonSummary());
+            S_SwitchBattlePokemon s_SwitchPokemonPacket = battleRoom.SwitchBattlePokemon(fromIdx, toIdx);
 
             player.Session.Send(s_SwitchPokemonPacket);
         }
@@ -506,9 +499,7 @@ public class PacketHandler
                 break;
             case RequestType.GetEnemyPokemonExp:
                 {
-                    S_GetEnemyPokemonExp s_GetExpPacket = new S_GetEnemyPokemonExp();
-
-                    s_GetExpPacket.Exp = player.BattleRoom.GetExp();
+                    S_GetEnemyPokemonExp s_GetExpPacket = player.BattleRoom.GetExp();
 
                     player.Session.Send(s_GetExpPacket);
                 }
@@ -520,6 +511,14 @@ public class PacketHandler
                     player.Session.Send(s_CheckAndApplyExpPacket);
                 }
                 break;
+            case RequestType.CheckAvailableBattlePokemon:
+                {
+                    S_CheckAvailableBattlePokemon checkBattlePokemon = new S_CheckAvailableBattlePokemon();
+                    checkBattlePokemon.CanFight = player.BattleRoom.FindAvailableBattlePokemon();
+
+                    player.Session.Send(checkBattlePokemon);
+                }
+                break;
             case RequestType.EscapeFromWildPokemon:
                 {
                     S_EscapeFromWildPokemon s_EscapePacket = new S_EscapeFromWildPokemon();
@@ -529,7 +528,96 @@ public class PacketHandler
                     player.Session.Send(s_EscapePacket);
                 }
                 break;
+            case RequestType.CheckExpPokemon:
+                {
+                    S_CheckExpPokemon checkExpPacket = new S_CheckExpPokemon();
+                    checkExpPacket.IsThereMoreExpPokemon = player.BattleRoom.CheckExpPokemons();
+
+                    player.Session.Send(checkExpPacket);
+                }
+                break;
+            case RequestType.CheckPokemonEvolution:
+                {
+                    S_CheckPokemonEvolution checkEvolutionPacket = new S_CheckPokemonEvolution();
+
+                    checkEvolutionPacket.GoToEvolutionScene = player.BattleRoom.CheckEvolutionPokemon();
+
+                    player.Session.Send(checkEvolutionPacket);
+                }
+                break;
         }
+    }
+
+    public static void C_ProcessTurnHandler(PacketSession session, IMessage packet)
+    {
+        C_ProcessTurn processTurnPacket = packet as C_ProcessTurn;
+        int playerId = processTurnPacket.PlayerId;
+        int moveOrder = processTurnPacket.MoveOrder;
+
+        Console.WriteLine($"" +
+            $"=====================\n" +
+            $"C_ProcessTurn\n" +
+            $"{processTurnPacket}\n" +
+            $"=====================\n"
+            );
+
+        Player player = ObjectManager.Instance.Find(playerId);
+
+        S_ProcessTurn s_ProcessTurnPacket = player.BattleRoom.ProcessTurn(moveOrder, player);
+
+        player.Session.Send(s_ProcessTurnPacket);
+    }
+
+    public static void C_EnterPokemonEvolutionSceneHandler(PacketSession session, IMessage packet)
+    {
+        C_EnterPokemonEvolutionScene c_EnterEvolutionPacket = packet as C_EnterPokemonEvolutionScene;
+        int playerId = c_EnterEvolutionPacket.PlayerId;
+
+        ClientSession clientSession = session as ClientSession;
+
+        Console.WriteLine($"" +
+            $"=====================\n" +
+            $"C_EnterPokemonEvolutionScene\n" +
+            $"PlayerId : {playerId}\n" +
+            $"=====================\n"
+            );
+
+        Player player = ObjectManager.Instance.Find(playerId);
+
+        if (player == null)
+        {
+            player = MakeTestPlayer(clientSession, CreatureState.Fight);
+            player.BattleRoom = new PrivateBattleRoom(player, player.Pokemons);
+            player.BattleRoom.MakeWildPokemon(1);
+            player.BattleRoom.EvolvePokemons.Add(player.Pokemons[0]);
+            player.BattleRoom.EvolvePokemons.Add(player.Pokemons[1]);
+            player.BattleRoom.EvolvePokemons.Add(player.Pokemons[2]);
+        }
+
+        S_EnterPokemonEvolutionScene s_EnterEvolutionPacket = player.BattleRoom.GetEvolutionPokemon();
+        player.Session.Send(s_EnterEvolutionPacket);
+    }
+
+    public static void C_PokemonEvolutionHandler(PacketSession session, IMessage packet)
+    {
+        C_PokemonEvolution evolutionPacket = packet as C_PokemonEvolution;
+        int playerId = evolutionPacket.PlayerId;
+        bool isEvolution = evolutionPacket.IsEvolution;
+
+        ClientSession clientSession = session as ClientSession;
+
+        Console.WriteLine($"" +
+            $"=====================\n" +
+            $"C_PokemonEvolution\n" +
+            $"{evolutionPacket}\n" +
+            $"=====================\n"
+            );
+
+        Player player = ObjectManager.Instance.Find(playerId);
+        S_PokemonEvolution s_EvolutionPacket = player.BattleRoom.EvolvePokemon(isEvolution);
+
+        if (isEvolution)
+            player.Session.Send(s_EvolutionPacket);
     }
 
     public static void C_PlayerTalkHandler(PacketSession session, IMessage packet)
@@ -622,55 +710,6 @@ public class PacketHandler
         player.Session.Send(s_EnterBagScenePacket);
     }
 
-    public static void C_SetBattlePokemonMoveHandler(PacketSession session, IMessage packet)
-    {
-        C_SetBattlePokemonMove c_SetMovePacket = packet as C_SetBattlePokemonMove;
-        int playerId = c_SetMovePacket.PlayerId;
-        int moveOrder = c_SetMovePacket.MoveOrder;
-
-        ClientSession clientSession = session as ClientSession;
-
-        Console.WriteLine($"" +
-            $"=====================\n" +
-            $"C_SetBattlePokemonMove\n" +
-            $"{c_SetMovePacket}\n" +
-            $"=====================\n"
-            );
-
-        Player player = ObjectManager.Instance.Find(playerId);
-        PrivateBattleRoom battleRoom = player.BattleRoom;
-
-        battleRoom.SetBattlePokemonMove(moveOrder);
-
-        S_SetBattlePokemonMove s_SetMovePacket = new S_SetBattlePokemonMove();
-        s_SetMovePacket.MyMoveOrder = battleRoom.MyPokemon.GetSelectedMoveIdx();
-        s_SetMovePacket.EnemyMoveOrder = battleRoom.WildPokemon.GetSelectedMoveIdx();
-
-        player.Session.Send(s_SetMovePacket);
-    }
-
-    public static void C_UsePokemonMoveHandler(PacketSession session, IMessage packet)
-    {
-        C_UsePokemonMove c_UseMovePacket = packet as C_UsePokemonMove;
-        int playerId = c_UseMovePacket.PlayerId;
-        int myMoveOrder = c_UseMovePacket.MoveOrder;
-
-        ClientSession clientSession = session as ClientSession;
-
-        Console.WriteLine($"" +
-            $"=====================\n" +
-            $"C_UsePokemonMove\n" +
-            $"{c_UseMovePacket}\n" +
-            $"=====================\n"
-            );
-
-        Player player = ObjectManager.Instance.Find(playerId);
-
-        S_UsePokemonMove s_UseMovePacket = player.BattleRoom.UseBattlePokemonMove();
-
-        player.Session.Send(s_UseMovePacket);
-    }
-
     public static void C_ReturnPokemonBattleSceneHandler(PacketSession session, IMessage packet)
     {
         C_ReturnPokemonBattleScene c_ReturnBattleScenePacket = packet as C_ReturnPokemonBattleScene;
@@ -731,10 +770,10 @@ public class PacketHandler
 
         // 플레이어 포켓몬
         player.Pokemons = new List<Pokemon>();
-        player.Pokemons.Add(new Pokemon("Pikachu", "PIKAO", 7, player.Name, -1));
-        player.Pokemons.Add(new Pokemon("Bulbasaur", "BUBAS", 6, player.Name, -1));
-        player.Pokemons.Add(new Pokemon("Charmander", "CHAKI", 5, player.Name, -1));
-        player.Pokemons.Add(new Pokemon("Squirtle", "SKIRT", 6, player.Name, -1));
+        player.Pokemons.Add(new Pokemon("Bulbasaur", "BUBAS", 16, player.Name, -1));
+        player.Pokemons.Add(new Pokemon("Charmander", "CHAKI", 16, player.Name, -1));
+        player.Pokemons.Add(new Pokemon("Squirtle", "SKIRT", 16, player.Name, -1));
+        player.Pokemons.Add(new Pokemon("Pikachu", "PIKAO", 5, player.Name, -1));
 
         // 플레이어 아이템
         player.AddItem(ItemCategory.PokeBall, "Monster Ball", 99);

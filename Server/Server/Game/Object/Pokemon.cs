@@ -9,9 +9,8 @@ namespace Server
         PokemonStat _pokemonStat;
         PokemonExpInfo _expInfo;
         List<PokemonMove> _pokemonMoves;
-        PokemonMove _selectedMove;
         PokemonMove _noPPMove;
-        PokemonMove _newLearnableMove;
+        //PokemonMove _newLearnableMove;
         PokemonSummaryDictData _summaryDictData;
 
         public PokemonInfo PokemonInfo
@@ -34,10 +33,9 @@ namespace Server
             get { return _pokemonMoves; }
         }
 
-        public PokemonMove SelectedMove
+        public PokemonMove NoPPMove
         {
-            set { _selectedMove = value; }
-            get { return _selectedMove; }
+            get { return _noPPMove; }
         }
 
         public Pokemon(string pokemonName, string pokemonNickName, int level, string ownerName, int ownerId, int remainHp = -1)
@@ -203,36 +201,24 @@ namespace Server
             return resultIndex;
         }
 
-        public int GetSelectedMoveIdx()
+        public bool UseMove(int moveOrder)
         {
-            return _pokemonMoves.IndexOf(_selectedMove);
-        }
-
-        public bool DidSelectedMoveHit()
-        {
-            _selectedMove.CurPP--;
+            PokemonMove move = moveOrder != -1 ? _pokemonMoves[moveOrder] : _noPPMove;
+            if (move != _noPPMove)
+                move.CurPP--;
 
             Random random = new Random();
             int ran = random.Next(1, 101);
 
-            if (ran > _selectedMove.MoveAccuracy)
-            {
+            if (ran > move.MoveAccuracy)
                 return false;
-            }
             else
-            {
                 return true;
-            }
         }
 
-        public void SetSelectedMove(int moveOrder)
+        public int FindMoveIndex(PokemonMove move)
         {
-            _selectedMove = _pokemonMoves[moveOrder];
-        }
-
-        public void SetNoPPMoveToSelectedMove()
-        {
-            _selectedMove = _noPPMove;
+            return _pokemonMoves.IndexOf(move);
         }
 
         public void GetDamaged(int damage)
@@ -246,32 +232,16 @@ namespace Server
             }
         }
 
-        public void GetExp(int exp, S_CheckAndApplyRemainedExp expPacket)
+        public bool GetExpAndCheckLevelUp(int exp)
         {
-            if (_expInfo.RemainExpToNextLevel >= exp)
-            {
-                _expInfo.CurExp += exp;
-                _expInfo.TotalExp += exp;
-                _expInfo.RemainExpToNextLevel -= exp;
+            _expInfo.CurExp += exp;
+            _expInfo.TotalExp += exp;
+            _expInfo.RemainExpToNextLevel -= exp;
 
-                if (_expInfo.RemainExpToNextLevel == 0)
-                {
-                    expPacket.StatDiff = LevelUp();
-                    expPacket.NewMoveSum = CheckNewLearnableMove();
-
-                    expPacket.ExpInfo = _expInfo;
-                    expPacket.PokemonLevel = _pokemonInfo.Level;
-                    expPacket.PokemonStat = _pokemonStat;
-                }
-                else
-                {
-                    expPacket.ExpInfo = _expInfo;
-                }
-            }
+            if (_expInfo.RemainExpToNextLevel == 0)
+                return true;
             else
-            {
-                return;
-            }
+                return false;
         }
 
         public LevelUpStatusDiff LevelUp()
@@ -314,6 +284,44 @@ namespace Server
             }
         }
 
+        public bool CanPokemonEvolve()
+        {
+            if (_pokemonInfo.Level >= _summaryDictData.evolutionChain.evolutionLevel && _summaryDictData.evolutionChain.evolutionPokemonName != null)
+                return true;
+            else
+                return false;
+        }
+
+        public void PokemonEvolution()
+        {
+            if (_pokemonInfo.Level >= _summaryDictData.evolutionChain.evolutionLevel)
+            {
+                int prevMaxHp = _pokemonStat.MaxHp;
+                string evolutionPokemonName = _summaryDictData.evolutionChain.evolutionPokemonName;
+
+                if (DataManager.PokemonSummaryDict.TryGetValue(evolutionPokemonName, out _summaryDictData))
+                {
+                    // 기본정보
+                    _pokemonInfo.DictionaryNum = _summaryDictData.dictionaryNum;
+                    _pokemonInfo.PokemonName = _summaryDictData.pokemonName;
+                    _pokemonInfo.Type1 = (PokemonType)Enum.Parse(typeof(PokemonType), _summaryDictData.type1);
+                    _pokemonInfo.Type2 = (PokemonType)Enum.Parse(typeof(PokemonType), _summaryDictData.type2);
+
+                    // 스텟
+                    UpdateStat();
+
+                    int hpDiff = _pokemonStat.MaxHp - prevMaxHp;
+
+                    _pokemonStat.Hp += hpDiff;
+                }
+            }
+        }
+
+        public string GetEvolvePokemonName()
+        {
+            return _summaryDictData.evolutionChain.evolutionPokemonName;
+        }
+
         public PokemonMoveSummary CheckNewLearnableMove()
         {
             LearnableMoveData[] moveDatas = _summaryDictData.learnableMoves;
@@ -340,10 +348,7 @@ namespace Server
                     {
                         _pokemonMoves.Add(move);
                     }
-                    else if (_pokemonMoves.Count == 4)
-                        _newLearnableMove = move;
 
-                    moveSum = new PokemonMoveSummary();
                     moveSum = move.MakePokemonMoveSummary();
                 }
                 else

@@ -68,23 +68,26 @@ class PacketManager
         _onRecv.Add((ushort)MsgId.CUseItem, MakePacket<C_UseItem>);
         _handler.Add((ushort)MsgId.CUseItem, PacketHandler.C_UseItemHandler);
 
-        _onRecv.Add((ushort)MsgId.CUsePokemonMove, MakePacket<C_UsePokemonMove>);
-        _handler.Add((ushort)MsgId.CUsePokemonMove, PacketHandler.C_UsePokemonMoveHandler);
+        _onRecv.Add((ushort)MsgId.CRequestDataById, MakePacket<C_RequestDataById>);
+        _handler.Add((ushort)MsgId.CRequestDataById, PacketHandler.C_RequestDataByIdHandler);
 
-        _onRecv.Add((ushort)MsgId.CSetBattlePokemonMove, MakePacket<C_SetBattlePokemonMove>);
-        _handler.Add((ushort)MsgId.CSetBattlePokemonMove, PacketHandler.C_SetBattlePokemonMoveHandler);
-
-        _onRecv.Add((ushort)MsgId.CReturnGame, MakePacket<C_ReturnGame>);
-        _handler.Add((ushort)MsgId.CReturnGame, PacketHandler.C_ReturnGameHandler);
+        _onRecv.Add((ushort)MsgId.CProcessTurn, MakePacket<C_ProcessTurn>);
+        _handler.Add((ushort)MsgId.CProcessTurn, PacketHandler.C_ProcessTurnHandler);
 
         _onRecv.Add((ushort)MsgId.CReturnPokemonBattleScene, MakePacket<C_ReturnPokemonBattleScene>);
         _handler.Add((ushort)MsgId.CReturnPokemonBattleScene, PacketHandler.C_ReturnPokemonBattleSceneHandler);
 
+        _onRecv.Add((ushort)MsgId.CReturnGame, MakePacket<C_ReturnGame>);
+        _handler.Add((ushort)MsgId.CReturnGame, PacketHandler.C_ReturnGameHandler);
+
         _onRecv.Add((ushort)MsgId.CPlayerTalk, MakePacket<C_PlayerTalk>);
         _handler.Add((ushort)MsgId.CPlayerTalk, PacketHandler.C_PlayerTalkHandler);
 
-        _onRecv.Add((ushort)MsgId.CRequestDataById, MakePacket<C_RequestDataById>);
-        _handler.Add((ushort)MsgId.CRequestDataById, PacketHandler.C_RequestDataByIdHandler);
+        _onRecv.Add((ushort)MsgId.CEnterPokemonEvolutionScene, MakePacket<C_EnterPokemonEvolutionScene>);
+        _handler.Add((ushort)MsgId.CEnterPokemonEvolutionScene, PacketHandler.C_EnterPokemonEvolutionSceneHandler);
+
+        _onRecv.Add((ushort)MsgId.CPokemonEvolution, MakePacket<C_PokemonEvolution>);
+        _handler.Add((ushort)MsgId.CPokemonEvolution, PacketHandler.C_PokemonEvolutionHandler);
     }
 
     public void OnRecvPacket(PacketSession session, ArraySegment<byte> buffer)

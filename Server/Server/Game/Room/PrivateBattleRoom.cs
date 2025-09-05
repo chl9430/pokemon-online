@@ -2,15 +2,18 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Server
 {
     public class PrivateBattleRoom
     {
+        int _expPerPokemon;
         int _remainedExp;
         int _escapeTurnCnt;
         Random _random;
@@ -21,8 +24,13 @@ namespace Server
 
         bool _myTurn = false;
         bool _enemyTurn = false;
-        Pokemon _attackPokemon;
-        Pokemon _defensePokemon;
+        //Pokemon _attackPokemon;
+        //Pokemon _defensePokemon;
+
+        int _curExpIdx;
+        int _curEvolutionIdx;
+        List<Pokemon> _getExpPokemons;
+        List<Pokemon> _evolvePokemons;
 
         public PrivateBattleRoom(Player player, List<Pokemon> pokemons)
         {
@@ -31,6 +39,9 @@ namespace Server
             _player = player;
             _pokemons = new List<Pokemon>();
             player.BattleRoom = this;
+
+            _getExpPokemons = new List<Pokemon>();
+            _evolvePokemons = new List<Pokemon>();
 
             foreach (Pokemon pokemon in pokemons)
             {
@@ -53,6 +64,7 @@ namespace Server
             }
 
             _myPokemon = _pokemons[0];
+            _getExpPokemons.Add(_myPokemon);
         }
 
         public List<Pokemon> Pokemons {  get { return _pokemons; } }
@@ -61,32 +73,7 @@ namespace Server
 
         public Pokemon WildPokemon { get { return _wildPokemon; } }
 
-        public S_CheckAndApplyRemainedExp CheckAndApplyExp()
-        {
-            S_CheckAndApplyRemainedExp s_CheckAndApplyExpPacket = new S_CheckAndApplyRemainedExp();
-
-            int finalExp = 0;
-
-            if (_remainedExp > 0)
-            {
-                if (_remainedExp > _myPokemon.ExpInfo.RemainExpToNextLevel)
-                    finalExp = _myPokemon.ExpInfo.RemainExpToNextLevel;
-                else
-                    finalExp = _remainedExp;
-
-                _remainedExp -= finalExp;
-
-                s_CheckAndApplyExpPacket.FinalExp = finalExp;
-            }
-            else
-            {
-                return s_CheckAndApplyExpPacket;
-            }
-
-            _myPokemon.GetExp(finalExp, s_CheckAndApplyExpPacket);
-
-            return s_CheckAndApplyExpPacket;
-        }
+        public List<Pokemon> EvolvePokemons {  get { return _evolvePokemons; } }
 
         public void MakeWildPokemon(int locationNum)
         {
@@ -132,37 +119,162 @@ namespace Server
             }
         }
 
-        public void SwitchBattlePokemon(int from, int to)
+        public S_SwitchBattlePokemon SwitchBattlePokemon(int from, int to)
         {
-            if (from == to)
-            {
-                Console.WriteLine("Cannot change with same pokemons");
-                return;
-            }
+            S_SwitchBattlePokemon switchPokemonPacket = new S_SwitchBattlePokemon();
 
             if (_pokemons[0].PokemonInfo.PokemonStatus != PokemonStatusCondition.Fainting)
             {
                 _myTurn = true;
-                _attackPokemon = WildPokemon;
-                _defensePokemon = _pokemons[to];
+                //_attackPokemon = WildPokemon;
+                //_defensePokemon = _pokemons[to];
                 SetWildPokemonSelectedMove();
             }
 
-            Pokemon temp = _pokemons[from];
+            Pokemon prevPokemon = _pokemons[from];
             _pokemons[from] = _pokemons[to];
-            _pokemons[to] = temp;
+            _pokemons[to] = prevPokemon;
 
             _myPokemon = _pokemons[0];
+
+            // 기절해서 벤치에 들어간 포켓몬을 exp리스트에서 삭제한다.
+            if (prevPokemon.PokemonInfo.PokemonStatus == PokemonStatusCondition.Fainting)
+            {
+                _getExpPokemons.Remove(prevPokemon);
+            }
+
+            // 벤치에서 나온 포켓몬이 exp리스트에 존재하면 0번째로 옮긴다.
+            if (_getExpPokemons.Contains(_myPokemon) == true)
+            {
+                _getExpPokemons.Remove(_myPokemon);
+                _getExpPokemons.Insert(0, _myPokemon);
+            }
+            // 벤치에서 나온 포켓몬이 exp리스트에 존재하지 않으면 0번째에 삽입한다.
+            else
+            {
+                _getExpPokemons.Insert(0, _myPokemon);
+            }
+
+            switchPokemonPacket.PlayerInfo = _player.MakePlayerInfo();
+            switchPokemonPacket.EnemyPokemonSum = _wildPokemon.MakePokemonSummary();
+
+            foreach (Pokemon pokemon in _pokemons)
+                switchPokemonPacket.MyPokemonSums.Add(pokemon.MakePokemonSummary());
+
+            switchPokemonPacket.PrevPokemonSum = prevPokemon.MakePokemonSummary();
+
+            return switchPokemonPacket;
         }
 
-        public void SetBattlePokemonMove(int moveOrder)
+        public S_ProcessTurn ProcessTurn(int moveOrder, Player player)
         {
-            if (moveOrder != -1)
-                _myPokemon.SetSelectedMove(moveOrder);
-            else
-                _myPokemon.SetNoPPMoveToSelectedMove();
+            S_ProcessTurn processTurnPacket = new S_ProcessTurn();
+            processTurnPacket.CanUseMove = true;
 
-            SetWildPokemonSelectedMove();
+            if (!_myTurn && !_enemyTurn)
+            {
+                if (moveOrder != -1)
+                {
+                    if (_myPokemon.PokemonMoves[moveOrder].CurPP == 0)
+                    {
+                        processTurnPacket.CanUseMove = false;
+                        return processTurnPacket;
+                    }
+                }
+
+                if (IsMyPokemonFast())
+                {
+                    processTurnPacket.IsMyPokemon = true;
+                }
+                else
+                {
+                    processTurnPacket.IsMyPokemon = false;
+                }
+            }
+            else if (_myTurn)
+            {
+                processTurnPacket.IsMyPokemon = false;
+            }
+            else if (_enemyTurn)
+            {
+                processTurnPacket.IsMyPokemon = true;
+            }
+
+            UsePokemonMove(processTurnPacket, moveOrder, processTurnPacket.IsMyPokemon);
+
+            return processTurnPacket;
+        }
+
+        public void UsePokemonMove(S_ProcessTurn processTurnPacket, int moveOrder, bool isMyPokemon)
+        {
+            Pokemon attackPokemon = isMyPokemon == true ? _myPokemon : _wildPokemon;
+            Pokemon defensePokemon = isMyPokemon == true ? _wildPokemon : _myPokemon;
+            PokemonMove attackMove;
+            int usedMoveOrder;
+
+            if (isMyPokemon)
+            {
+                _myTurn = true;
+                attackMove = moveOrder != -1 ? attackPokemon.PokemonMoves[moveOrder] : attackPokemon.NoPPMove;
+                usedMoveOrder = moveOrder;
+                processTurnPacket.UsedMoveOrder = usedMoveOrder;
+            }
+            else
+            {
+                _enemyTurn = true;
+                attackMove = SetWildPokemonSelectedMove();
+                usedMoveOrder = _wildPokemon.FindMoveIndex(attackMove);
+                processTurnPacket.UsedMoveOrder = usedMoveOrder;
+            }
+
+            processTurnPacket.DefensePokemonSum = defensePokemon.MakePokemonSummary();
+
+            if (attackPokemon.UseMove(usedMoveOrder))
+            {
+                processTurnPacket.IsHit = true;
+
+                float typeEffectiveModifier = GetTypeEffectivenessMultiplier(attackPokemon, defensePokemon, attackMove);
+                float criticalModifier = GetCriticalModifier(attackMove);
+                float typeEqualModifier = GetTypeEqualModifier(attackMove, attackPokemon);
+                float damageModifier = typeEffectiveModifier * criticalModifier * typeEqualModifier;
+
+                processTurnPacket.TypeEffectiveness = typeEffectiveModifier;
+                processTurnPacket.IsCriticalHit = criticalModifier == 1.5f ? true : false;
+                ChangeBattlePokemonHp(attackMove, attackPokemon, defensePokemon, damageModifier);
+
+                if (defensePokemon.PokemonInfo.PokemonStatus == PokemonStatusCondition.Fainting)
+                {
+                    processTurnPacket.UsedMoveSum = attackMove.MakePokemonMoveSummary();
+                    processTurnPacket.IsTurnFinish = true;
+                    _myTurn = false;
+                    _enemyTurn = false;
+
+                    return;
+                }
+            }
+            else
+            {
+                processTurnPacket.IsHit = false;
+            }
+
+            processTurnPacket.UsedMoveSum = attackMove.MakePokemonMoveSummary();
+
+            // 공격, 수비 포켓몬 바꾸기
+            if (!_myTurn || !_enemyTurn)
+            {
+                processTurnPacket.IsTurnFinish = false;
+            }
+            else // 턴이 끝났다면 턴 초기화
+            {
+                _escapeTurnCnt++;
+
+                if (_escapeTurnCnt > 10)
+                    _escapeTurnCnt = 10;
+
+                processTurnPacket.IsTurnFinish = true;
+                _myTurn = false;
+                _enemyTurn = false;
+            }
         }
 
         List<PokemonMove> FindAvailableMove(Pokemon pokemon)
@@ -182,125 +294,80 @@ namespace Server
             return availableMoves;
         }
 
-        void SetWildPokemonSelectedMove()
+        PokemonMove SetWildPokemonSelectedMove()
         {
-            List<PokemonMove> enemyPKMAvailableMoves = FindAvailableMove(_wildPokemon);
+            List<PokemonMove> availableMoves = FindAvailableMove(_wildPokemon);
 
-            if (enemyPKMAvailableMoves.Count > 0)
-                _wildPokemon.SelectedMove = enemyPKMAvailableMoves[_random.Next(0, enemyPKMAvailableMoves.Count)];
+            int ranMoveOrder = _random.Next(0, availableMoves.Count);
+
+            if (availableMoves.Count > 0)
+                return availableMoves[ranMoveOrder];
             else
-            {
-                _wildPokemon.SetNoPPMoveToSelectedMove();
-            }
+                return _wildPokemon.NoPPMove;
         }
 
-        public S_UsePokemonMove UseBattlePokemonMove()
-        {
-            if (!_myTurn && !_enemyTurn)
-                SetAttackAndDefensePokemon();
-
-            S_UsePokemonMove s_UseMovePacket = new S_UsePokemonMove();
-
-            // 턴 체크
-            if (_attackPokemon == _myPokemon)
-            {
-                s_UseMovePacket.IsMyPokemon = true;
-                _myTurn = true;
-            }
-            else
-            {
-                s_UseMovePacket.IsMyPokemon = false;
-                _enemyTurn = true;
-            }
-
-            if (_attackPokemon.DidSelectedMoveHit())
-            {
-                s_UseMovePacket.IsHit = true;
-                s_UseMovePacket.RemainedPP = _attackPokemon.SelectedMove.CurPP;
-
-                ChangeBattlePokemonHp(s_UseMovePacket);
-
-                if (_defensePokemon.PokemonInfo.PokemonStatus == PokemonStatusCondition.Fainting)
-                {
-                    s_UseMovePacket.IsTurnFinish = true;
-                    _myTurn = false;
-                    _enemyTurn = false;
-
-                    return s_UseMovePacket;
-                }
-            }
-            else
-            {
-                s_UseMovePacket.IsHit = false;
-                s_UseMovePacket.RemainedPP = _attackPokemon.SelectedMove.CurPP;
-            }
-
-            // 공격, 수비 포켓몬 바꾸기
-            if (!_myTurn || !_enemyTurn)
-            {
-                s_UseMovePacket.IsTurnFinish = false;
-
-                Pokemon temp = _attackPokemon;
-                _attackPokemon = _defensePokemon;
-                _defensePokemon = temp;
-            }
-            else // 턴이 끝났다면 턴 초기화
-            {
-                _escapeTurnCnt++;
-
-                if (_escapeTurnCnt > 10)
-                    _escapeTurnCnt = 10;
-
-                s_UseMovePacket.IsTurnFinish = true;
-                _myTurn = false;
-                _enemyTurn = false;
-            }
-            
-            return s_UseMovePacket;
-        }
-
-        public void ChangeBattlePokemonHp(S_UsePokemonMove useMovePacket)
+        public void ChangeBattlePokemonHp(PokemonMove move, Pokemon attackPokemon, Pokemon defensePokemon, float damageModifier)
         {
             int finalDamage = 0;
-            float multiplier = CalDamageModifier(useMovePacket);
 
-            if (multiplier == 0f)
+            if (damageModifier == 0f)
+            {
                 return;
+            }
+            else
+            {
+                finalDamage = CalFinalDamage(move, attackPokemon, defensePokemon, damageModifier);
 
-            finalDamage = CalFinalDamage(_attackPokemon.SelectedMove, _attackPokemon, _defensePokemon);
-            
-            finalDamage = (int)((float)finalDamage * multiplier);
-
-            _defensePokemon.GetDamaged(finalDamage);
-
-            useMovePacket.RemainedHp = _defensePokemon.PokemonStat.Hp;
-
-            useMovePacket.PokemonStatus = _defensePokemon.PokemonInfo.PokemonStatus;
+                defensePokemon.GetDamaged(finalDamage);
+            }
         }
 
-        public float GetTypeEffectivenessMultiplier(Pokemon attackPokemon, Pokemon defensePokemon)
+        float GetCriticalModifier(PokemonMove move)
+        {
+            float criticalModifier;
+
+            float rawRandom = (float)(_random.NextDouble() * (100.00 - 0.00) + 0.00);
+            float ran = (float)Math.Round(rawRandom, 2, MidpointRounding.AwayFromZero);
+
+            if (ran <= move.CriticalRate)
+            {
+                criticalModifier = 1.5f;
+            }
+            else
+            {
+                criticalModifier = 1;
+            }
+
+            return criticalModifier;
+        }
+
+        float GetTypeEqualModifier(PokemonMove move, Pokemon attackPokemon)
+        {
+            float typeEqualModifier;
+
+            if (attackPokemon.PokemonInfo.Type1 == move.MoveType)
+                typeEqualModifier = 1.5f;
+            else if (attackPokemon.PokemonInfo.Type2 == move.MoveType)
+                typeEqualModifier = 1.5f;
+            else
+                typeEqualModifier = 1f;
+
+            return typeEqualModifier;
+        }
+
+        float GetTypeEffectivenessMultiplier(Pokemon attackPokemon, Pokemon defensePokemon, PokemonMove attackMove)
         {
             float multiplier = 1f;
 
-            multiplier *= PokemonTypeChecker.Instance.GetEffectiveness(attackPokemon.SelectedMove.MoveType, defensePokemon.PokemonInfo.Type1);
+            multiplier *= PokemonTypeChecker.Instance.GetEffectiveness(attackMove.MoveType, defensePokemon.PokemonInfo.Type1);
 
             if (defensePokemon.PokemonInfo.Type2 != PokemonType.TypeNone)
-                multiplier *= PokemonTypeChecker.Instance.GetEffectiveness(attackPokemon.SelectedMove.MoveType, defensePokemon.PokemonInfo.Type2);
+                multiplier *= PokemonTypeChecker.Instance.GetEffectiveness(attackMove.MoveType, defensePokemon.PokemonInfo.Type2);
 
             return multiplier;
         }
 
-        public int GetExp()
-        {
-            //int exp = (112 * _wildPokemon.PokemonInfo.Level) / 7;
-            int exp = 50;
-
-            _remainedExp = exp;
-
-            return exp;
-        }
-
-        int CalFinalDamage(PokemonMove attackMove, Pokemon attackPokemon, Pokemon defensePokemon)
+        int CalFinalDamage(PokemonMove attackMove, Pokemon attackPokemon, Pokemon defensePokemon, float damageModifier)
         {
             float finalDamage = 0;
 
@@ -317,58 +384,87 @@ namespace Server
                 * ((float)attackPokemon.PokemonStat.SpecialAttack) / ((float)defensePokemon.PokemonStat.SpecialDefense)
                 ) / 50f + 2f);
 
+            finalDamage = finalDamage * damageModifier;
+
             if ((int)finalDamage <= 0)
                 finalDamage = 1f;
 
             return (int)finalDamage;
         }
 
-        float CalDamageModifier(S_UsePokemonMove useMovePacket)
+        public S_GetEnemyPokemonExp GetExp()
         {
-            float typeEffectivenessModifier = GetTypeEffectivenessMultiplier(_attackPokemon, _defensePokemon);
-            useMovePacket.TypeEffectiveness = typeEffectivenessModifier;
+            S_GetEnemyPokemonExp getExpPacket = new S_GetEnemyPokemonExp();
+            getExpPacket.GotExpPokemonSum = _getExpPokemons[_curExpIdx].MakePokemonSummary();
 
-            float typeEqualModifier;
-            float criticalModifier;
+            //int exp = (112 * _wildPokemon.PokemonInfo.Level) / 7;
+            _remainedExp = (int)Math.Ceiling(300f / ((float)_getExpPokemons.Count));
 
-            if (_attackPokemon.PokemonInfo.Type1 == _attackPokemon.SelectedMove.MoveType)
-                typeEqualModifier = 1.5f;
-            else if (_attackPokemon.PokemonInfo.Type2 == _attackPokemon.SelectedMove.MoveType)
-                typeEqualModifier = 1.5f;
-            else
-                typeEqualModifier = 1f;
+            getExpPacket.Exp = _remainedExp;
 
-            float rawRandom = (float)(_random.NextDouble() * (100.00 - 0.00) + 0.00);
-            float ran = (float)Math.Round(rawRandom, 2, MidpointRounding.AwayFromZero);
-
-            if (ran <= _attackPokemon.SelectedMove.CriticalRate)
-            {
-                criticalModifier = 1.5f;
-                useMovePacket.IsCriticalHit = true;
-            }
-            else
-            {
-                criticalModifier = 1;
-                useMovePacket.IsCriticalHit = false;
-            }
-
-            return typeEffectivenessModifier * typeEqualModifier * criticalModifier;
+            return getExpPacket;
         }
 
-        void SetAttackAndDefensePokemon()
+        public S_CheckAndApplyRemainedExp CheckAndApplyExp()
+        {
+            S_CheckAndApplyRemainedExp s_CheckAndApplyExpPacket = new S_CheckAndApplyRemainedExp();
+
+            Pokemon expPokemon = _getExpPokemons[_curExpIdx];
+            int finalExp;
+
+            if (_curExpIdx == 0)
+                s_CheckAndApplyExpPacket.IsMainPokemon = true;
+            else
+                s_CheckAndApplyExpPacket.IsMainPokemon = false;
+
+            if (_remainedExp > expPokemon.ExpInfo.RemainExpToNextLevel)
+                finalExp = expPokemon.ExpInfo.RemainExpToNextLevel;
+            else
+                finalExp = _remainedExp;
+
+            _remainedExp -= finalExp;
+
+            if (_remainedExp <= 0)
+                _curExpIdx++;
+
+            s_CheckAndApplyExpPacket.FinalExp = finalExp;
+
+            bool isLevelUp = expPokemon.GetExpAndCheckLevelUp(finalExp);
+
+            if (isLevelUp)
+            {
+                s_CheckAndApplyExpPacket.StatDiff = expPokemon.LevelUp();
+                s_CheckAndApplyExpPacket.NewMoveSum = expPokemon.CheckNewLearnableMove();
+
+                if (expPokemon.CanPokemonEvolve())
+                    _evolvePokemons.Add(expPokemon);
+            }
+
+            s_CheckAndApplyExpPacket.ExpPokemonSum = expPokemon.MakePokemonSummary();
+
+            return s_CheckAndApplyExpPacket;
+        }
+
+        public bool CheckExpPokemons()
+        {
+            if (_getExpPokemons.Count > _curExpIdx)
+                return true;
+            else
+                return false;
+        }
+
+        bool IsMyPokemonFast()
         {
             int myPokemonSpeed = _myPokemon.PokemonStat.Speed;
             int enemyPokemonSpeed = _wildPokemon.PokemonStat.Speed;
 
             if (myPokemonSpeed > enemyPokemonSpeed)
             {
-                _attackPokemon = _myPokemon;
-                _defensePokemon = _wildPokemon;
+                return true;
             }
             else if (myPokemonSpeed < enemyPokemonSpeed)
             {
-                _attackPokemon = _wildPokemon;
-                _defensePokemon = _myPokemon;
+                return false;
             }
             else
             {
@@ -376,15 +472,30 @@ namespace Server
 
                 if (ran > 50)
                 {
-                    _attackPokemon = _myPokemon;
-                    _defensePokemon = _wildPokemon;
+                    return true;
                 }
                 else
                 {
-                    _attackPokemon = _wildPokemon;
-                    _defensePokemon = _myPokemon;
+                    return false;
                 }
             }
+        }
+
+        public bool FindAvailableBattlePokemon()
+        {
+            for (int i = 0; i < _pokemons.Count; i++)
+            {
+                if (i == 0)
+                    continue;
+                else
+                {
+                    Pokemon pokemon = _pokemons[i];
+                    if (pokemon.PokemonInfo.PokemonStatus != PokemonStatusCondition.Fainting)
+                        return true;
+                }
+            }
+
+            return false;
         }
 
         public bool CalEscapeRate()
@@ -410,14 +521,47 @@ namespace Server
                         _escapeTurnCnt++;
 
                         _myTurn = true;
-                        _attackPokemon = WildPokemon;
-                        _defensePokemon = _myPokemon;
                         SetWildPokemonSelectedMove();
                     }
 
                     return false;
                 }
             }
+        }
+
+        public bool CheckEvolutionPokemon()
+        {
+            if (_evolvePokemons.Count == _curEvolutionIdx)
+                return false;
+            else
+                return true;
+        }
+
+        public S_EnterPokemonEvolutionScene GetEvolutionPokemon()
+        {
+            S_EnterPokemonEvolutionScene enterEvolutionPacket = new S_EnterPokemonEvolutionScene();
+            enterEvolutionPacket.PlayerInfo = _player.MakePlayerInfo();
+            enterEvolutionPacket.PokemonSum =  _evolvePokemons[_curEvolutionIdx].MakePokemonSummary();
+            enterEvolutionPacket.EvolvePokemonName = _evolvePokemons[_curEvolutionIdx].GetEvolvePokemonName();
+
+            return enterEvolutionPacket;
+        }
+
+        public S_PokemonEvolution EvolvePokemon(bool isEvolution)
+        {
+            S_PokemonEvolution evolutionPacket = new S_PokemonEvolution();
+
+            if (isEvolution)
+            {
+                _evolvePokemons[_curEvolutionIdx].PokemonEvolution();
+                evolutionPacket.NewMoveSum = _evolvePokemons[_curEvolutionIdx].CheckNewLearnableMove();
+            }
+
+            evolutionPacket.EvolvePokemonSum = _evolvePokemons[_curEvolutionIdx].MakePokemonSummary();
+
+            _curEvolutionIdx++;
+
+            return evolutionPacket;
         }
     }
 }

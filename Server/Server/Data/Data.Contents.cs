@@ -34,6 +34,12 @@ public struct PokemonMoveDictData
     public PokemonType moveType;
 }
 
+public struct EvolutionChain
+{
+    public int evolutionLevel;
+    public string evolutionPokemonName;
+}
+
 public struct LearnableMoveData
 {
     public int learnLevel;
@@ -60,6 +66,7 @@ public struct PokemonSummaryDictData
     public int specialDefense;
     public int speed;
     public LearnableMoveData[] learnableMoves;
+    public EvolutionChain evolutionChain;
 }
 
 public struct WildPokemonAppearData

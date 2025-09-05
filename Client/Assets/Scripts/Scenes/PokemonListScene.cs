@@ -23,16 +23,10 @@ public class PokemonListScene : BaseScene
     int _selectedPokemonIdx;
     int _selectedSwitchPokemonIdx;
     PlayerInfo _playerInfo;
-    List<Pokemon> _myPokemons;
-    List<DynamicButton> _pokemonBtns;
-    List<DynamicButton> _actionBtns;
     PokemonListSceneState _sceneState;
 
     [SerializeField] PokemonListSelectArea _pokemonSelectingZone;
-    [SerializeField] List<DynamicButton> _pokemonSelectBtns;
     [SerializeField] GridLayoutSelectBox _actionSelectBox;
-    List<DynamicButton> _actionSelectBtns;
-    [SerializeField] DynamicButton _actionBtn;
     [SerializeField] TextMeshProUGUI _instructorTmp;
 
     protected override void Init()
@@ -68,74 +62,52 @@ public class PokemonListScene : BaseScene
 
                     S_EnterPokemonListScene s_enterPokemonListPacket = packet as S_EnterPokemonListScene;
                     PlayerInfo playerInfo = s_enterPokemonListPacket.PlayerInfo;
-                    IList myPokmeonSums = s_enterPokemonListPacket.PokemonSums;
+                    IList myPokemonSums = s_enterPokemonListPacket.PokemonSums;
 
                     // 플레이어, 포켓몬 데이터 채우기
                     Managers.Object.PlayerInfo = playerInfo;
                     _playerInfo = playerInfo;
-                    _myPokemons = new List<Pokemon>();
-
-                    foreach (PokemonSummary sum in myPokmeonSums)
-                    {
-                        _myPokemons.Add(new Pokemon(sum));
-                    }
 
                     // 포켓몬 선택 기능 세팅
-                    _pokemonBtns = new List<DynamicButton>();
-
-                    for (int i = 0; i <= _myPokemons.Count; i++)
+                    List<object> datas = new List<object>();
+                    for (int i = 0; i < myPokemonSums.Count; i++)
                     {
-                        if (i == _myPokemons.Count)
-                        {
-                            _pokemonBtns.Add(_pokemonSelectBtns[_pokemonSelectBtns.Count - 1]);
-                            _pokemonBtns[i].BtnData = Util.FindChild<TextMeshProUGUI>(_pokemonBtns[i].gameObject, "ContentText", true).text;
-                        }
-                        else
-                        {
-                            _pokemonSelectBtns[i].gameObject.SetActive(true);
-                            _pokemonSelectBtns[i].GetComponent<PokemonCard>().FillPokemonCard(_myPokemons[i]);
-                            _pokemonBtns.Add(_pokemonSelectBtns[i]);
-                            _pokemonBtns[i].BtnData = _myPokemons[i];
-                        }
+                        PokemonSummary pokemonSum = myPokemonSums[i] as PokemonSummary;
+
+                        datas.Add(pokemonSum);
+                    }
+                    _pokemonSelectingZone.CreateButton(datas);
+
+                    // 포켓몬카드에 렌더링 하기
+                    List<DynamicButton> btns = _pokemonSelectingZone.ChangeBtnGridDataToList();
+                    for (int i = 0; i < btns.Count; i++)
+                    {
+                        btns[i].GetComponent<PokemonCard>().FillPokemonCard(myPokemonSums[i] as PokemonSummary);
                     }
 
-                    _pokemonSelectingZone.FillButtonGrid(_pokemonBtns.Count, 1, _pokemonBtns);
-
                     // 액션 선택 기능 세팅
-                    _actionBtns = new List<DynamicButton>();
-
                     if (_playerInfo.ObjectInfo.PosInfo.State == CreatureState.Fight)
                     {
-                        for (int i = 0; i < 3; i++)
+                        List<string> btnNames = new List<string>()
                         {
-                            _actionBtns.Add(GameObject.Instantiate(_actionBtn, _actionSelectBox.transform));
-
-                            if (i == 0)
-                                _actionBtns[i].SetButtonName("Send Out");
-                            else if (i == 1)
-                                _actionBtns[i].SetButtonName("Summary");
-                            else if (i == 2)
-                                _actionBtns[i].SetButtonName("Cancel");
-                        }
+                            "Send Out",
+                            "Summary",
+                            "Cancel"
+                        };
+                        _actionSelectBox.CreateButtons(btnNames, 1, 400, 100);
                     }
                     else
                     {
                         // 비전머신이 만들어지면 커스텀
-                        for (int i = 0; i < 4; i++)
+                        List<string> btnNames = new List<string>()
                         {
-                            _actionBtns.Add(GameObject.Instantiate(_actionBtn, _actionSelectBox.transform));
-
-                            if (i == 0)
-                                _actionBtns[i].SetButtonName("Summary");
-                            else if (i == 1)
-                                _actionBtns[i].SetButtonName("Switch");
-                            else if (i == 2)
-                                _actionBtns[i].SetButtonName("Item");
-                            else if (i == 3)
-                                _actionBtns[i].SetButtonName("Cancel");
-                        }
+                            "Summary",
+                            "Switch",
+                            "Item",
+                            "Cancel"
+                        };
+                        _actionSelectBox.CreateButtons(btnNames, 1, 400, 100);
                     }
-                    _actionSelectBox.SetSelectBoxContent(_actionBtns, _actionBtns.Count, 1);
                 }
                 break;
         }
@@ -164,34 +136,14 @@ public class PokemonListScene : BaseScene
                         {
                             if (_playerInfo.ObjectInfo.PosInfo.State == CreatureState.Fight)
                             {
-                                C_ReturnPokemonBattleScene returnBattleScene = new C_ReturnPokemonBattleScene();
-                                returnBattleScene.PlayerId = _playerInfo.ObjectInfo.ObjectId;
+                                List<DynamicButton> pokemonBtns = _pokemonSelectingZone.ChangeBtnGridDataToList();
+                                PokemonSummary firstPokemonSum = pokemonBtns[0].BtnData as PokemonSummary;
 
-                                Managers.Network.SavePacket(returnBattleScene);
-
-                                _enterEffect.PlayEffect("FadeOut");
-
-                                _sceneState = PokemonListSceneState.MOVING_TO_BATTLE_SCENE;
-                                ActiveUIBySceneState(_sceneState);
-                            }
-                            else
-                            {
-                                _enterEffect.PlayEffect("FadeOut");
-
-                                _sceneState = PokemonListSceneState.MOVING_TO_GAME_SCENE;
-                                ActiveUIBySceneState(_sceneState);
-                            }
-                        }
-                        else if (inputEvent == Define.InputSelectBoxEvent.SELECT)
-                        {
-                            if (_pokemonBtns[_selectedPokemonIdx].BtnData is Pokemon)
-                            {
-                                _sceneState = PokemonListSceneState.CHOOSING_ACTION;
-                                ActiveUIBySceneState(_sceneState);
-                            }
-                            else if (_pokemonBtns[_selectedPokemonIdx].BtnData as string == "CANCEL")
-                            {
-                                if (_playerInfo.ObjectInfo.PosInfo.State == CreatureState.Fight)
+                                if (firstPokemonSum.PokemonInfo.PokemonStatus == PokemonStatusCondition.Fainting)
+                                {
+                                    return;
+                                }
+                                else
                                 {
                                     C_ReturnPokemonBattleScene returnBattleScene = new C_ReturnPokemonBattleScene();
                                     returnBattleScene.PlayerId = _playerInfo.ObjectInfo.ObjectId;
@@ -203,6 +155,41 @@ public class PokemonListScene : BaseScene
                                     _sceneState = PokemonListSceneState.MOVING_TO_BATTLE_SCENE;
                                     ActiveUIBySceneState(_sceneState);
                                 }
+                            }
+                            else
+                            {
+                                _enterEffect.PlayEffect("FadeOut");
+
+                                _sceneState = PokemonListSceneState.MOVING_TO_GAME_SCENE;
+                                ActiveUIBySceneState(_sceneState);
+                            }
+                        }
+                        else if (inputEvent == Define.InputSelectBoxEvent.SELECT)
+                        {
+                            if (_pokemonSelectingZone.GetSelectedBtnData() as string == "Cancel")
+                            {
+                                if (_playerInfo.ObjectInfo.PosInfo.State == CreatureState.Fight)
+                                {
+                                    List<DynamicButton> pokemonBtns = _pokemonSelectingZone.ChangeBtnGridDataToList();
+                                    PokemonSummary firstPokemonSum = pokemonBtns[0].BtnData as PokemonSummary;
+
+                                    if (firstPokemonSum.PokemonInfo.PokemonStatus == PokemonStatusCondition.Fainting)
+                                    {
+                                        return;
+                                    }
+                                    else
+                                    {
+                                        C_ReturnPokemonBattleScene returnBattleScene = new C_ReturnPokemonBattleScene();
+                                        returnBattleScene.PlayerId = _playerInfo.ObjectInfo.ObjectId;
+
+                                        Managers.Network.SavePacket(returnBattleScene);
+
+                                        _enterEffect.PlayEffect("FadeOut");
+
+                                        _sceneState = PokemonListSceneState.MOVING_TO_BATTLE_SCENE;
+                                        ActiveUIBySceneState(_sceneState);
+                                    }
+                                }
                                 else
                                 {
                                     _enterEffect.PlayEffect("FadeOut");
@@ -210,6 +197,11 @@ public class PokemonListScene : BaseScene
                                     _sceneState = PokemonListSceneState.MOVING_TO_GAME_SCENE;
                                     ActiveUIBySceneState(_sceneState);
                                 }
+                            }
+                            else
+                            {
+                                _sceneState = PokemonListSceneState.CHOOSING_ACTION;
+                                ActiveUIBySceneState(_sceneState);
                             }
                         }
                     }
@@ -236,7 +228,7 @@ public class PokemonListScene : BaseScene
 
                             if (selectedAction == "Summary")
                             {
-                                Managers.Scene.Data = _pokemonBtns[_selectedPokemonIdx].BtnData;
+                                Managers.Scene.Data = _pokemonSelectingZone.GetSelectedBtnData();
 
                                 _enterEffect.PlayEffect("FadeOut");
 
@@ -245,6 +237,7 @@ public class PokemonListScene : BaseScene
                             }
                             else if (selectedAction == "Switch")
                             {
+                                Debug.Log(_pokemonSelectingZone.GetSelectedSwitchBtnData());
                                 _sceneState = PokemonListSceneState.CHOOSING_POKEMON_TO_SWITCH;
                                 ActiveUIBySceneState(_sceneState);
                             }
@@ -253,9 +246,10 @@ public class PokemonListScene : BaseScene
                             }
                             else if (selectedAction == "Send Out")
                             {
-                                int selectedIdx = _pokemonSelectingZone.GetSelectedIdx();
+                                PokemonSummary pokemonSum = _pokemonSelectingZone.GetSelectedBtnData() as PokemonSummary;
+                                int selectedIdx = _pokemonSelectingZone.GetSelectedIndex();
 
-                                if (selectedIdx == 0 || _myPokemons[selectedIdx].PokemonInfo.PokemonStatus == PokemonStatusCondition.Fainting)
+                                if (selectedIdx == 0 || pokemonSum.PokemonInfo.PokemonStatus == PokemonStatusCondition.Fainting)
                                 {
                                     return;
                                 }
@@ -266,7 +260,7 @@ public class PokemonListScene : BaseScene
                                 switchPokemon.PokemonToIdx = selectedIdx;
 
                                 Managers.Network.SavePacket(switchPokemon);
-                                Managers.Scene.Data = _myPokemons[0];
+                                Managers.Scene.Data = _pokemonSelectingZone.ChangeBtnGridDataToList()[0];
 
                                 _enterEffect.PlayEffect("FadeOut");
 
@@ -295,7 +289,15 @@ public class PokemonListScene : BaseScene
                         }
                         else if (inputEvent == Define.InputSelectBoxEvent.SELECT)
                         {
-                            if (_pokemonBtns[_selectedSwitchPokemonIdx].BtnData is Pokemon)
+                            Debug.Log(_pokemonSelectingZone.GetSelectedBtnData());
+                            if (_pokemonSelectingZone.GetSelectedBtnData() as string == "Cancel")
+                            {
+                                _enterEffect.PlayEffect("FadeOut");
+
+                                _sceneState = PokemonListSceneState.MOVING_TO_GAME_SCENE;
+                                ActiveUIBySceneState(_sceneState);
+                            }
+                            else
                             {
                                 C_SwitchPokemon switchPacket = new C_SwitchPokemon();
                                 switchPacket.OwnerId = _playerInfo.ObjectInfo.ObjectId;
@@ -308,13 +310,6 @@ public class PokemonListScene : BaseScene
                                 ActiveUIBySceneState(_sceneState);
 
                                 _pokemonSelectingZone.MoveAndSwitchPokemonCard();
-                            }
-                            else if (_pokemonBtns[_selectedSwitchPokemonIdx].BtnData as string == "CANCEL")
-                            {
-                                _enterEffect.PlayEffect("FadeOut");
-
-                                _sceneState = PokemonListSceneState.MOVING_TO_GAME_SCENE;
-                                ActiveUIBySceneState(_sceneState);
                             }
                         }
                     }

@@ -248,11 +248,11 @@ public class IntroScene : BaseScene
         }
         else if (state == IntroSceneState.INPUTING_GENDER)
         {
-            _genderSelectArea.UIState = GridSelectBoxState.SELECTING;
+            _genderSelectArea.UIState = SelectAreaState.SELECTING;
         }
         else if (state == IntroSceneState.HIDING_GENDER_UI)
         {
-            _genderSelectArea.UIState = GridSelectBoxState.NONE;
+            _genderSelectArea.UIState = SelectAreaState.NONE;
         }
     }
 

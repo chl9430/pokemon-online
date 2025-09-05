@@ -15,7 +15,8 @@ public class Define
         PokemonSummary,
         Battle,
         Bag,
-        PokemonExchange
+        PokemonExchange,
+        Evolution
     }
 
     public enum Sound

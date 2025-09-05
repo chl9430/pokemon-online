@@ -41,25 +41,30 @@ enum MsgId {
   
   C_USE_ITEM = 50;
   S_USE_ITEM = 51;
-  C_USE_POKEMON_MOVE = 17;
-  S_USE_POKEMON_MOVE = 18;
-
-  C_SET_BATTLE_POKEMON_MOVE = 33;
-  S_SET_BATTLE_POKEMON_MOVE = 34;
   
+  // ¹èÆ² ¾À
+  C_REQUEST_DATA_BY_ID = 60;
+  C_PROCESS_TURN = 310;
+  S_PROCESS_TURN = 320;
   S_SWITCH_BATTLE_POKEMON = 31;
-  
-  C_RETURN_GAME = 4;
+  S_GET_ENEMY_POKEMON_EXP = 61;
+  S_CHECK_AND_APPLY_REMAINED_EXP = 62;
+  S_CHECK_AVAILABLE_BATTLE_POKEMON = 550;
+  S_ESCAPE_FROM_WILD_POKEMON = 63;
+  S_CHECK_EXP_POKEMON = 340;
+  S_CHECK_POKEMON_EVOLUTION = 330;
   C_RETURN_POKEMON_BATTLE_SCENE = 72;
   S_RETURN_POKEMON_BATTLE_SCENE = 73;
+  
+  C_RETURN_GAME = 4;
 
   C_PLAYER_TALK = 70;
   S_SEND_TALK_REQUEST = 71;
 
-  C_REQUEST_DATA_BY_ID = 60;
-  S_GET_ENEMY_POKEMON_EXP = 61;
-  S_CHECK_AND_APPLY_REMAINED_EXP = 62;
-  S_ESCAPE_FROM_WILD_POKEMON = 63;
+  C_ENTER_POKEMON_EVOLUTION_SCENE = 500;
+  S_ENTER_POKEMON_EVOLUTION_SCENE = 510;
+  C_POKEMON_EVOLUTION = 520;
+  S_POKEMON_EVOLUTION = 530;
 }
 
 enum CreatureState {
@@ -252,11 +257,6 @@ message S_ExitPokemonExchangeScene
     PlayerInfo exitPlayerInfo = 1;
 }
 
-message C_RequestDataById
-{
-    int32 playerId = 1;
-    RequestType requestType = 2;
-}
 
 message C_PlayerTalk
 {
@@ -267,14 +267,6 @@ message C_PlayerTalk
 message S_SendTalkRequest
 {
     TalkRequestType talkRequestType = 1;
-}
-
-enum RequestType
-{
-    CHECK_OBJECT_IN_MAP = 0;
-    GET_ENEMY_POKEMON_EXP = 1;
-    CHECK_AND_APPLY_REMAINED_EXP = 2;
-    ESCAPE_FROM_WILD_POKEMON = 3;
 }
 
 enum TalkRequestType
@@ -313,49 +305,56 @@ message S_EnterPlayerBagScene
     map<int32, CategoryInventory> inventory = 2;
 }
 
-message C_SetBattlePokemonMove
+// ¹èÆ² ¾À
+message C_RequestDataById
+{
+    int32 playerId = 1;
+    RequestType requestType = 2;
+}
+
+enum RequestType
+{
+    CHECK_OBJECT_IN_MAP = 0;
+    GET_ENEMY_POKEMON_EXP = 2;
+    CHECK_AND_APPLY_REMAINED_EXP = 3;
+    ESCAPE_FROM_WILD_POKEMON = 4;
+    CHECK_EXP_POKEMON = 5;
+    CHECK_AVAILABLE_BATTLE_POKEMON = 6;
+    CHECK_POKEMON_EVOLUTION = 7;
+}
+
+message C_ProcessTurn
 {
     int32 playerId = 1;
     int32 moveOrder = 2;
 }
 
-message S_SetBattlePokemonMove
+message S_ProcessTurn
 {
-    int32 myMoveOrder = 1;
-    int32 enemyMoveOrder = 2;
-}
-
-message C_UsePokemonMove
-{
-    int32 playerId = 1;
-    int32 moveOrder = 2;
-}
-
-message S_UsePokemonMove
-{
-    bool isMyPokemon = 1;
-    bool _isHit = 2;
-    int32 remainedPP = 3;
-    int32 remainedHp = 4;
-    float typeEffectiveness = 5;
-    PokemonStatusCondition pokemonStatus = 6;
-    bool isCriticalHit = 7;
-    bool isTurnFinish = 8;
+    bool canUseMove = 1;
+    bool isMyPokemon  = 2;
+    int32 usedMoveOrder = 3;
+    PokemonMoveSummary usedMoveSum = 4;
+    PokemonSummary defensePokemonSum = 5;
+    bool _isHit = 6;
+    float typeEffectiveness = 7;
+    bool isCriticalHit = 8;
+    bool isTurnFinish = 9;
 }
 
 message S_GetEnemyPokemonExp
 {
-    int32 exp = 1;
+    PokemonSummary gotExpPokemonSum = 1;
+    int32 exp = 2;
 }
 
 message S_CheckAndApplyRemainedExp
 {
-    int32 FinalExp = 1;
-    PokemonExpInfo expInfo = 2;
-    int32 pokemonLevel = 3;
-    PokemonStat pokemonStat = 4;
-    LevelUpStatusDiff statDiff = 5;
-    PokemonMoveSummary newMoveSum = 6;
+    int32 finalExp = 1;
+    PokemonSummary expPokemonSum = 2;
+    LevelUpStatusDiff statDiff = 3;
+    PokemonMoveSummary newMoveSum = 4;
+    bool isMainPokemon = 5;
 }
 
 message S_EscapeFromWildPokemon
@@ -363,11 +362,27 @@ message S_EscapeFromWildPokemon
     bool canEscape = 1;
 }
 
+message S_CheckExpPokemon
+{
+    bool isThereMoreExpPokemon = 1;
+}
+
+message S_CheckAvailableBattlePokemon
+{
+    bool canFight = 1;
+}
+
+message S_CheckPokemonEvolution
+{
+    bool goToEvolutionScene = 1;
+}
+
 message S_SwitchBattlePokemon
 {
     PlayerInfo playerInfo = 1;
     PokemonSummary enemyPokemonSum = 2;
     repeated PokemonSummary myPokemonSums = 3;
+    PokemonSummary prevPokemonSum = 4;
 }
 
 message C_ReturnPokemonBattleScene
@@ -381,6 +396,34 @@ message S_ReturnPokemonBattleScene
     PokemonSummary enemyPokemonSum = 2;
     repeated PokemonSummary myPokemonSums = 3;
 }
+
+
+
+// Æ÷ÄÏ¸ó ÁøÈ­ ¾À
+message C_EnterPokemonEvolutionScene
+{
+    int32 playerId = 1;
+}
+
+message S_EnterPokemonEvolutionScene
+{
+    PlayerInfo playerInfo = 1;
+    PokemonSummary pokemonSum = 2;
+    string evolvePokemonName = 3;
+}
+
+message C_PokemonEvolution
+{
+    int32 playerId = 1;
+    bool isEvolution = 2;
+}
+
+message S_PokemonEvolution
+{
+    PokemonSummary evolvePokemonSum = 1;
+    PokemonMoveSummary newMoveSum = 2;
+}
+
 
 
 
@@ -510,6 +553,8 @@ enum PokemonType
     WATER = 2;
     ELECTR = 3;
     GRASS = 4;
+    FLYING = 5;
+    POISON = 6;
     TYPE_NONE = 99;
 }
 

@@ -1,3 +1,4 @@
+using Google.Protobuf.Protocol;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -52,14 +53,14 @@ public class PokemonCard : MonoBehaviour
         }
     }
 
-    public void FillPokemonCard(Pokemon pokemon)
+    public void FillPokemonCard(PokemonSummary pokemonSum)
     {
-        Texture2D image = pokemon.PokemonIconImage;
+        Texture2D image = Managers.Resource.Load<Texture2D>($"Textures/Pokemon/{pokemonSum.PokemonInfo.PokemonName}_Icon");
 
         _pokemonImg.sprite = Sprite.Create(image, new Rect(0, 0, image.width, image.height), Vector2.one * 0.5f);
         _pokemonImg.SetNativeSize();
 
-        image = pokemon.PokemonStatusImage;
+        image = Managers.Resource.Load<Texture2D>($"Textures/UI/{pokemonSum.PokemonInfo.PokemonStatus}_Icon");
 
         if (image == null)
         {
@@ -79,13 +80,14 @@ public class PokemonCard : MonoBehaviour
             _pokemonImg.SetNativeSize();
         }
 
-        image = pokemon.PokemonGenderImage;
+        image = Managers.Resource.Load<Texture2D>($"Textures/Pokemon/PokemonGender_{pokemonSum.PokemonInfo.Gender}");
 
         _pokemonGenderImg.sprite = Sprite.Create(image, new Rect(0, 0, image.width, image.height), Vector2.one * 0.5f);
         _pokemonImg.SetNativeSize();
-        _pokemonNickname.text = pokemon.PokemonInfo.NickName;
-        _pokemonHp.text = $"HP : {pokemon.PokemonStat.Hp.ToString()} / {pokemon.PokemonStat.MaxHp.ToString()}";
-        _pokemonLevel.text = $"Lv.{pokemon.PokemonInfo.Level}";
+
+        _pokemonNickname.text = pokemonSum.PokemonInfo.NickName;
+        _pokemonHp.text = $"HP : {pokemonSum.PokemonStat.Hp.ToString()} / {pokemonSum.PokemonStat.MaxHp.ToString()}";
+        _pokemonLevel.text = $"Lv.{pokemonSum.PokemonInfo.Level}";
     }
 
     public void SetDirection(int dir, float speed)
@@ -118,7 +120,7 @@ public class PokemonCard : MonoBehaviour
             _rt.anchorMin = newMinPos;
             _rt.anchorMax = newMaxPos;
 
-            FillPokemonCard(_dynamicButton.BtnData as Pokemon);
+            FillPokemonCard(_dynamicButton.BtnData as PokemonSummary);
 
             SetDirection(_dir * -1, _speed);
             _state = PokemonCardState.MOVING_BACK;

@@ -110,10 +110,9 @@ public class BattleArea : MonoBehaviour
         _battlePokemonHitImage.color = colorToUnvisible;
     }
 
-    public void TriggerPokemonHitImage(Pokemon attackingPKM)
+    public void TriggerPokemonHitImage(PokemonMove attackMove)
     {
-        Texture2D texture = attackingPKM.SelectedMove.HitEffectImage;
+        Texture2D texture = attackMove.HitEffectImage;
         StartCoroutine(BlinkPokemonHitEffect(texture));
     }
-
 }

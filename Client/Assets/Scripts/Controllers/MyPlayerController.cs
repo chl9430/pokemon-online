@@ -12,6 +12,11 @@ public class MyPlayerController : PlayerController
     public bool IsLoading { set {  _isLoading = value; } }
     public PokemonAppearanceTile PokemonTile {  set { _pokemonTile = value; } }
 
+    void Awake()
+    {
+        _isLoading = true;
+    }
+
     protected override void Start()
     {
         base.Start();

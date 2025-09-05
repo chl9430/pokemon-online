@@ -206,6 +206,8 @@ public class PokemonExchangeScene : BaseScene
                 DynamicButton otherBtn = _otherSelectArea.GetSelectedButton();
                 otherBtn.GetComponent<ExchangePokemonCard>().FillPokemonCard(myPokemonSum);
 
+                _pokemonSelectArea.GetSelectedButton().BtnData = otherPokemonSum;
+
                 State = PokemonExchangeSceneState.FINISH_EXCHANGE_SCRIPTING;
                 List<string> script = new List<string>()
                 {

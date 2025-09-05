@@ -168,7 +168,7 @@ public class GridLayoutSelectBox : MonoBehaviour
         _btnGrid[_x, _y].SetSelectedOrNotSelected(true);
     }
 
-    public void CreateButtons(List<string> btnName, int col, int btnWidth, int btnHeight)
+    public void CreateButtons(List<string> btnName, int col, int btnWidth, int btnHeight, List<object> btnDatas = null)
     {
         // 기존에 있던 버튼들 삭제
         if (_btnGrid != null)
@@ -219,7 +219,7 @@ public class GridLayoutSelectBox : MonoBehaviour
 
                         TextMeshProUGUI tmp = Util.FindChild<TextMeshProUGUI>(btn.gameObject, "ContentText", true);
                         tmp.text = btnName[i * _col + j];
-                        btn.BtnData = tmp.text;
+                        btn.BtnData = btnDatas == null ? tmp.text : btnDatas[i * _col + j];
                     }
                 }
                 else
@@ -231,7 +231,7 @@ public class GridLayoutSelectBox : MonoBehaviour
 
                         TextMeshProUGUI tmp = Util.FindChild<TextMeshProUGUI>(btn.gameObject, "ContentText", true);
                         tmp.text = btnName[i * _row + j];
-                        btn.BtnData = tmp.text;
+                        btn.BtnData = btnDatas == null ? tmp.text : btnDatas[i * _row + j];
                     }
                 }
             }
@@ -248,5 +248,10 @@ public class GridLayoutSelectBox : MonoBehaviour
     public int GetSelectedIdx()
     {
         return _x * _col + _y;
+    }
+
+    public DynamicButton GetSelectedBtn()
+    {
+        return _btnGrid[_x, _y];
     }
 }

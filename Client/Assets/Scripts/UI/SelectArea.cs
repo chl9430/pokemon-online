@@ -2,6 +2,12 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 
+public enum SelectAreaState
+{
+    NONE = 0,
+    SELECTING = 1,
+}
+
 public class SelectArea : MonoBehaviour
 {
     protected int _row;
@@ -9,17 +15,17 @@ public class SelectArea : MonoBehaviour
 
     protected int _x = 0;
     protected int _y = 0;
-    GridSelectBoxState _uiState = GridSelectBoxState.NONE;
+    SelectAreaState _uiState = SelectAreaState.NONE;
     protected DynamicButton[,] _btnGrid;
     protected BaseScene _scene;
 
-    public GridSelectBoxState UIState
+    public SelectAreaState UIState
     {
         set
         {
             _uiState = value;
 
-            if (_uiState == GridSelectBoxState.SELECTING)
+            if (_uiState == SelectAreaState.SELECTING)
                 _scene.DoNextAction(_x * _col + _y);
         }
     }
@@ -33,7 +39,7 @@ public class SelectArea : MonoBehaviour
     {
         switch (_uiState)
         {
-            case GridSelectBoxState.SELECTING:
+            case SelectAreaState.SELECTING:
                 ChooseAction();
                 break;
         }
