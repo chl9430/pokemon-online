@@ -52,16 +52,19 @@ public class EvolutionController : MonoBehaviour
         _anim.Play(animName);
     }
 
-    public void SetPokemonImages(string prevPokemonName, string evolvePokemonName)
+    public void SetPrevPokemonImage(string prevPokemonName)
     {
         Texture2D texture = Managers.Resource.Load<Texture2D>($"Textures/Pokemon/{prevPokemonName}");
         _prevPokemonImage = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), Vector2.one * 0.5f);
 
-        texture = Managers.Resource.Load<Texture2D>($"Textures/Pokemon/{evolvePokemonName}");
-        _evolvePokemonImage = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), Vector2.one * 0.5f);
-
         _pokemonImage.sprite = _prevPokemonImage;
         _pokemonImage.SetNativeSize();
+    }
+
+    public void SetEvolvePokemonImage(string evolvePokemonName)
+    {
+        Texture2D texture = Managers.Resource.Load<Texture2D>($"Textures/Pokemon/{evolvePokemonName}");
+        _evolvePokemonImage = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), Vector2.one * 0.5f);
     }
 
     public void ChangeEvolvePokemonImage()

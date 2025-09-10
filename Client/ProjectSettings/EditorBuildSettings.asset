@@ -26,6 +26,12 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Bag.unity
     guid: cc9c2af07bdcd88488dc3e7ef9e657ac
+  - enabled: 1
+    path: Assets/Scenes/Evolution.unity
+    guid: 0f7181da18f757a4c972878b19a78b19
+  - enabled: 1
+    path: Assets/Scenes/MoveSelection.unity
+    guid: 14af5eab6557c2a40bf36391ccf8adbf
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
   m_UseUCBPForAssetBundles: 0

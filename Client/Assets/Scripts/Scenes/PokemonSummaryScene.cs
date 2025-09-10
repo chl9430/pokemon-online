@@ -39,6 +39,7 @@ public class PokemonSummaryScene : BaseScene
 
         if (Managers.Scene.Data is PokemonSummary)
         {
+            summaryUI.FillPokemonBasicInfo(Managers.Scene.Data as PokemonSummary);
             summaryUI.FillPokemonSummary(Managers.Scene.Data as PokemonSummary);
 
             _slider.UpdateSliderContents(_sliderContents);

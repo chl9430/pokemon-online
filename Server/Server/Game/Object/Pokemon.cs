@@ -10,7 +10,6 @@ namespace Server
         PokemonExpInfo _expInfo;
         List<PokemonMove> _pokemonMoves;
         PokemonMove _noPPMove;
-        //PokemonMove _newLearnableMove;
         PokemonSummaryDictData _summaryDictData;
 
         public PokemonInfo PokemonInfo
@@ -44,7 +43,7 @@ namespace Server
             _pokemonStat = new PokemonStat();
             _expInfo = new PokemonExpInfo();
             _pokemonMoves = new List<PokemonMove>();
-            _noPPMove = new PokemonMove(1, 30, 100, "Struggle", PokemonType.Normal, MoveCategory.Physical);
+            _noPPMove = new PokemonMove("Struggle");
 
             Random random = new Random();
 
@@ -162,7 +161,7 @@ namespace Server
 
                     if (DataManager.PokemonMoveDict.TryGetValue(moveNames[i], out PokemonMoveDictData moveDictData))
                     {
-                        PokemonMove move = new PokemonMove(moveDictData.maxPP, moveDictData.movePower, moveDictData.moveAccuracy, moveDictData.moveName, moveDictData.moveType, moveDictData.moveCategory);
+                        PokemonMove move = new PokemonMove(moveDictData.moveName);
 
                         _pokemonMoves.Add(move);
                     }
@@ -322,11 +321,11 @@ namespace Server
             return _summaryDictData.evolutionChain.evolutionPokemonName;
         }
 
-        public PokemonMoveSummary CheckNewLearnableMove()
+        public PokemonMove CheckNewLearnableMove()
         {
             LearnableMoveData[] moveDatas = _summaryDictData.learnableMoves;
             string foundMoveName = "";
-            PokemonMoveSummary moveSum = null;
+            PokemonMove move = null;
 
             for (int i = 0; i < moveDatas.Length; i++)
             {
@@ -342,14 +341,14 @@ namespace Server
             {
                 if (DataManager.PokemonMoveDict.TryGetValue(foundMoveName, out PokemonMoveDictData moveDictData))
                 {
-                    PokemonMove move = new PokemonMove(moveDictData.maxPP, moveDictData.movePower, moveDictData.moveAccuracy, moveDictData.moveName, moveDictData.moveType, moveDictData.moveCategory);
+                    move = new PokemonMove(moveDictData.moveName);
 
                     if (_pokemonMoves.Count < 4)
                     {
                         _pokemonMoves.Add(move);
                     }
 
-                    moveSum = move.MakePokemonMoveSummary();
+                    return move;
                 }
                 else
                 {
@@ -357,7 +356,12 @@ namespace Server
                 }
             }
 
-            return moveSum;
+            return move;
+        }
+
+        public void ForgetAndLearnNewMove(int prevMoveIdx, PokemonMove newMove)
+        {
+            _pokemonMoves[prevMoveIdx] = newMove;
         }
 
         public void UpdateStat()

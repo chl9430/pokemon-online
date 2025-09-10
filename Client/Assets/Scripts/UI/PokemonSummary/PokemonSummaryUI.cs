@@ -31,17 +31,21 @@ public class PokemonSummaryUI : MonoBehaviour
     [SerializeField] TextMeshProUGUI totalEXP;
     [SerializeField] TextMeshProUGUI expToNextLevel;
 
+    public void FillPokemonBasicInfo(PokemonSummary pokemonSum)
+    {
+        FillText(dictNum, $"No. {pokemonSum.PokemonInfo.DictionaryNum}");
+        FillText(nickName, $"{pokemonSum.PokemonInfo.NickName}");
+        FillText(pokemonName, $"/ {pokemonSum.PokemonInfo.PokemonName}");
+        FillText(level, $"Lv. {pokemonSum.PokemonInfo.Level}");
+
+        FillImage(pokemonSum);
+    }
+
     public void FillPokemonSummary(PokemonSummary summary)
     {
-        FillText(dictNum, $"No. {summary.PokemonInfo.DictionaryNum}");
-        FillText(nickName, $"{summary.PokemonInfo.NickName}");
-        FillText(pokemonName, $"/ {summary.PokemonInfo.PokemonName}");
-        FillText(level, $"Lv. {summary.PokemonInfo.Level}");
         FillText(owner, $"{summary.PokemonInfo.OwnerName} (ID : {summary.PokemonInfo.OwnerId})");
         FillText(nature, $"{summary.PokemonInfo.Nature} nature,");
         FillText(metLevel, $"met at Lv. {summary.PokemonInfo.MetLevel}, MOON FIELD.");
-
-        FillImage(summary);
 
         FillTypeImage(summary);
 

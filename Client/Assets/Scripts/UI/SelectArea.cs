@@ -19,6 +19,9 @@ public class SelectArea : MonoBehaviour
     protected DynamicButton[,] _btnGrid;
     protected BaseScene _scene;
 
+    [SerializeField] DynamicButton _btn;
+    [SerializeField] Transform _btnPos;
+
     public SelectAreaState UIState
     {
         set
@@ -29,6 +32,8 @@ public class SelectArea : MonoBehaviour
                 _scene.DoNextAction(_x * _col + _y);
         }
     }
+
+    public DynamicButton[,] BtnGrid { get  { return _btnGrid; } }
 
     void Start()
     {
@@ -109,8 +114,20 @@ public class SelectArea : MonoBehaviour
         }
     }
 
-    public void FillButtonGrid(int row, int col, List<DynamicButton> btns)
+    public void FillButtonGrid(int row, int col, List<object> datas)
     {
+        // 기존에 있던 버튼들 삭제
+        if (_btnGrid != null)
+        {
+            for (int i = 0; i < _btnGrid.GetLength(0); i++)
+            {
+                for (int j = 0; j < _btnGrid.GetLength(1); j++)
+                {
+                    Destroy(_btnGrid[i, j].gameObject);
+                }
+            }
+        }
+
         _row = row;
         _col = col;
 
@@ -127,16 +144,22 @@ public class SelectArea : MonoBehaviour
             {
                 if (_row > _col)
                 {
-                    if (i * _col + j < btns.Count)
+                    if (i * _col + j < datas.Count)
                     {
-                        _btnGrid[i, j] = btns[i * _col + j];
+                        DynamicButton btn = GameObject.Instantiate(_btn, _btnPos);
+
+                        _btnGrid[i, j] = btn;
+                        _btnGrid[i, j].BtnData = datas[i * _col + j];
                     }
                 }
                 else
                 {
-                    if (i * _row + j < btns.Count)
+                    if (i * _row + j < datas.Count)
                     {
-                        _btnGrid[i, j] = btns[i * _row + j];
+                        DynamicButton btn = GameObject.Instantiate(_btn, _btnPos);
+
+                        _btnGrid[i, j] = btn;
+                        _btnGrid[i, j].BtnData = datas[i * _row + j];
                     }
                 }
             }
@@ -145,8 +168,29 @@ public class SelectArea : MonoBehaviour
         _btnGrid[_x, _y].SetSelectedOrNotSelected(true);
     }
 
+    public object GetSelectedBtnData()
+    {
+        return _btnGrid[_x, _y].BtnData;
+    }
+
     public int GetSelectedIdx()
     {
         return _x * _col + _y;
+    }
+
+    public List<DynamicButton> ChangeBtnGridDataToList()
+    {
+        List<DynamicButton> btns = new List<DynamicButton>();
+
+        for (int i = 0; i < _btnGrid.GetLength(0); i++)
+        {
+            for (int j = 0; j < _btnGrid.GetLength(1); j++)
+            {
+                if (_btnGrid[i, j] != null)
+                    btns.Add(_btnGrid[i, j]);
+            }
+        }
+
+        return btns;
     }
 }

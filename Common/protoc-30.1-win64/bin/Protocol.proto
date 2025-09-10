@@ -49,7 +49,7 @@ enum MsgId {
   S_SWITCH_BATTLE_POKEMON = 31;
   S_GET_ENEMY_POKEMON_EXP = 61;
   S_CHECK_AND_APPLY_REMAINED_EXP = 62;
-  S_CHECK_AVAILABLE_BATTLE_POKEMON = 550;
+  S_CHECK_AVAILABLE_BATTLE_POKEMON = 350;
   S_ESCAPE_FROM_WILD_POKEMON = 63;
   S_CHECK_EXP_POKEMON = 340;
   S_CHECK_POKEMON_EVOLUTION = 330;
@@ -65,6 +65,13 @@ enum MsgId {
   S_ENTER_POKEMON_EVOLUTION_SCENE = 510;
   C_POKEMON_EVOLUTION = 520;
   S_POKEMON_EVOLUTION = 530;
+
+  C_ENTER_MOVE_SELECTION_SCENE = 600;
+  S_ENTER_MOVE_SELECTION_SCENE = 610;
+  C_MOVE_SCENE_TO_BATTLE_SCENE = 620;
+  S_MOVE_SCENE_TO_BATTLE_SCENE = 630;
+  C_MOVE_SCENE_TO_EVOLVE_SCENE = 640;
+  S_MOVE_SCENE_TO_EVOLVE_SCENE = 650;
 }
 
 enum CreatureState {
@@ -76,6 +83,7 @@ enum CreatureState {
   FIGHT = 5;
   TALK = 6;
   EXCHANGING = 7;
+  POKEMON_EVOLVING = 8;
 }
 
 enum MoveDir {
@@ -180,19 +188,6 @@ message C_AccessPokemonSummary
 message S_AccessPokemonSummary
 {
     PokemonSummary pokemonSum = 1;
-}
-
-message C_EnterPokemonBattleScene
-{
-    int32 playerId = 1;
-    int32 locationNum = 2;
-}
-
-message S_EnterPokemonBattleScene
-{
-    PlayerInfo playerInfo = 1;
-    PokemonSummary enemyPokemonSum = 2;
-    repeated PokemonSummary playerPokemonSums = 3;
 }
 
 message C_EnterPokemonExchangeScene
@@ -305,7 +300,23 @@ message S_EnterPlayerBagScene
     map<int32, CategoryInventory> inventory = 2;
 }
 
+
+
+
 // 배틀 씬
+message C_EnterPokemonBattleScene
+{
+    int32 playerId = 1;
+    int32 locationNum = 2;
+}
+
+message S_EnterPokemonBattleScene
+{
+    PlayerInfo playerInfo = 1;
+    PokemonSummary enemyPokemonSum = 2;
+    repeated PokemonSummary playerPokemonSums = 3;
+}
+
 message C_RequestDataById
 {
     int32 playerId = 1;
@@ -426,6 +437,51 @@ message S_PokemonEvolution
 
 
 
+// 포켓몬 기술 선택 씬
+message C_EnterMoveSelectionScene
+{
+    int32 playerId = 1;
+}
+
+message S_EnterMoveSelectionScene
+{
+    PlayerInfo playerInfo = 1;
+    PokemonSummary pokemonSum = 2;
+    PokemonMoveSummary learnableMoveSum = 3;
+}
+
+message C_MoveSceneToBattleScene
+{
+    int32 playerId = 1;
+    int32 prevMoveIdx = 2;
+}
+
+message S_MoveSceneToBattleScene
+{
+    PlayerInfo playerInfo = 1;
+    PokemonSummary myPokemonSum = 2;
+    PokemonSummary enemyPokemonSum = 3;
+    string movePokemonName = 4;
+    string prevMoveName = 5;
+    string newMoveName = 6;
+}
+
+message C_MoveSceneToEvolveScene
+{
+    int32 playerId = 1;
+    int32 prevMoveIdx = 2;
+}
+
+message S_MoveSceneToEvolveScene
+{
+    PlayerInfo playerInfo = 1;
+    PokemonSummary pokemonSum = 2;
+    string prevMoveName = 3;
+    string newMoveName = 4;
+}
+
+
+
 
 message ObjectInfo {
   int32 objectId = 1;
@@ -508,6 +564,7 @@ message PokemonMoveSummary
     int32 maxPP = 6;
     MoveCategory moveCategory = 7;
     PokemonType moveType = 8;
+    string moveDescription = 9;
 }
 
 message CategoryInventory

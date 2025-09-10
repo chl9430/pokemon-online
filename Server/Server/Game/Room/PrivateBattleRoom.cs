@@ -24,13 +24,13 @@ namespace Server
 
         bool _myTurn = false;
         bool _enemyTurn = false;
-        //Pokemon _attackPokemon;
-        //Pokemon _defensePokemon;
 
-        int _curExpIdx;
-        int _curEvolutionIdx;
+        int _curExpIdx = 0;
+        public int _curEvolutionIdx = 0;
         List<Pokemon> _getExpPokemons;
         List<Pokemon> _evolvePokemons;
+
+        PokemonMove _learnableMove;
 
         public PrivateBattleRoom(Player player, List<Pokemon> pokemons)
         {
@@ -74,6 +74,8 @@ namespace Server
         public Pokemon WildPokemon { get { return _wildPokemon; } }
 
         public List<Pokemon> EvolvePokemons {  get { return _evolvePokemons; } }
+
+        public PokemonMove LearnableMove { get { return _learnableMove; } set { _learnableMove = value; } }
 
         public void MakeWildPokemon(int locationNum)
         {
@@ -398,7 +400,7 @@ namespace Server
             getExpPacket.GotExpPokemonSum = _getExpPokemons[_curExpIdx].MakePokemonSummary();
 
             //int exp = (112 * _wildPokemon.PokemonInfo.Level) / 7;
-            _remainedExp = (int)Math.Ceiling(300f / ((float)_getExpPokemons.Count));
+            _remainedExp = (int)Math.Ceiling(2000f / ((float)_getExpPokemons.Count));
 
             getExpPacket.Exp = _remainedExp;
 
@@ -424,8 +426,8 @@ namespace Server
 
             _remainedExp -= finalExp;
 
-            if (_remainedExp <= 0)
-                _curExpIdx++;
+            //if (_remainedExp <= 0)
+            //    _curExpIdx++;
 
             s_CheckAndApplyExpPacket.FinalExp = finalExp;
 
@@ -434,9 +436,12 @@ namespace Server
             if (isLevelUp)
             {
                 s_CheckAndApplyExpPacket.StatDiff = expPokemon.LevelUp();
-                s_CheckAndApplyExpPacket.NewMoveSum = expPokemon.CheckNewLearnableMove();
+                _learnableMove = expPokemon.CheckNewLearnableMove();
 
-                if (expPokemon.CanPokemonEvolve())
+                if (_learnableMove != null)
+                    s_CheckAndApplyExpPacket.NewMoveSum = _learnableMove.MakePokemonMoveSummary();
+
+                if (expPokemon.CanPokemonEvolve() && !_evolvePokemons.Contains(expPokemon))
                     _evolvePokemons.Add(expPokemon);
             }
 
@@ -447,10 +452,40 @@ namespace Server
 
         public bool CheckExpPokemons()
         {
-            if (_getExpPokemons.Count > _curExpIdx)
-                return true;
-            else
+            _curExpIdx++;
+
+            if (_getExpPokemons.Count <= _curExpIdx)
                 return false;
+            else
+                return true;
+        }
+
+        public Pokemon GetExpPokemon()
+        {
+            return _getExpPokemons[_curExpIdx];
+        }
+
+        public S_EnterMoveSelectionScene EnterMoveSelectionScene()
+        {
+            S_EnterMoveSelectionScene enterMoveScenePacket = new S_EnterMoveSelectionScene();
+
+            enterMoveScenePacket.PlayerInfo = _player.MakePlayerInfo();
+
+            PokemonSummary pokemonSum = null;
+
+            if (_player.Info.PosInfo.State == CreatureState.Fight)
+            {
+                pokemonSum = _getExpPokemons[_curExpIdx].MakePokemonSummary();
+            }
+            else if (_player.Info.PosInfo.State == CreatureState.PokemonEvolving)
+            {
+                pokemonSum = _evolvePokemons[_curEvolutionIdx].MakePokemonSummary();
+            }
+
+            enterMoveScenePacket.PokemonSum = pokemonSum;
+            enterMoveScenePacket.LearnableMoveSum = _learnableMove.MakePokemonMoveSummary();
+
+            return enterMoveScenePacket;
         }
 
         bool IsMyPokemonFast()
@@ -531,20 +566,15 @@ namespace Server
 
         public bool CheckEvolutionPokemon()
         {
-            if (_evolvePokemons.Count == _curEvolutionIdx)
+            if (_evolvePokemons.Count <= _curEvolutionIdx)
                 return false;
             else
                 return true;
         }
 
-        public S_EnterPokemonEvolutionScene GetEvolutionPokemon()
+        public Pokemon GetEvolutionPokemon()
         {
-            S_EnterPokemonEvolutionScene enterEvolutionPacket = new S_EnterPokemonEvolutionScene();
-            enterEvolutionPacket.PlayerInfo = _player.MakePlayerInfo();
-            enterEvolutionPacket.PokemonSum =  _evolvePokemons[_curEvolutionIdx].MakePokemonSummary();
-            enterEvolutionPacket.EvolvePokemonName = _evolvePokemons[_curEvolutionIdx].GetEvolvePokemonName();
-
-            return enterEvolutionPacket;
+            return _evolvePokemons[_curEvolutionIdx];
         }
 
         public S_PokemonEvolution EvolvePokemon(bool isEvolution)
@@ -554,12 +584,15 @@ namespace Server
             if (isEvolution)
             {
                 _evolvePokemons[_curEvolutionIdx].PokemonEvolution();
-                evolutionPacket.NewMoveSum = _evolvePokemons[_curEvolutionIdx].CheckNewLearnableMove();
+                _learnableMove = _evolvePokemons[_curEvolutionIdx].CheckNewLearnableMove();
+
+                evolutionPacket.EvolvePokemonSum = _evolvePokemons[_curEvolutionIdx].MakePokemonSummary();
+
+                if (_learnableMove != null)
+                    evolutionPacket.NewMoveSum = _learnableMove.MakePokemonMoveSummary();
+                else
+                    _curEvolutionIdx++;
             }
-
-            evolutionPacket.EvolvePokemonSum = _evolvePokemons[_curEvolutionIdx].MakePokemonSummary();
-
-            _curEvolutionIdx++;
 
             return evolutionPacket;
         }

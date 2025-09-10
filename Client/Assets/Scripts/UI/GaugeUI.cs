@@ -11,6 +11,7 @@ public class GaugeUI : MonoBehaviour
     int _destRate;
     int _maxRate;
     int _curRate;
+    int _applyRateAmount;
     float _curChangeRateTime;
     float _changeRateTime = 0.25f;
     HPBarUIState _uiState = HPBarUIState.NONE;
@@ -37,10 +38,21 @@ public class GaugeUI : MonoBehaviour
                     {
                         _curChangeRateTime = 0;
 
+                        int restDiff = Mathf.Abs(_curRate - _destRate);
                         if (_curRate < _destRate)
-                            _curRate++;
+                        {
+                            if (restDiff >= _applyRateAmount)
+                                _curRate += _applyRateAmount;
+                            else
+                                _curRate += restDiff;
+                        }
                         else
-                            _curRate--;
+                        {
+                            if (restDiff >= _applyRateAmount)
+                                _curRate -= _applyRateAmount;
+                            else
+                                _curRate -= restDiff;
+                        }
 
                         _gauge.anchorMax = new Vector2(((float)_curRate / (float)_maxRate), _gauge.anchorMax.y);
 
@@ -62,6 +74,10 @@ public class GaugeUI : MonoBehaviour
     {
         _uiState = HPBarUIState.CHANGING_HP;
         _changeRateTime = changeHPTime;
+
+        int offset = Mathf.Abs(_curRate - destHP);
+
+        _applyRateAmount = Mathf.CeilToInt((float)offset / 10f);
 
         if (destHP <= 0)
             _destRate = 0;

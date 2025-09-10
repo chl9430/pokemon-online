@@ -17,6 +17,9 @@ namespace Server
         string _moveName;
         PokemonType _moveType;
         MoveCategory _moveCategory;
+        string _moveDescription;
+
+        PokemonMoveDictData _moveDictData;
 
         public int CurPP { get { return _curPp; } set { _curPp = value; } }
         public int MaxPP { get { return _maxPp; } }
@@ -27,16 +30,20 @@ namespace Server
         public PokemonType MoveType { get { return _moveType; } }
         public MoveCategory MoveCategory { get { return _moveCategory; } }
 
-        public PokemonMove(int maxPp, int movePower, int moveAccuracy, string moveName, PokemonType moveType, MoveCategory moveCategory, float criticalRate = 6.25f)
+        public PokemonMove(string moveName, float criticalRate = 6.25f)
         {
-            _curPp = maxPp;
-            _maxPp = maxPp;
-            _movePower = movePower;
-            _moveAccuracy = moveAccuracy;
-            _criticalRate = criticalRate;
-            _moveName = moveName;
-            _moveType = moveType;
-            _moveCategory = moveCategory;
+            if (DataManager.PokemonMoveDict.TryGetValue(moveName, out _moveDictData))
+            {
+                _curPp = _moveDictData.maxPP;
+                _maxPp = _moveDictData.maxPP;
+                _movePower = _moveDictData.movePower;
+                _moveAccuracy = _moveDictData.moveAccuracy;
+                _criticalRate = criticalRate;
+                _moveName = moveName;
+                _moveType = _moveDictData.moveType;
+                _moveCategory = _moveDictData.moveCategory;
+                _moveDescription = _moveDictData.moveDescription;
+            }
         }
 
         public PokemonMoveSummary MakePokemonMoveSummary()
@@ -50,6 +57,7 @@ namespace Server
             moveSum.MoveName = _moveName;
             moveSum.MoveType = _moveType;
             moveSum.MoveCategory = _moveCategory;
+            moveSum.MoveDescription = _moveDescription;
 
             return moveSum;
         }

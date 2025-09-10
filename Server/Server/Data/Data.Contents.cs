@@ -32,6 +32,7 @@ public struct PokemonMoveDictData
     public int maxPP;
     public MoveCategory moveCategory;
     public PokemonType moveType;
+    public string moveDescription;
 }
 
 public struct EvolutionChain

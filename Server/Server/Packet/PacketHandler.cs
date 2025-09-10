@@ -586,7 +586,7 @@ public class PacketHandler
 
         if (player == null)
         {
-            player = MakeTestPlayer(clientSession, CreatureState.Fight);
+            player = MakeTestPlayer(clientSession, CreatureState.PokemonEvolving);
             player.BattleRoom = new PrivateBattleRoom(player, player.Pokemons);
             player.BattleRoom.MakeWildPokemon(1);
             player.BattleRoom.EvolvePokemons.Add(player.Pokemons[0]);
@@ -594,7 +594,15 @@ public class PacketHandler
             player.BattleRoom.EvolvePokemons.Add(player.Pokemons[2]);
         }
 
-        S_EnterPokemonEvolutionScene s_EnterEvolutionPacket = player.BattleRoom.GetEvolutionPokemon();
+        player.Info.PosInfo.State = CreatureState.PokemonEvolving;
+
+        S_EnterPokemonEvolutionScene s_EnterEvolutionPacket = new S_EnterPokemonEvolutionScene();
+        Pokemon myPokemon = player.BattleRoom.GetEvolutionPokemon();
+
+        s_EnterEvolutionPacket.PlayerInfo = player.MakePlayerInfo();
+        s_EnterEvolutionPacket.PokemonSum = myPokemon.MakePokemonSummary();
+        s_EnterEvolutionPacket.EvolvePokemonName = myPokemon.GetEvolvePokemonName();
+
         player.Session.Send(s_EnterEvolutionPacket);
     }
 
@@ -735,6 +743,119 @@ public class PacketHandler
         player.Session.Send(s_CheckMovePacket);
     }
 
+    public static void C_EnterMoveSelectionSceneHandler(PacketSession session, IMessage packet)
+    {
+        C_EnterMoveSelectionScene enterMoveScenePacket = packet as C_EnterMoveSelectionScene;
+        int playerId = enterMoveScenePacket.PlayerId;
+
+        ClientSession clientSession = session as ClientSession;
+
+        Console.WriteLine($"" +
+            $"=====================\n" +
+            $"C_EnterMoveSelectionScene\n" +
+            $"{enterMoveScenePacket}\n" +
+            $"=====================\n"
+            );
+
+        Player player = ObjectManager.Instance.Find(playerId);
+
+        if (player == null)
+        {
+            player = MakeTestPlayer(clientSession, CreatureState.PokemonEvolving);
+            player.BattleRoom = new PrivateBattleRoom(player, player.Pokemons);
+            player.BattleRoom.MakeWildPokemon(1);
+            player.BattleRoom.EvolvePokemons.Add(player.Pokemons[0]);
+            player.BattleRoom.EvolvePokemons.Add(player.Pokemons[1]);
+            player.BattleRoom.EvolvePokemons.Add(player.Pokemons[2]);
+
+            var moveData = DataManager.PokemonMoveDict["Seed Bomb"];
+            player.BattleRoom.LearnableMove = new PokemonMove(moveData.moveName);
+        }
+
+        PrivateBattleRoom battleRoom = player.BattleRoom;
+
+        S_EnterMoveSelectionScene s_EnterMoveScenePacket = battleRoom.EnterMoveSelectionScene();
+
+        player.Session.Send(s_EnterMoveScenePacket);
+    }
+
+    public static void C_MoveSceneToBattleSceneHandler(PacketSession session, IMessage packet)
+    {
+        C_MoveSceneToBattleScene battleScenePacket = packet as C_MoveSceneToBattleScene;
+        int playerId = battleScenePacket.PlayerId;
+        int prevMoveIdx = battleScenePacket.PrevMoveIdx;
+
+        ClientSession clientSession = session as ClientSession;
+
+        Console.WriteLine($"" +
+            $"=====================\n" +
+            $"C_MoveSceneToBattleScene\n" +
+            $"{battleScenePacket}\n" +
+            $"=====================\n"
+            );
+
+        Player player = ObjectManager.Instance.Find(playerId);
+        Pokemon myPokemon = player.BattleRoom.GetExpPokemon();
+
+        S_MoveSceneToBattleScene s_BattleScenePacket = new S_MoveSceneToBattleScene();
+        s_BattleScenePacket.PlayerInfo = player.MakePlayerInfo();
+        s_BattleScenePacket.MyPokemonSum = player.BattleRoom.MyPokemon.MakePokemonSummary();
+        s_BattleScenePacket.EnemyPokemonSum = player.BattleRoom.WildPokemon.MakePokemonSummary();
+        s_BattleScenePacket.MovePokemonName = player.BattleRoom.GetExpPokemon().PokemonInfo.NickName;
+
+        if (prevMoveIdx != -1)
+        {
+            s_BattleScenePacket.PrevMoveName = myPokemon.PokemonMoves[prevMoveIdx].MoveName;
+            myPokemon.ForgetAndLearnNewMove(prevMoveIdx, player.BattleRoom.LearnableMove);
+            s_BattleScenePacket.NewMoveName = myPokemon.PokemonMoves[prevMoveIdx].MoveName;
+        }
+        else
+        {
+            s_BattleScenePacket.PrevMoveName = null;
+            s_BattleScenePacket.NewMoveName = player.BattleRoom.LearnableMove.MoveName;
+        }
+
+        player.Session.Send(s_BattleScenePacket);
+    }
+
+    public static void C_MoveSceneToEvolveSceneHandler(PacketSession session, IMessage packet)
+    {
+        C_MoveSceneToEvolveScene evolveScenePacket = packet as C_MoveSceneToEvolveScene;
+        int playerId = evolveScenePacket.PlayerId;
+        int prevMoveIdx = evolveScenePacket.PrevMoveIdx;
+
+        ClientSession clientSession = session as ClientSession;
+
+        Console.WriteLine($"" +
+            $"=====================\n" +
+            $"C_MoveSceneToEvolveScene\n" +
+            $"{evolveScenePacket}\n" +
+            $"=====================\n"
+            );
+
+        Player player = ObjectManager.Instance.Find(playerId);
+        Pokemon myPokemon = player.BattleRoom.GetEvolutionPokemon();
+        player.BattleRoom._curEvolutionIdx++;
+
+        S_MoveSceneToEvolveScene s_EvolveScenePacket = new S_MoveSceneToEvolveScene();
+        s_EvolveScenePacket.PlayerInfo = player.MakePlayerInfo();
+        s_EvolveScenePacket.PokemonSum = myPokemon.MakePokemonSummary();
+
+        if (prevMoveIdx != -1)
+        {
+            s_EvolveScenePacket.PrevMoveName = myPokemon.PokemonMoves[prevMoveIdx].MoveName;
+            myPokemon.ForgetAndLearnNewMove(prevMoveIdx, player.BattleRoom.LearnableMove);
+            s_EvolveScenePacket.NewMoveName = myPokemon.PokemonMoves[prevMoveIdx].MoveName;
+        }
+        else
+        {
+            s_EvolveScenePacket.PrevMoveName = null;
+            s_EvolveScenePacket.NewMoveName = player.BattleRoom.LearnableMove.MoveName;
+        }
+
+        player.Session.Send(s_EvolveScenePacket);
+    }
+
     public static Player MakeTestPlayer(ClientSession clientSession, CreatureState state)
     {
         Random _random = new Random();
@@ -756,7 +877,7 @@ public class PacketHandler
 
         Player player = ObjectManager.Instance.Add<Player>();
         {
-            player.Info.PosInfo.State = CreatureState.Idle;
+            player.Info.PosInfo.State = state;
             player.Info.PosInfo.MoveDir = MoveDir.Down;
             player.Info.PosInfo.PosX = 0;
             player.Info.PosInfo.PosY = 0;
@@ -770,9 +891,9 @@ public class PacketHandler
 
         // 플레이어 포켓몬
         player.Pokemons = new List<Pokemon>();
-        player.Pokemons.Add(new Pokemon("Bulbasaur", "BUBAS", 16, player.Name, -1));
-        player.Pokemons.Add(new Pokemon("Charmander", "CHAKI", 16, player.Name, -1));
-        player.Pokemons.Add(new Pokemon("Squirtle", "SKIRT", 16, player.Name, -1));
+        player.Pokemons.Add(new Pokemon("Bulbasaur", "BUBAS", 15, player.Name, -1));
+        player.Pokemons.Add(new Pokemon("Charmander", "CHAKI", 14, player.Name, -1));
+        player.Pokemons.Add(new Pokemon("Squirtle", "SKIRT", 14, player.Name, -1));
         player.Pokemons.Add(new Pokemon("Pikachu", "PIKAO", 5, player.Name, -1));
 
         // 플레이어 아이템

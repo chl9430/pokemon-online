@@ -88,6 +88,15 @@ class PacketManager
 
         _onRecv.Add((ushort)MsgId.CPokemonEvolution, MakePacket<C_PokemonEvolution>);
         _handler.Add((ushort)MsgId.CPokemonEvolution, PacketHandler.C_PokemonEvolutionHandler);
+
+        _onRecv.Add((ushort)MsgId.CEnterMoveSelectionScene, MakePacket<C_EnterMoveSelectionScene>);
+        _handler.Add((ushort)MsgId.CEnterMoveSelectionScene, PacketHandler.C_EnterMoveSelectionSceneHandler);
+
+        _onRecv.Add((ushort)MsgId.CMoveSceneToBattleScene, MakePacket<C_MoveSceneToBattleScene>);
+        _handler.Add((ushort)MsgId.CMoveSceneToBattleScene, PacketHandler.C_MoveSceneToBattleSceneHandler);
+
+        _onRecv.Add((ushort)MsgId.CMoveSceneToEvolveScene, MakePacket<C_MoveSceneToEvolveScene>);
+        _handler.Add((ushort)MsgId.CMoveSceneToEvolveScene, PacketHandler.C_MoveSceneToEvolveSceneHandler);
     }
 
     public void OnRecvPacket(PacketSession session, ArraySegment<byte> buffer)

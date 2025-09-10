@@ -16,7 +16,7 @@ public enum EvolutionSceneState
     ASKING_TO_LEARN_NEW_MOVE = 6,
     LEARNED_NEW_MOVE_SCRIPTING = 7,
     ANSWERING_TO_LEARN_NEW_MOVE = 8,
-    NOT_LEARN_NEW_MOVE_SCRIPTING = 9,
+    AFTER_MOVE_SELECT_SCRIPTING = 9,
     MOVING_SCENE = 10,
 }
 
@@ -73,7 +73,8 @@ public class EvolutionScene : BaseScene
             string evolvePokemonName = enterEvolutionPacket.EvolvePokemonName;
             _myPokemonSum = enterEvolutionPacket.PokemonSum;
 
-            _controller.SetPokemonImages(_myPokemonSum.PokemonInfo.PokemonName, evolvePokemonName);
+            _controller.SetPrevPokemonImage(_myPokemonSum.PokemonInfo.PokemonName);
+            _controller.SetEvolvePokemonImage(evolvePokemonName);
         }
         else if (packet is S_PokemonEvolution)
         {
@@ -102,6 +103,16 @@ public class EvolutionScene : BaseScene
             SceneState = EvolutionSceneState.MOVING_SCENE;
             _enterEffect.PlayEffect("FadeOut");
         }
+        else if (packet is S_MoveSceneToEvolveScene)
+        {
+            _enterEffect.PlayEffect("FadeIn");
+
+            S_MoveSceneToEvolveScene evolveScenePacket = packet as S_MoveSceneToEvolveScene;
+            _playerInfo = evolveScenePacket.PlayerInfo;
+            _myPokemonSum = evolveScenePacket.PokemonSum;
+
+            _controller.SetPrevPokemonImage(_myPokemonSum.PokemonInfo.PokemonName);
+        }
     }
 
     public override void DoNextAction(object value = null)
@@ -111,12 +122,43 @@ public class EvolutionScene : BaseScene
         {
             case EvolutionSceneState.NONE:
                 {
-                    List<string> scripts = new List<string>()
+                    if (_packet is S_MoveSceneToEvolveScene)
                     {
-                        $"What?\n{_myPokemonSum.PokemonInfo.NickName} is evolving!"
-                    };
-                    _scriptBox.BeginScriptTyping(scripts);
-                    _sceneState = EvolutionSceneState.EVOLUTION_SCRIPTING;
+                        S_MoveSceneToEvolveScene evolveScenePacket = _packet as S_MoveSceneToEvolveScene;
+                        string prevMoveName = evolveScenePacket.PrevMoveName;
+                        string newMoveName = evolveScenePacket.NewMoveName;
+
+                        if (prevMoveName == null)
+                        {
+                            _sceneState = EvolutionSceneState.AFTER_MOVE_SELECT_SCRIPTING;
+                            List<string> scripts = new List<string>()
+                            {
+                                $"{_myPokemonSum.PokemonInfo.NickName} did not learn the move {newMoveName}."
+                            };
+                            _scriptBox.BeginScriptTyping(scripts);
+                        }
+                        else
+                        {
+                            _sceneState = EvolutionSceneState.AFTER_MOVE_SELECT_SCRIPTING;
+                            List<string> scripts = new List<string>()
+                            {
+                                $"1, 2, and... ... ... Poof!",
+                                $"{_myPokemonSum.PokemonInfo.NickName} forgot how to use {prevMoveName}.",
+                                "And...",
+                                $"{_myPokemonSum.PokemonInfo.NickName} learned {newMoveName}!",
+                            };
+                            _scriptBox.BeginScriptTyping(scripts);
+                        }
+                    }
+                    else if (_packet is S_EnterPokemonEvolutionScene)
+                    {
+                        List<string> scripts = new List<string>()
+                        {
+                            $"What?\n{_myPokemonSum.PokemonInfo.NickName} is evolving!"
+                        };
+                        _scriptBox.BeginScriptTyping(scripts);
+                        _sceneState = EvolutionSceneState.EVOLUTION_SCRIPTING;
+                    }
                 }
                 break;
             case EvolutionSceneState.EVOLUTION_SCRIPTING:
@@ -271,7 +313,13 @@ public class EvolutionScene : BaseScene
 
                             if (selectBox.GetSelectedBtnData() as string == "Yes")
                             {
+                                C_EnterMoveSelectionScene enterMoveScene = new C_EnterMoveSelectionScene();
+                                enterMoveScene.PlayerId = _playerInfo.ObjectInfo.ObjectId;
 
+                                Managers.Network.SavePacket(enterMoveScene);
+
+                                SceneState = EvolutionSceneState.MOVING_SCENE;
+                                _enterEffect.PlayEffect("FadeOut");
                             }
                             else if (selectBox.GetSelectedBtnData() as string == "No")
                             {
@@ -287,14 +335,14 @@ public class EvolutionScene : BaseScene
                                         $"{_myPokemonSum.PokemonInfo.NickName} did not learn the move {newMoveSum.MoveName}."
                                     };
                                     _scriptBox.BeginScriptTyping(scripts);
-                                    _sceneState = EvolutionSceneState.NOT_LEARN_NEW_MOVE_SCRIPTING;
+                                    _sceneState = EvolutionSceneState.AFTER_MOVE_SELECT_SCRIPTING;
                                 }
                             }
                         }
                     }
                 }
                 break;
-            case EvolutionSceneState.NOT_LEARN_NEW_MOVE_SCRIPTING:
+            case EvolutionSceneState.AFTER_MOVE_SELECT_SCRIPTING:
                 {
                     C_RequestDataById c_RequestDataPacket = new C_RequestDataById();
                     c_RequestDataPacket.PlayerId = _playerInfo.ObjectInfo.ObjectId;
@@ -309,6 +357,8 @@ public class EvolutionScene : BaseScene
                         Managers.Scene.LoadScene(Define.Scene.Game);
                     else if (Managers.Network.Packet is C_EnterPokemonEvolutionScene)
                         Managers.Scene.LoadScene(Define.Scene.Evolution);
+                    else if (Managers.Network.Packet is C_EnterMoveSelectionScene)
+                        Managers.Scene.LoadScene(Define.Scene.MoveSelection);
                 }
                 break;
         }

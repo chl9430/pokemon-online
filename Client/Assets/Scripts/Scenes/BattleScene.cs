@@ -395,6 +395,34 @@ public class BattleScene : BaseScene
             // UI 생성
             MakeUI(myPokemonSums[0] as PokemonSummary);
 
+            return;
+        }
+        else if (packet is S_MoveSceneToBattleScene)
+        {
+            _enterEffect.PlayEffect("FadeIn");
+            _myPokemonArea.SetActiveTrainer(false);
+
+            S_MoveSceneToBattleScene battleScenePacket = packet as S_MoveSceneToBattleScene;
+
+            PlayerInfo playerInfo = battleScenePacket.PlayerInfo;
+            PokemonSummary enemyPokemonSum = battleScenePacket.EnemyPokemonSum;
+            PokemonSummary myPokemonSum = battleScenePacket.MyPokemonSum;
+
+            // 포켓몬 및 플레이어 데이터 채우기
+            _playerInfo = playerInfo;
+            _enemyPokemon = new Pokemon(enemyPokemonSum);
+
+            _myPokemon = new Pokemon(myPokemonSum);
+
+            // 포켓몬 랜더링
+            _enemyPokemonArea.FillPokemonInfo(_enemyPokemon, false);
+            _myPokemonArea.FillPokemonInfo(_myPokemon, true);
+
+            // UI 생성
+            MakeUI(myPokemonSum);
+
+            // 기술 선택창에서 돌아왔다면(상대 포켓몬 기절상태)
+            _enemyPokemonArea.PlayPokemonZoneAnim("Zone_LeftHide");
             SceneState = BattleSceneState.NONE;
         }
 
@@ -476,6 +504,31 @@ public class BattleScene : BaseScene
                     else if (_packet is S_ReturnPokemonBattleScene)
                     {
                         SceneState = BattleSceneState.SELECTING_ACTION;
+                    }
+                    else if (_packet is S_MoveSceneToBattleScene)
+                    {
+                        S_MoveSceneToBattleScene battleScenePacket = _packet as S_MoveSceneToBattleScene;
+                        string movePokemonName = battleScenePacket.MovePokemonName;
+                        string prevMoveName = battleScenePacket.PrevMoveName;
+                        string newMoveName = battleScenePacket.NewMoveName;
+
+                        if (prevMoveName == null)
+                        {
+                            RefillScriptBox(new string[] {
+                                $"{movePokemonName} did not learn the move {newMoveName}."
+                            });
+                            _sceneState = BattleSceneState.NEW_MOVE_LEARN_SCRIPTING;
+                        }
+                        else
+                        {
+                            RefillScriptBox(new string[] {
+                                $"1, 2, and... ... ... Poof!",
+                                $"{movePokemonName} forgot how to use {prevMoveName}.",
+                                "And...",
+                                $"{movePokemonName} learned {newMoveName}!",
+                            });
+                            _sceneState = BattleSceneState.NEW_MOVE_LEARN_SCRIPTING;
+                        }
                     }
                     else
                     {
@@ -905,7 +958,15 @@ public class BattleScene : BaseScene
 
                             if (selectBox.GetSelectedBtnData() as string == "Yes")
                             {
-                                Debug.Log("Yes!");
+                                C_EnterMoveSelectionScene enterMoveScene = new C_EnterMoveSelectionScene();
+                                enterMoveScene.PlayerId = _playerInfo.ObjectInfo.ObjectId;
+
+                                Managers.Network.SavePacket(enterMoveScene);
+
+                                SceneState = BattleSceneState.MOVING_SCENE;
+                                _actionSelectBox.gameObject.SetActive(false);
+                                _scriptBox.ScriptSelectBox.gameObject.SetActive(true);
+                                _enterEffect.PlayEffect("FadeOut");
                             }
                             else if (selectBox.GetSelectedBtnData() as string == "No")
                             {
@@ -1009,6 +1070,7 @@ public class BattleScene : BaseScene
                             Managers.Network.SavePacket(returnGamePacket);
 
                             SceneState = BattleSceneState.MOVING_SCENE;
+                            _actionSelectBox.gameObject.SetActive(false);
                         }
                         else
                         {
@@ -1040,6 +1102,8 @@ public class BattleScene : BaseScene
                         Managers.Scene.LoadScene(Define.Scene.Game);
                     else if (Managers.Network.Packet is C_EnterPokemonEvolutionScene)
                         Managers.Scene.LoadScene(Define.Scene.Evolution);
+                    else if (Managers.Network.Packet is C_EnterMoveSelectionScene)
+                        Managers.Scene.LoadScene(Define.Scene.MoveSelection);
                 }
                 break;
         }

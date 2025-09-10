@@ -341,4 +341,34 @@ public class PacketHandler
         BaseScene scene = Managers.Scene.CurrentScene;
         scene.UpdateData(evolutionPacket);
     }
+
+    public static void S_EnterMoveSelectionSceneHandler(PacketSession session, IMessage packet)
+    {
+        S_EnterMoveSelectionScene enterMovePacket = packet as S_EnterMoveSelectionScene;
+
+        Debug.Log($"S_EnterMoveSelectionScene : {enterMovePacket}");
+
+        BaseScene scene = Managers.Scene.CurrentScene;
+        scene.UpdateData(enterMovePacket);
+    }
+
+    public static void S_MoveSceneToBattleSceneHandler(PacketSession session, IMessage packet)
+    {
+        S_MoveSceneToBattleScene battleScenePacket = packet as S_MoveSceneToBattleScene;
+
+        Debug.Log($"S_MoveSceneToBattleScene : {battleScenePacket}");
+
+        BaseScene scene = Managers.Scene.CurrentScene;
+        scene.UpdateData(battleScenePacket);
+    }
+
+    public static void S_MoveSceneToEvolveSceneHandler(PacketSession session, IMessage packet)
+    {
+        S_MoveSceneToEvolveScene evolveScenePacket = packet as S_MoveSceneToEvolveScene;
+
+        Debug.Log($"S_MoveSceneToEvolveScene : {evolveScenePacket}");
+
+        BaseScene scene = Managers.Scene.CurrentScene;
+        scene.UpdateData(evolveScenePacket);
+    }
 }

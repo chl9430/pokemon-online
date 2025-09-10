@@ -55,7 +55,7 @@ public class IntroScene : BaseScene
         {
             _genderSelectBtns[i].BtnData = (PlayerGender)i;
         }
-        _genderSelectArea.FillButtonGrid(1, _genderSelectBtns.Count, _genderSelectBtns);
+        // _genderSelectArea.FillButtonGrid(1, _genderSelectBtns.Count, _genderSelectBtns);
 
         _enterEffect.PlayEffect("FadeIn");
     }
