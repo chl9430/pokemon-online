@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 0cbdcbd65e0a3ec4589d37f9c7cb32a5
+guid: d2d76b472784b5a469852e191d6d621f
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 1405750835678907656
-    second: Monster_Ball_Icon_0
+      213: -1323400448070425369
+    second: SuperBall_Battle_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -100,7 +100,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Monster_Ball_Icon_0
+      name: SuperBall_Battle_0
       rect:
         serializedVersion: 2
         x: 0
@@ -115,8 +115,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 80d8953efea328310800000000000000
-      internalID: 1405750835678907656
+      spriteID: 7e46b2ddd4652ade0800000000000000
+      internalID: -1323400448070425369
       vertices: []
       indices: 
       edges: []
@@ -135,7 +135,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Monster_Ball_Icon_0: 1405750835678907656
+      SuperBall_Battle_0: -1323400448070425369
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

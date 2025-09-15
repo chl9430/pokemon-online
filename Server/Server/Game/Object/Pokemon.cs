@@ -37,6 +37,11 @@ namespace Server
             get { return _noPPMove; }
         }
 
+        public PokemonSummaryDictData PokemonSummaryDictData
+        {
+            get { return _summaryDictData; }
+        }
+
         public Pokemon(string pokemonName, string pokemonNickName, int level, string ownerName, int ownerId, int remainHp = -1)
         {
             _pokemonInfo = new PokemonInfo();

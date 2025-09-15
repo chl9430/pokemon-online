@@ -66,6 +66,7 @@ public struct PokemonSummaryDictData
     public int specialAttack;
     public int specialDefense;
     public int speed;
+    public int baseCatchRate;
     public LearnableMoveData[] learnableMoves;
     public EvolutionChain evolutionChain;
 }

@@ -45,6 +45,11 @@ public enum BattleSceneState
     AFTER_DIE_SWITCH_POKEMON = 76,
     GO_NEXT_POKEMON_SCRIPTING = 77,
     ITEM_USE_SCRIPTING = 87,
+    BALL_THROW_ANIMATION = 88,
+    POKEMON_SUCKED_ANIMATION = 89,
+    POKE_BALL_ANIMATION = 90,
+    POKEMON_COME_OUT_ANIMATION = 91,
+    CATCH_SCRIPTING = 92,
     MOVING_SCENE = 1000,
     ESCAPE_SCRIPTING = 100
 }
@@ -326,6 +331,52 @@ public class BattleScene : BaseScene
                 SceneState = BattleSceneState.NONE;
             }
         }
+        else if (packet is S_ItemSceneToBattleScene)
+        {
+            _enterEffect.PlayEffect("FadeIn");
+            _myPokemonArea.SetActiveTrainer(false);
+
+            S_ItemSceneToBattleScene itemToBattlePacket = packet as S_ItemSceneToBattleScene;
+            PlayerInfo playerInfo = itemToBattlePacket.PlayerInfo;
+            PokemonSummary enemyPokemonSum = itemToBattlePacket.EnemyPokemonSum;
+            PokemonSummary myPokemonSum = itemToBattlePacket.PlayerPokemonSum;
+            ItemSummary itemSumamary = itemToBattlePacket.UsedItem;
+
+            // 포켓몬 및 플레이어 데이터 채우기
+            _playerInfo = playerInfo;
+            _enemyPokemon = new Pokemon(enemyPokemonSum);
+            _myPokemon = new Pokemon(myPokemonSum);
+
+            // 포켓몬 랜더링
+            _enemyPokemonArea.FillPokemonInfo(_enemyPokemon, false);
+            _myPokemonArea.FillPokemonInfo(_myPokemon, true);
+
+            // UI 생성
+            MakeUI(myPokemonSum);
+
+            if (itemSumamary != null)
+            {
+                _usedItem = new Item(itemSumamary);
+                SceneState = BattleSceneState.AFTER_USE_ITEM_UPDATE;
+            }
+        }
+        else if (packet is S_IsSuccessPokeBallCatch)
+        {
+            S_IsSuccessPokeBallCatch successCatchPacket = packet as S_IsSuccessPokeBallCatch;
+            bool isCatch = successCatchPacket.IsCatch;
+
+            if (isCatch)
+            {
+                _myPokemonArea.PlaySuccessCatchBallAnim();
+                _sceneState = BattleSceneState.POKE_BALL_ANIMATION;
+            }
+            else
+            {
+                int ran = Random.Range(1, 4);
+                _myPokemonArea.PlayFailCatchBallAnim(ran);
+                _sceneState = BattleSceneState.POKE_BALL_ANIMATION;
+            }
+        }
         else if (packet is S_EscapeFromWildPokemon)
         {
             S_EscapeFromWildPokemon escapePacket = packet as S_EscapeFromWildPokemon;
@@ -430,33 +481,7 @@ public class BattleScene : BaseScene
         {
             case BattleSceneState.NONE:
                 {
-                    if (packet is S_UseItem)
-                    {
-                        _enterEffect.PlayEffect("FadeIn");
-                        _myPokemonArea.SetActiveTrainer(false);
-
-                        S_UseItem useItemPacket = packet as S_UseItem;
-                        PlayerInfo playerInfo = useItemPacket.PlayerInfo;
-                        PokemonSummary enemyPokemonSum = useItemPacket.EnemyPokemonSum;
-                        PokemonSummary myPokemonSum = useItemPacket.PlayerPokemonSum;
-                        ItemSummary itemSumamary = useItemPacket.UsedItem;
-
-                        // 포켓몬 및 플레이어 데이터 채우기
-                        _playerInfo = playerInfo;
-                        _enemyPokemon = new Pokemon(enemyPokemonSum);
-                        _myPokemon = new Pokemon(myPokemonSum);
-                        _usedItem = new Item(itemSumamary);
-
-                        // 포켓몬 랜더링
-                        _enemyPokemonArea.FillPokemonInfo(_enemyPokemon, false);
-                        _myPokemonArea.FillPokemonInfo(_myPokemon, true);
-
-                        // UI 생성
-                        MakeUI(myPokemonSum);
-
-                        SceneState = BattleSceneState.AFTER_USE_ITEM_UPDATE;
-                    }
-                    else if (packet is S_EnterPokemonBattleScene)
+                    if (packet is S_EnterPokemonBattleScene)
                     {
                         _enterEffect.PlayEffect("FadeIn");
                         _playableDirector.Play();
@@ -505,6 +530,10 @@ public class BattleScene : BaseScene
                     {
                         SceneState = BattleSceneState.SELECTING_ACTION;
                     }
+                    else if (_packet is S_ItemSceneToBattleScene)
+                    {
+                        SceneState = BattleSceneState.SELECTING_ACTION;
+                    }
                     else if (_packet is S_MoveSceneToBattleScene)
                     {
                         S_MoveSceneToBattleScene battleScenePacket = _packet as S_MoveSceneToBattleScene;
@@ -512,7 +541,7 @@ public class BattleScene : BaseScene
                         string prevMoveName = battleScenePacket.PrevMoveName;
                         string newMoveName = battleScenePacket.NewMoveName;
 
-                        if (prevMoveName == null)
+                        if (prevMoveName == "")
                         {
                             RefillScriptBox(new string[] {
                                 $"{movePokemonName} did not learn the move {newMoveName}."
@@ -1021,9 +1050,97 @@ public class BattleScene : BaseScene
                 break;
             case BattleSceneState.AFTER_USE_ITEM_UPDATE:
                 {
-                    RefillScriptBox(new string[] { $"{_playerInfo.PlayerName} used {_usedItem.ItemName}!" }, true);
+                    if (_packet is S_ItemSceneToBattleScene)
+                    {
+                        S_ItemSceneToBattleScene itemToBattlePacket = _packet as S_ItemSceneToBattleScene;
+                        PlayerInfo playerInfo = itemToBattlePacket.PlayerInfo;
+                        ItemSummary itemSumamary = itemToBattlePacket.UsedItem;
 
-                    _sceneState = BattleSceneState.ITEM_USE_SCRIPTING;
+                        RefillScriptBox(new string[] { $"{playerInfo.PlayerName} used {itemSumamary.ItemName}!" }, true);
+                        _sceneState = BattleSceneState.ITEM_USE_SCRIPTING;
+                    }
+                }
+                break;
+            case BattleSceneState.ITEM_USE_SCRIPTING:
+                {
+                    if (_packet is S_ItemSceneToBattleScene)
+                    {
+                        S_ItemSceneToBattleScene itemToBattlePacket = _packet as S_ItemSceneToBattleScene;
+                        ItemSummary itemSumamary = itemToBattlePacket.UsedItem;
+
+                        _myPokemonArea.CreateAndThrowBall(itemSumamary.ItemName);
+                        _sceneState = BattleSceneState.BALL_THROW_ANIMATION;
+                    }
+                }
+                break;
+            case BattleSceneState.BALL_THROW_ANIMATION:
+                {
+                    _enemyPokemonArea.PlayBattlePokemonAnim("BattlePokemon_SuckedInToBall");
+                    _sceneState = BattleSceneState.POKEMON_SUCKED_ANIMATION;
+                }
+                break;
+            case BattleSceneState.POKEMON_SUCKED_ANIMATION:
+                {
+                    if (!_loadingPacket)
+                    {
+                        C_IsSuccessPokeBallCatch successCatchPacket = new C_IsSuccessPokeBallCatch();
+                        successCatchPacket.PlayerId = _playerInfo.ObjectInfo.ObjectId;
+
+                        Managers.Network.Send(successCatchPacket);
+
+                        _loadingPacket = true;
+                    }
+                }
+                break;
+            case BattleSceneState.POKE_BALL_ANIMATION:
+                {
+                    if (_packet is S_IsSuccessPokeBallCatch)
+                    {
+                        S_IsSuccessPokeBallCatch successCatchPacket = _packet as S_IsSuccessPokeBallCatch;
+                        bool isCatch = successCatchPacket.IsCatch;
+                        string catchPokemonName = successCatchPacket.CatchPokemonName;
+
+                        if (isCatch)
+                        {
+                            RefillScriptBox(new string[] { $"Gotcha! {catchPokemonName} was caught!" }, true);
+                            SceneState = BattleSceneState.CATCH_SCRIPTING;
+                        }
+                        else
+                        {
+                            _enemyPokemonArea.PlayBattlePokemonAnim("BattlePokemon_ComeOutFromBall");
+                            _sceneState = BattleSceneState.POKEMON_COME_OUT_ANIMATION;
+                        }
+                    }
+                }
+                break;
+            case BattleSceneState.POKEMON_COME_OUT_ANIMATION:
+                {
+                    RefillScriptBox(new string[] { "Aww! It appeared to be caught!" }, true);
+                    SceneState = BattleSceneState.CATCH_SCRIPTING;
+                }
+                break;
+            case BattleSceneState.CATCH_SCRIPTING:
+                {
+                    if (_packet is S_IsSuccessPokeBallCatch)
+                    {
+                        S_IsSuccessPokeBallCatch successCatchPacket = _packet as S_IsSuccessPokeBallCatch;
+                        bool isCatch = successCatchPacket.IsCatch;
+
+                        if (isCatch)
+                        {
+                            C_ReturnGame returnGamePacket = new C_ReturnGame();
+                            returnGamePacket.PlayerId = _playerInfo.ObjectInfo.ObjectId;
+
+                            Managers.Network.SavePacket(returnGamePacket);
+
+                            SceneState = BattleSceneState.MOVING_SCENE;
+                            _actionSelectBox.gameObject.SetActive(false);
+                        }
+                        else
+                        {
+                            SendProcessTurnPacket(_moveSelectBox.GetSelectedIdx());
+                        }
+                    }
                 }
                 break;
             case BattleSceneState.AFTER_DIE_SWITCH_POKEMON:

@@ -32,6 +32,8 @@ namespace Server
 
         PokemonMove _learnableMove;
 
+        Item _usedItem;
+
         public PrivateBattleRoom(Player player, List<Pokemon> pokemons)
         {
             _escapeTurnCnt = 1;
@@ -73,9 +75,13 @@ namespace Server
 
         public Pokemon WildPokemon { get { return _wildPokemon; } }
 
+        public bool MyTurn { set { _myTurn = value; } }
+
         public List<Pokemon> EvolvePokemons {  get { return _evolvePokemons; } }
 
         public PokemonMove LearnableMove { get { return _learnableMove; } set { _learnableMove = value; } }
+
+        public Item UsedItem { set { _usedItem = value; } }
 
         public void MakeWildPokemon(int locationNum)
         {
@@ -400,7 +406,7 @@ namespace Server
             getExpPacket.GotExpPokemonSum = _getExpPokemons[_curExpIdx].MakePokemonSummary();
 
             //int exp = (112 * _wildPokemon.PokemonInfo.Level) / 7;
-            _remainedExp = (int)Math.Ceiling(2000f / ((float)_getExpPokemons.Count));
+            _remainedExp = (int)Math.Ceiling(1000f / ((float)_getExpPokemons.Count));
 
             getExpPacket.Exp = _remainedExp;
 
@@ -463,6 +469,47 @@ namespace Server
         public Pokemon GetExpPokemon()
         {
             return _getExpPokemons[_curExpIdx];
+        }
+
+        public S_IsSuccessPokeBallCatch CatchPokemon()
+        {
+            S_IsSuccessPokeBallCatch isSuccessCatchPacket = new S_IsSuccessPokeBallCatch();
+
+            float hpModifier = (3.0f * _wildPokemon.PokemonStat.MaxHp - 2.0f * _wildPokemon.PokemonStat.Hp) / (3.0f * _wildPokemon.PokemonStat.MaxHp);
+
+            float statusModifier = 1.0f;
+
+            float a = hpModifier * _wildPokemon.PokemonSummaryDictData.baseCatchRate * ((PokeBall)_usedItem).CatchRate * statusModifier;
+
+            if (a > 255)
+                a = 255;
+
+            bool isCatch = true;
+            for (int i = 0; i < 4; i++)
+            {
+                // 0부터 65535 사이의 난수 생성
+                int randomNumber = _random.Next(0, 65536);
+
+                // 난수가 a * 256보다 크면 실패
+                if (randomNumber > a * 256)
+                {
+                    Console.WriteLine($"포획 실패! (난수: {randomNumber}, 요구 값: {a * 256})");
+                    isCatch = false;
+                    break;
+                }
+
+                Console.WriteLine($"포획 성공! (난수: {randomNumber}, 요구 값: {a * 256})");
+            }
+
+            isSuccessCatchPacket.IsCatch = isCatch;
+
+            if (isCatch)
+            {
+                _player.Pokemons.Add(_wildPokemon);
+                isSuccessCatchPacket.CatchPokemonName = _wildPokemon.PokemonInfo.PokemonName;
+            }
+
+            return isSuccessCatchPacket;
         }
 
         public S_EnterMoveSelectionScene EnterMoveSelectionScene()

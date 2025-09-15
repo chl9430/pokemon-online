@@ -50,7 +50,7 @@ GameObject:
   - component: {fileID: 4099495340590952206}
   - component: {fileID: 4514633740949524571}
   m_Layer: 5
-  m_Name: Move
+  m_Name: PokemonMoveCard
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

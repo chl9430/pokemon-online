@@ -2135,6 +2135,7 @@ RectTransform:
   - {fileID: 2127670576}
   - {fileID: 1320988241}
   - {fileID: 318730110}
+  - {fileID: 1137512307}
   m_Father: {fileID: 1082758678}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0.25}
@@ -3623,6 +3624,41 @@ RectTransform:
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!1 &1137512306
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1137512307}
+  m_Layer: 5
+  m_Name: MonsterBallZone
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &1137512307
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1137512306}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 698424701}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1001 &1167486336
 PrefabInstance:
@@ -7153,7 +7189,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: -8958176391163020056, guid: 63f39e02ed2ed10489ab276461423963, type: 3}
+  m_Sprite: {fileID: -2685585903658353469, guid: 63fde604ee22fc146b07187c287bc00b, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -8412,7 +8448,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0}
   m_AnchorMax: {x: 0.5, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 64, y: 56}
+  m_SizeDelta: {x: 38, y: 36}
   m_Pivot: {x: 0.5, y: 0}
 --- !u!224 &5458788141228968694
 RectTransform:
@@ -8682,6 +8718,9 @@ MonoBehaviour:
   _pokemonGender: {fileID: 2986085063227556887}
   _hpGauge: {fileID: 1636415304843366606}
   _expGauge: {fileID: 5267459872628413241}
+  _pokeBall: {fileID: 8683485127419575708, guid: 0da223e5f48eac04394e5b4e182581be, type: 3}
+  _pokeBallPos: {fileID: 1137512307}
+  _ballTargetPos: {fileID: 5458788139838744384}
 --- !u!1 &6483812581523695356
 GameObject:
   m_ObjectHideFlags: 0
@@ -9370,6 +9409,9 @@ MonoBehaviour:
   _pokemonGender: {fileID: 1741003279}
   _hpGauge: {fileID: 96854663}
   _expGauge: {fileID: 0}
+  _pokeBall: {fileID: 0}
+  _pokeBallPos: {fileID: 0}
+  _ballTargetPos: {fileID: 0}
 --- !u!114 &8895335492526222972
 MonoBehaviour:
   m_ObjectHideFlags: 0

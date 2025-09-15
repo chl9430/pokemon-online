@@ -9,6 +9,7 @@ public class Item
     int _itemCnt;
     Texture2D _itemImg;
 
+    public ItemCategory ItemCategory {  get { return _itemCategory; } }
     public string ItemName { get { return _itemName; } }
     public int ItemCnt { get { return _itemCnt; } }
     public string ItemDescription { get { return _itemDescription; } }

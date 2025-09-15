@@ -112,16 +112,6 @@ public class PacketHandler
         scene.UpdateData(s_TalkPacket);
     }
 
-    public static void S_AddPokemonHandler(PacketSession session, IMessage packet)
-    {
-        S_AddPokemon s_ServerPokemonPacket = packet as S_AddPokemon;
-        PokemonSummary pokemonSum = s_ServerPokemonPacket.PokemonSum;
-
-        Debug.Log($"S_AddPokemon : {s_ServerPokemonPacket}");
-
-        Pokemon pokemon = new Pokemon(pokemonSum);
-    }
-
     public static void S_EnterPokemonListSceneHandler(PacketSession session, IMessage packet)
     {
         S_EnterPokemonListScene s_enterPokemonListPacket = packet as S_EnterPokemonListScene;
@@ -172,6 +162,16 @@ public class PacketHandler
         scene.UpdateData(checkBattlePokemonPacket);
     }
 
+    public static void S_IsSuccessPokeBallCatchHandler(PacketSession session, IMessage packet)
+    {
+        S_IsSuccessPokeBallCatch successCatchPacket = packet as S_IsSuccessPokeBallCatch;
+
+        Debug.Log($"S_IsSuccessPokeBallCatch : {successCatchPacket}");
+
+        BaseScene scene = Managers.Scene.CurrentScene;
+        scene.UpdateData(successCatchPacket);
+    }
+
     public static void S_EscapeFromWildPokemonHandler(PacketSession session, IMessage packet)
     {
         S_EscapeFromWildPokemon s_EscapePacket = packet as S_EscapeFromWildPokemon;
@@ -182,16 +182,6 @@ public class PacketHandler
         scene.UpdateData(s_EscapePacket);
     }
 
-    public static void S_UseItemHandler(PacketSession session, IMessage packet)
-    {
-        S_UseItem s_useItemPacket = packet as S_UseItem;
-
-        Debug.Log($"S_UseItem : {s_useItemPacket}");
-
-        BaseScene scene = Managers.Scene.CurrentScene;
-        scene.UpdateData(s_useItemPacket);
-    }
-
     public static void S_EnterPlayerBagSceneHandler(PacketSession session, IMessage packet)
     {
         S_EnterPlayerBagScene s_EnterPlayerBagScenePacket = packet as S_EnterPlayerBagScene;
@@ -200,6 +190,16 @@ public class PacketHandler
 
         BaseScene scene = Managers.Scene.CurrentScene;
         scene.UpdateData(s_EnterPlayerBagScenePacket);
+    }
+
+    public static void S_ItemSceneToBattleSceneHandler(PacketSession session, IMessage packet)
+    {
+        S_ItemSceneToBattleScene itemToBattlePacket = packet as S_ItemSceneToBattleScene;
+
+        Debug.Log($"S_ItemSceneToBattleScene : {itemToBattlePacket}");
+
+        BaseScene scene = Managers.Scene.CurrentScene;
+        scene.UpdateData(itemToBattlePacket);
     }
 
     public static void S_EnterPokemonExchangeSceneHandler(PacketSession session, IMessage packet)

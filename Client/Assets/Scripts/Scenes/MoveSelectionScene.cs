@@ -15,7 +15,6 @@ public enum MoveSelectionSceneState
 
 public class MoveSelectionScene : BaseScene
 {
-    bool _isLoading = false;
     PokemonSummary _pokemonSum;
     PlayerInfo _playerInfo;
     IMessage _packet;
@@ -52,7 +51,6 @@ public class MoveSelectionScene : BaseScene
     public override void UpdateData(IMessage packet)
     {
         _packet = packet;
-        _isLoading = false;
 
         if (packet is S_EnterMoveSelectionScene)
         {
@@ -176,7 +174,7 @@ public class MoveSelectionScene : BaseScene
                             _state = MoveSelectionSceneState.ASKING_TO_QUIT;
                             List<string> scripts = new List<string>()
                             {
-                                $"Stop trying to teach {selectedMoveSum.MoveName}?"
+                                $"Stop trying to teach {(_moveSelectArea.BtnGrid[0,0].BtnData as PokemonMoveSummary).MoveName}?"
                             };
                             _scriptBoxUI.BeginScriptTyping(scripts);
                         }
@@ -227,7 +225,7 @@ public class MoveSelectionScene : BaseScene
                                 {
                                     C_MoveSceneToEvolveScene packet = new C_MoveSceneToEvolveScene();
                                     packet.PlayerId = _playerInfo.ObjectInfo.ObjectId;
-                                    packet.PrevMoveIdx = _moveSelectArea.GetSelectedIdx() - 1;
+                                    packet.PrevMoveIdx = -1;
 
                                     Managers.Network.SavePacket(packet);
 

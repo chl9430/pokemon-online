@@ -151,6 +151,12 @@ namespace Server
         {
             Item usedItem = _items[itemCategory][itemOrder];
 
+            if (_battleRoom != null)
+            {
+                _battleRoom.UsedItem = usedItem;
+                _battleRoom.MyTurn = true;
+            }
+
             usedItem.ItemCount--;
 
             if (usedItem.ItemCount <= 0)

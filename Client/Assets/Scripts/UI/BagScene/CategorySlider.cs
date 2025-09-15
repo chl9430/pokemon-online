@@ -1,5 +1,6 @@
 using NUnit.Framework;
 using System.Collections.Generic;
+using System.Security.Cryptography;
 using TMPro;
 using UnityEngine;
 
@@ -20,7 +21,11 @@ public class CategorySlider : MonoBehaviour
     protected int _curIdx;
     protected BaseScene _scene;
 
+    [SerializeField] SliderContent _sliderContent;
+
     public int CurIdx { get { return _curIdx; } }
+
+    public List<SliderContent> SliderContents { get { return _sliderContents; } }
 
     public SliderState SliderState 
     { 
@@ -38,9 +43,14 @@ public class CategorySlider : MonoBehaviour
                 if (_scene == null)
                     _scene = Managers.Scene.CurrentScene;
 
-                _scene.DoNextAction("SliderMove");
+                _scene.DoNextAction(_sliderContents[_curIdx].ContentData);
             }
         } 
+    }
+
+    void Awake()
+    {
+        _sliderContents = new List<SliderContent>();
     }
 
     void Start()
@@ -126,14 +136,6 @@ public class CategorySlider : MonoBehaviour
                 category.MoveContent(5f, _dir);
             }
         }
-        else if (Input.GetKeyDown(KeyCode.D))
-        {
-            _scene.DoNextAction(Define.InputSelectBoxEvent.SELECT);
-        }
-        else if (Input.GetKeyDown(KeyCode.S))
-        {
-            _scene.DoNextAction(Define.InputSelectBoxEvent.BACK);
-        }
     }
 
     public void CountContentMoving()
@@ -167,5 +169,25 @@ public class CategorySlider : MonoBehaviour
     {
         _curIdx = 0;
         _sliderContents = sliderContents;
+    }
+
+    public void CreateSlideContents(List<object> contents)
+    {
+        for (int i = 0; i < contents.Count; i++)
+        {
+            _sliderContents.Add(Instantiate(_sliderContent, gameObject.transform));
+            RectTransform rt = _sliderContents[i].GetComponent<RectTransform>();
+
+            rt.anchorMin = new Vector2(i, 0);
+            rt.anchorMax = new Vector2(i + 1, 1);
+
+            _sliderContents[i].Slider = this;
+            _sliderContents[i].ContentData = contents[i];
+        }
+    }
+
+    public object GetSelectedContentData()
+    {
+        return _sliderContents[_curIdx].ContentData;
     }
 }

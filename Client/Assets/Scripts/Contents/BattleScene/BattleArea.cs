@@ -6,6 +6,8 @@ using UnityEngine.UI;
 
 public class BattleArea : MonoBehaviour
 {
+    PokeBall _pokeBallInst;
+
     [SerializeField] Animator _trainerAnim;
     [SerializeField] Animator _pokemonZoneAnim;
     [SerializeField] Animator _battlePokemonAnim;
@@ -19,6 +21,9 @@ public class BattleArea : MonoBehaviour
     [SerializeField] Image _pokemonGender;
     [SerializeField] GaugeUI _hpGauge;
     [SerializeField] GaugeUI _expGauge;
+    [SerializeField] PokeBall _pokeBall;
+    [SerializeField] Transform _pokeBallPos;
+    [SerializeField] Transform _ballTargetPos;
 
     public void FillTrainerImage(PlayerGender gender)
     {
@@ -114,5 +119,23 @@ public class BattleArea : MonoBehaviour
     {
         Texture2D texture = attackMove.HitEffectImage;
         StartCoroutine(BlinkPokemonHitEffect(texture));
+    }
+
+    public void CreateAndThrowBall(string ballName)
+    {
+        _pokeBallInst = Instantiate(_pokeBall, _pokeBallPos);
+        _pokeBallInst.SetBallImage(ballName);
+
+        _pokeBallInst.ThrowTheBall(_ballTargetPos.position);
+    }
+
+    public void PlayFailCatchBallAnim(int shakeCnt)
+    {
+        _pokeBallInst.FailBallShake(shakeCnt);
+    }
+
+    public void PlaySuccessCatchBallAnim()
+    {
+        _pokeBallInst.SuccessBallShake();
     }
 }

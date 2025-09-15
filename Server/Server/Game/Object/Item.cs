@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Server
 {
-    public class Item
+    public abstract class Item
     {
         protected ItemCategory _itemCategory;
         protected string _itemName;
@@ -22,17 +22,6 @@ namespace Server
             _itemCnt = itemCnt;
         }
 
-        public ItemSummary MakeItemSummary()
-        {
-            ItemSummary itemSum = new ItemSummary()
-            {
-                ItemCategory = ItemCategory.PokeBall,
-                ItemName = _itemName,
-                ItemDescription = _itemDescription,
-                ItemCnt = _itemCnt,
-            };
-
-            return itemSum;
-        }
+        public abstract ItemSummary MakeItemSummary();
     }
 }

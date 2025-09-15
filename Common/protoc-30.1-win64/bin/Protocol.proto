@@ -12,9 +12,8 @@ enum MsgId {
   S_ENTER_POKEMON_LIST_SCENE = 41;
   C_ENTER_POKEMON_BATTLE_SCENE = 42;
   S_ENTER_POKEMON_BATTLE_SCENE = 43;
-  C_ENTER_PLAYER_BAG_SCENE = 44;
-  S_ENTER_PLAYER_BAG_SCENE = 45;
 
+  // Æ÷ÄÏ¸ó ±³È¯ ¾À
   C_ENTER_POKEMON_EXCHANGE_SCENE = 400;
   S_ENTER_POKEMON_EXCHANGE_SCENE = 410;
   C_MOVE_EXCHANGE_CURSOR = 420;
@@ -33,14 +32,15 @@ enum MsgId {
   C_CREATE_PLAYER = 9;
   S_SEND_TALK = 15;
   S_RECEIVE_TALK = 16;
-  C_ADD_POKEMON = 10;
-  S_ADD_POKEMON = 11;
   C_SWITCH_POKEMON = 12;
   C_ACCESS_POKEMON_SUMMARY = 13;
   S_ACCESS_POKEMON_SUMMARY = 14;
   
-  C_USE_ITEM = 50;
-  S_USE_ITEM = 51;
+  // °¡¹æ ¾À
+  C_ENTER_PLAYER_BAG_SCENE = 200;
+  S_ENTER_PLAYER_BAG_SCENE = 210;
+  C_ITEM_SCENE_TO_BATTLE_SCENE = 220;
+  S_ITEM_SCENE_TO_BATTLE_SCENE = 230;
   
   // ¹èÆ² ¾À
   C_REQUEST_DATA_BY_ID = 60;
@@ -50,6 +50,8 @@ enum MsgId {
   S_GET_ENEMY_POKEMON_EXP = 61;
   S_CHECK_AND_APPLY_REMAINED_EXP = 62;
   S_CHECK_AVAILABLE_BATTLE_POKEMON = 350;
+  C_IS_SUCCESS_POKE_BALL_CATCH = 380;
+  S_IS_SUCCESS_POKE_BALL_CATCH = 390;
   S_ESCAPE_FROM_WILD_POKEMON = 63;
   S_CHECK_EXP_POKEMON = 340;
   S_CHECK_POKEMON_EVOLUTION = 330;
@@ -61,11 +63,13 @@ enum MsgId {
   C_PLAYER_TALK = 70;
   S_SEND_TALK_REQUEST = 71;
 
+  // Æ÷ÄÏ¸ó ÁøÈ­ ¾À
   C_ENTER_POKEMON_EVOLUTION_SCENE = 500;
   S_ENTER_POKEMON_EVOLUTION_SCENE = 510;
   C_POKEMON_EVOLUTION = 520;
   S_POKEMON_EVOLUTION = 530;
 
+  // ±â¼ú ¼±ÅÃ ¾À
   C_ENTER_MOVE_SELECTION_SCENE = 600;
   S_ENTER_MOVE_SELECTION_SCENE = 610;
   C_MOVE_SCENE_TO_BATTLE_SCENE = 620;
@@ -148,18 +152,6 @@ message S_SendTalk
 message S_ReceiveTalk
 {
     PlayerInfo playerInfo = 1;
-}
-
-message C_AddPokemon {
-    int32 playerId = 1;
-	string pokemonName = 2;
-	string nickName = 3;
-	int32 level = 4;
-    int32 hp = 5;
-}
-
-message S_AddPokemon {
-    PokemonSummary pokemonSum = 1;
 }
 
 message C_SwitchPokemon {
@@ -274,21 +266,10 @@ enum TalkRequestType
     CANCEL_TALK = 5;
 }
 
-message C_UseItem
-{
-    int32 playerId = 1;
-    ItemCategory itemCategory = 2;
-    int32 itemOrder = 3;
-}
 
-message S_UseItem
-{
-    PlayerInfo playerInfo = 1;
-    PokemonSummary enemyPokemonSum = 2;
-    PokemonSummary playerPokemonSum = 3;
-    ItemSummary usedItem = 4;
-}
 
+
+// °¡¹æ ¾À
 message C_EnterPlayerBagScene
 {
     int32 playerId = 1;
@@ -298,6 +279,26 @@ message S_EnterPlayerBagScene
 {
     PlayerInfo playerInfo = 1;
     map<int32, CategoryInventory> inventory = 2;
+}
+
+message C_ItemSceneToBattleScene
+{
+    int32 playerId = 1;
+    ItemCategory itemCategory = 2;
+    int32 itemOrder = 3;
+}
+
+message S_ItemSceneToBattleScene
+{
+    PlayerInfo playerInfo = 1;
+    PokemonSummary enemyPokemonSum = 2;
+    PokemonSummary playerPokemonSum = 3;
+    ItemSummary usedItem = 4;
+}
+
+message CategoryInventory
+{
+    repeated ItemSummary categoryItemSums = 1;
 }
 
 
@@ -383,6 +384,17 @@ message S_CheckAvailableBattlePokemon
     bool canFight = 1;
 }
 
+message C_IsSuccessPokeBallCatch
+{
+    int32 playerId = 1;
+}
+
+message S_IsSuccessPokeBallCatch
+{
+    bool isCatch = 1;
+    string _catchPokemonName = 2;
+}
+
 message S_CheckPokemonEvolution
 {
     bool goToEvolutionScene = 1;
@@ -407,6 +419,7 @@ message S_ReturnPokemonBattleScene
     PokemonSummary enemyPokemonSum = 2;
     repeated PokemonSummary myPokemonSums = 3;
 }
+
 
 
 
@@ -565,11 +578,6 @@ message PokemonMoveSummary
     MoveCategory moveCategory = 7;
     PokemonType moveType = 8;
     string moveDescription = 9;
-}
-
-message CategoryInventory
-{
-    repeated ItemSummary categoryItemSums = 1;
 }
 
 message ItemSummary

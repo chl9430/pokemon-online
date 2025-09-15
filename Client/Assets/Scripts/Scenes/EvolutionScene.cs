@@ -128,7 +128,7 @@ public class EvolutionScene : BaseScene
                         string prevMoveName = evolveScenePacket.PrevMoveName;
                         string newMoveName = evolveScenePacket.NewMoveName;
 
-                        if (prevMoveName == null)
+                        if (prevMoveName == "")
                         {
                             _sceneState = EvolutionSceneState.AFTER_MOVE_SELECT_SCRIPTING;
                             List<string> scripts = new List<string>()

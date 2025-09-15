@@ -12,22 +12,16 @@ public class SliderContent : MonoBehaviour
     object _contentData;
     float _startTime;
     float _moveSpeed;
+    CategorySlider _slider;
     RectTransform _rect;
-    TextMeshProUGUI _tmp;
     Vector2 _prevMinPos;
     Vector2 _prevMaxPos;
     Vector2 _destMinPos;
     Vector2 _destMaxPos;
     SliderContentState _state = SliderContentState.NONE;
-    
-    [SerializeField] CategorySlider _slider;
 
+    public CategorySlider Slider { set { _slider = value; } }
     public object ContentData {  get { return _contentData; } set { _contentData = value; } }
-
-    void Start()
-    {
-        _tmp = GetComponent<TextMeshProUGUI>();
-    }
 
     void Update()
     {
