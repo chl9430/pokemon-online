@@ -210,7 +210,7 @@ public class IntroScene : BaseScene
             case IntroSceneState.MOVING_TO_GAME_SCENE:
                 {
                     // ¾À º¯°æ
-                    Managers.Scene.LoadScene(Define.Scene.Game);
+                    //Managers.Scene.LoadScene(Define.Scene.Game);
                 }
                 break;
         }

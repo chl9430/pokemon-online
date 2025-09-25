@@ -15,16 +15,27 @@ namespace Server
     public class GameRoom : JobSerializer
     {
         public int RoomId { get; set; }
-
+        RoomType _roomType;
+        RoomInfo _roomInfo;
         Dictionary<int, Player> _players = new Dictionary<int, Player>();
+        Random _ran;
 
         public Dictionary<int, Player> Players { get { return _players; } }
 
         public Map Map { get; private set; } = new Map();
 
-        public void Init(int mapId)
+        public RoomType RoomType { get { return _roomType; } }
+
+        public void Init(int mapId, RoomType roomType)
         {
-            Map.LoadMap(mapId);
+            _roomType = roomType;
+
+            if (DataManager.RoomDoorPathDict.TryGetValue(roomType, out RoomInfo[] value))
+            {
+                _roomInfo = value[RoomId - 1];
+            }
+
+            Map.LoadMap(mapId, roomType);
         }
 
         public void Update()
@@ -45,7 +56,9 @@ namespace Server
                 _players.Add(gameObject.Id, player);
                 player.Room = this;
 
-                Map.ApplyMove(player, new Vector2Int(player.CellPos.x, player.CellPos.y));
+                Vector2Int playerInitPos = new Vector2Int(player.CellPos.x, player.CellPos.y);
+
+                Map.ApplyMove(player, playerInitPos);
 
                 if (player.PosInfo.State != CreatureState.WatchMenu && player.PosInfo.State != CreatureState.Exchanging)
                 {
@@ -55,6 +68,8 @@ namespace Server
                     PlayerInfo playerInfo = player.MakePlayerInfo();
 
                     enterPacket.PlayerInfo = playerInfo;
+                    enterPacket.RoomId = _roomInfo.roomId;
+                    enterPacket.RoomType = _roomType;
 
                     player.Session.Send(enterPacket);
 
@@ -69,6 +84,21 @@ namespace Server
                     }
 
                     player.Session.Send(spawnPacket);
+                }
+
+                TileType tileType = Map.GetTileType(new Vector2Int(player.PosInfo.PosX, player.PosInfo.PosY));
+                if (tileType == TileType.DOOR)
+                {
+                    S_GetDoorDestDir destDirPacket = new S_GetDoorDestDir();
+
+                    int doorId = Map.GetDoorId(new Vector2Int(player.PosInfo.PosX, player.PosInfo.PosY));
+
+                    if (DataManager.RoomDoorPathDict.TryGetValue(_roomType, out RoomInfo[] value))
+                    {
+                        destDirPacket.DestDir = value[RoomId - 1].doors[doorId - 1].destDir;
+                    }
+
+                    player.Session.Send(destDirPacket);
                 }
             }
 
@@ -112,21 +142,95 @@ namespace Server
             }
         }
 
+        public void MoveAnotherRoom(Player player)
+        {
+            if (player == null)
+                return;
+
+            ObjectInfo info = player.Info;
+
+            int doorId = Map.GetDoorId(new Vector2Int(info.PosInfo.PosX, info.PosInfo.PosY));
+
+            DoorDestInfo door = _roomInfo.doors[doorId - 1];
+
+            RoomType destRoomType = door.destRoomType;
+            int destRoomId = door.destRoomId;
+
+            LeaveRoom(player);
+
+            GameRoom destRoom = RoomManager.Instance.Find(destRoomId, destRoomType);
+            int enterDoorId = destRoom.FindDoorId(_roomInfo.roomId, _roomType);
+            Vector2Int playerInitPos = destRoom.Map.GetDoorPos(enterDoorId);
+
+            player.Info.PosInfo.PosX = playerInitPos.x;
+            player.Info.PosInfo.PosY = playerInitPos.y;
+            player.Info.PosInfo.State = CreatureState.Idle;
+
+            destRoom.EnterRoom(player);
+        }
+
+        public int FindDoorId(int destRoomId, RoomType destRoomType)
+        {
+            int enterDoorId = 0;
+            for (int i = 0; i < _roomInfo.doors.Length; i++)
+            {
+                if (_roomInfo.doors[i].destRoomId == destRoomId && _roomInfo.doors[i].destRoomType == destRoomType)
+                {
+                    enterDoorId = _roomInfo.doors[i].doorId;
+                    break;
+                }
+            }
+
+            return enterDoorId;
+        }
+
         public void HandleMove(Player player, C_Move movePacket)
         {
-            var a = ObjectManager.Instance.Players;
-
             if (player == null)
                 return;
 
             PositionInfo movePosInfo = movePacket.PosInfo;
             ObjectInfo info = player.Info;
 
-            // 다른 좌표로 갈 수 있는지 체크
+            // 방향만 바꾼게 아니라면(실제로 이동하였다면) 
             if (movePosInfo.PosX != info.PosInfo.PosX || movePosInfo.PosY != info.PosInfo.PosY)
             {
-                if (Map.CanGo(new Vector2Int(movePosInfo.PosX, movePosInfo.PosY)) == false)
+                TileType nextTile = Map.GetTileType(new Vector2Int(movePosInfo.PosX, movePosInfo.PosY));
+                if (nextTile == TileType.COLLISION)
+                {
                     return;
+                }
+                else if (nextTile == TileType.BUSH)
+                {
+                    if (_ran == null)
+                        _ran = new Random();
+
+                    int metPokemonRate = _ran.Next(0, 100);
+
+                    if (metPokemonRate < 20)
+                    {
+                        int bushNum = Map.GetBushNmuber(new Vector2Int(movePosInfo.PosX, movePosInfo.PosY));
+
+                        S_MeetWildPokemon meetPokemonPacket = new S_MeetWildPokemon();
+                        meetPokemonPacket.RoomId = RoomId;
+                        meetPokemonPacket.BushNum = bushNum;
+
+                        player.Session.Send(meetPokemonPacket);
+                    }
+                }
+                else if (nextTile == TileType.DOOR)
+                {
+                    S_GetDoorDestDir destDirPacket = new S_GetDoorDestDir();
+
+                    int doorId = Map.GetDoorId(new Vector2Int(movePosInfo.PosX, movePosInfo.PosY));
+
+                    if (DataManager.RoomDoorPathDict.TryGetValue(_roomType, out RoomInfo[] value))
+                    {
+                        destDirPacket.DestDir = value[RoomId - 1].doors[doorId - 1].destDir;
+                    }
+
+                    player.Session.Send(destDirPacket);
+                }
             }
 
             info.PosInfo.State = movePosInfo.State;

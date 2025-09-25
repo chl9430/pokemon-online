@@ -142,6 +142,26 @@ public class PacketHandler
         scene.UpdateData(s_EnterBattleScenePacket);
     }
 
+    public static void S_MeetWildPokemonHandler(PacketSession session, IMessage packet)
+    {
+        S_MeetWildPokemon meetPokemonPacket = packet as S_MeetWildPokemon;
+
+        Debug.Log($"S_MeetWildPokemon : {meetPokemonPacket}");
+
+        BaseScene scene = Managers.Scene.CurrentScene;
+        scene.UpdateData(meetPokemonPacket);
+    }
+
+    public static void S_GetDoorDestDirHandler(PacketSession session, IMessage packet)
+    {
+        S_GetDoorDestDir doorDestDirPacket = packet as S_GetDoorDestDir;
+
+        Debug.Log($"S_GetDoorDestDir : {doorDestDirPacket}");
+
+        BaseScene scene = Managers.Scene.CurrentScene;
+        scene.UpdateData(doorDestDirPacket);
+    }
+
     public static void S_CheckAndApplyRemainedExpHandler(PacketSession session, IMessage packet)
     {
         S_CheckAndApplyRemainedExp s_CheckAndApplyExpPacket = packet as S_CheckAndApplyRemainedExp;

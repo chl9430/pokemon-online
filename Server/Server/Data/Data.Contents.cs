@@ -71,17 +71,43 @@ public struct PokemonSummaryDictData
     public EvolutionChain evolutionChain;
 }
 
-public struct WildPokemonAppearData
+public struct WildPokemonAppearInfo
 {
     public string pokemonName;
     public int pokemonLevel;
     public int appearRate;
 }
 
+public struct BushInfo
+{
+    public int bushNum;
+    public WildPokemonAppearInfo[] wildPokemons;
+}
+
 public struct WildPokemonLocationDictData
 {
-    public int locationNum;
-    public WildPokemonAppearData[] WildPokemons;
+    public int roomId;
+    public BushInfo[] bushes;
+}
+
+public struct DoorDestInfo
+{
+    public int doorId;
+    public RoomType destRoomType;
+    public int destRoomId;
+    public MoveDir destDir;
+}
+
+public struct RoomInfo
+{
+    public int roomId;
+    public DoorDestInfo[] doors;
+}
+
+public struct RoomDoorPathDictData
+{
+    public RoomType roomType;
+    public RoomInfo[] rooms;
 }
 
 namespace Server
@@ -106,18 +132,24 @@ namespace Server
 
     #region WildPokemonLocation
     [Serializable]
-    public class WildPokemonLocationData : ILoader<int, WildPokemonAppearData[]>
+    public class WildPokemonLocationData : ILoader<int, BushInfo[]>
     {
         public List<WildPokemonLocationDictData> wildPKMLocations = new List<WildPokemonLocationDictData>();
 
-        public Dictionary<int, WildPokemonAppearData[]> MakeDict()
+        public Dictionary<int, BushInfo[]> MakeDict()
         {
-            Dictionary<int, WildPokemonAppearData[]> dict = new Dictionary<int, WildPokemonAppearData[]>();
+            Dictionary<int, BushInfo[]> dict = new Dictionary<int, BushInfo[]>();
             foreach (WildPokemonLocationDictData locationData in wildPKMLocations)
             {
-                WildPokemonAppearData[] sortedDatas = locationData.WildPokemons.OrderBy(item => item.appearRate).ToArray();
+                for (int j = 0; j < locationData.bushes.Length; j++)
+                {
+                    BushInfo bushInfo = locationData.bushes[j];
+                    WildPokemonAppearInfo[] sortedDatas = bushInfo.wildPokemons.OrderBy(item => item.appearRate).ToArray();
 
-                dict.Add(locationData.locationNum, sortedDatas);
+                    bushInfo.wildPokemons = sortedDatas;
+                }
+
+                dict.Add(locationData.roomId, locationData.bushes);
             }
             return dict;
         }
@@ -172,6 +204,34 @@ namespace Server
             foreach (TypeEffectivenessDictData effectivenessData in pokemonTypeEffectiveness)
             {
                 dict.Add((PokemonType)Enum.Parse(typeof(PokemonType), effectivenessData.type), effectivenessData.effectiveness);
+            }
+            return dict;
+        }
+    }
+    #endregion
+
+    #region RoomDoorPath
+    [Serializable]
+    public class RoomDoorPath : ILoader<RoomType, RoomInfo[]>
+    {
+        public List<RoomDoorPathDictData> roomPathDoorDatas = new List<RoomDoorPathDictData>();
+
+        public Dictionary<RoomType, RoomInfo[]> MakeDict()
+        {
+            Dictionary<RoomType, RoomInfo[]> dict = new Dictionary<RoomType, RoomInfo[]>();
+            foreach (RoomDoorPathDictData data in roomPathDoorDatas)
+            {
+                RoomInfo[] roomList = data.rooms;
+
+                for (int i = 0; i < roomList.Length; i++)
+                {
+                    DoorDestInfo[] sortedList = roomList[i].doors.OrderBy(item => item.doorId).ToArray();
+                    roomList[i].doors = sortedList;
+                }
+
+                RoomInfo[] sortedRoomList = roomList.OrderBy(item => item.roomId).ToArray();
+
+                dict.Add(data.roomType, sortedRoomList);
             }
             return dict;
         }

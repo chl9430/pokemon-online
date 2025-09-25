@@ -375,10 +375,10 @@ public class BagScene : BaseScene
                 break;
             case BagSceneState.MOVING_TO_SCENE:
                 {
-                    if (Managers.Network.Packet is C_ReturnGame)
-                        Managers.Scene.LoadScene(Define.Scene.Game);
-                    else if (Managers.Network.Packet is C_ItemSceneToBattleScene)
+                    if (Managers.Network.Packet is C_ItemSceneToBattleScene)
                         Managers.Scene.LoadScene(Define.Scene.Battle);
+                    //else if (Managers.Network.Packet is C_ReturnGame)
+                    //    Managers.Scene.LoadScene(Define.Scene.Game);
                 }
                 break;
         }

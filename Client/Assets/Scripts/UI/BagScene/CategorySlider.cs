@@ -2,6 +2,7 @@ using NUnit.Framework;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 using TMPro;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public enum SliderState
@@ -15,13 +16,13 @@ public class CategorySlider : MonoBehaviour
 {
     int _dir;
     int _moveFinishCnt;
-    List<SliderContent> _sliderContents;
 
     protected SliderState _sliderState = SliderState.NONE;
     protected int _curIdx;
     protected BaseScene _scene;
 
     [SerializeField] SliderContent _sliderContent;
+    [SerializeField] List<SliderContent> _sliderContents;
 
     public int CurIdx { get { return _curIdx; } }
 
@@ -50,7 +51,15 @@ public class CategorySlider : MonoBehaviour
 
     void Awake()
     {
-        _sliderContents = new List<SliderContent>();
+        if (_sliderContents == null)
+            _sliderContents = new List<SliderContent>();
+        else
+        {
+            foreach (SliderContent content in _sliderContents)
+            {
+                content.Slider = this;
+            }
+        }
     }
 
     void Start()
@@ -135,6 +144,14 @@ public class CategorySlider : MonoBehaviour
 
                 category.MoveContent(5f, _dir);
             }
+        }
+        else if (Input.GetKeyDown(KeyCode.D))
+        {
+            _scene.DoNextAction(Define.InputSelectBoxEvent.SELECT);
+        }
+        else if (Input.GetKeyDown(KeyCode.S))
+        {
+            _scene.DoNextAction(Define.InputSelectBoxEvent.BACK);
         }
     }
 

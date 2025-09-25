@@ -58,6 +58,15 @@ namespace Server
         public int cellDistFromZero { get { return Math.Abs(x) + Math.Abs(y); } }
     }
 
+    public enum TileType
+    {
+        NONE = 0,
+        PATH = 1,
+        COLLISION = 2,
+        BUSH = 3,
+        DOOR = 4,
+    }
+
     public class Map
     {
         public int MinX { get; set; }
@@ -68,19 +77,23 @@ namespace Server
         public int SizeX { get { return MaxX - MinX + 1; } }
         public int SizeY { get { return MaxY - MinY + 1; } }
 
-        bool[,] _collision;
+        TileType[,] _collision;
+        int[,] _bushTileGrid;
+        int[,] _doorTileGrid;
         GameObject[,] _objects;
 
-        public bool CanGo(Vector2Int cellPos, bool checkObjects = true)
+        public TileType GetTileType(Vector2Int cellPos, bool checkObjects = true)
         {
             if (cellPos.x < MinX || cellPos.x > MaxX)
-                return false;
+                return TileType.COLLISION;
             if (cellPos.y < MinY || cellPos.y > MaxY)
-                return false;
+                return TileType.COLLISION;
 
             int x = cellPos.x - MinX;
             int y = MaxY - cellPos.y;
-            return !_collision[y, x] && (!checkObjects || _objects[y, x] == null);
+
+            // return !_collision[y, x] && (!checkObjects || _objects[y, x] == null);
+            return _collision[y, x];
         }
 
         public GameObject Find(Vector2Int cellPos)
@@ -93,6 +106,59 @@ namespace Server
             int x = cellPos.x - MinX;
             int y = MaxY - cellPos.y;
             return _objects[y, x];
+        }
+
+        public int GetBushNmuber(Vector2Int cellPos)
+        {
+            if (cellPos.x < MinX || cellPos.x > MaxX)
+                return 0;
+            if (cellPos.y < MinY || cellPos.y > MaxY)
+                return 0;
+
+            int x = cellPos.x - MinX;
+            int y = MaxY - cellPos.y;
+            return _bushTileGrid[y, x];
+        }
+
+        public int GetDoorId(Vector2Int cellPos)
+        {
+            if (cellPos.x < MinX || cellPos.x > MaxX)
+                return 0;
+            if (cellPos.y < MinY || cellPos.y > MaxY)
+                return 0;
+
+            int x = cellPos.x - MinX;
+            int y = MaxY - cellPos.y;
+            return _doorTileGrid[y, x];
+        }
+
+        public Vector2Int GetDoorPos(int doorId)
+        {
+            Vector2Int doorPos = new Vector2Int();
+
+            for (int i = 0; i < _doorTileGrid.GetLength(0); i++)
+            {
+                for (int j = 0; j < _doorTileGrid.GetLength(1); j++)
+                {
+                    if (_doorTileGrid[i, j] == doorId)
+                    {
+                        doorPos = GetTilePos(j, i);
+                        return doorPos;
+                    }
+                }
+            }
+
+            return doorPos;
+        }
+
+        public Vector2Int GetTilePos(int x, int y)
+        {
+            Vector2Int pos = new Vector2Int();
+
+            pos.x = x + MinX;
+            pos.y = MaxY - y;
+
+            return pos;
         }
 
         public bool ApplyLeave(GameObject gameObject)
@@ -116,18 +182,21 @@ namespace Server
             return true;
         }
 
-        public bool ApplyMove(GameObject gameObject, Vector2Int dest)
+        public void ApplyMove(GameObject gameObject, Vector2Int dest)
         {
             ApplyLeave(gameObject);
 
             if (gameObject.Room == null)
-                return false;
+                return;
             if (gameObject.Room.Map != this)
-                return false;
+                return;
 
             PositionInfo posInfo = gameObject.PosInfo;
-            if (CanGo(dest, true) == false)
-                return false;
+            TileType tile = GetTileType(dest, true);
+            if (tile == TileType.COLLISION)
+            {
+                return;
+            }
 
             int x = dest.x - MinX;
             int y = MaxY - dest.y;
@@ -135,12 +204,12 @@ namespace Server
 
             posInfo.PosX = dest.x;
             posInfo.PosY = dest.y;
-            return true;
+            return;
         }
 
-        public void LoadMap(int mapId, string pathPrefix = "../../../../../Common/MapData")
+        public void LoadMap(int mapId, RoomType roomType, string pathPrefix = "../../../../../Common/MapData")
         {
-            string mapName = "Map_" + mapId.ToString("000");
+            string mapName = $"{roomType.ToString()}_" + mapId.ToString();
 
             string text = File.ReadAllText($"{pathPrefix}/{mapName}.txt");
             StringReader reader = new StringReader(text);
@@ -152,15 +221,82 @@ namespace Server
 
             int xCount = MaxX - MinX + 1;
             int yCount = MaxY - MinY + 1;
-            _collision = new bool[yCount, xCount];
+            _collision = new TileType[yCount, xCount];
+            _bushTileGrid = new int[yCount, xCount];
+            _doorTileGrid = new int[yCount, xCount];
             _objects = new GameObject[yCount, xCount];
+
+            // 타일맵의 정보를 불러온다.
+            for (int y = 0; y < yCount; y++)
+            {
+                string line = reader.ReadLine();
+                for (int x = 0; x < xCount; x++)
+                {
+                    if (line[x] == '1')
+                    {
+                        _collision[y, x] = TileType.COLLISION;
+                    }
+                    else if (line[x] == '2')
+                    {
+                        _collision[y, x] = TileType.DOOR;
+                    }
+                    else if (line[x] == '0')
+                    {
+                        _collision[y, x] = TileType.PATH;
+                    }
+                }
+            }
+
+            // 문 타일맵의 정보를 불러온다.
+            string doorMapName = mapName + "_DoorMap";
+
+            text = File.ReadAllText($"{pathPrefix}/{doorMapName}.txt");
+            reader = new StringReader(text);
+
+            MinX = int.Parse(reader.ReadLine());
+            MaxX = int.Parse(reader.ReadLine());
+            MinY = int.Parse(reader.ReadLine());
+            MaxY = int.Parse(reader.ReadLine());
+
+            xCount = MaxX - MinX + 1;
+            yCount = MaxY - MinY + 1;
 
             for (int y = 0; y < yCount; y++)
             {
                 string line = reader.ReadLine();
                 for (int x = 0; x < xCount; x++)
                 {
-                    _collision[y, x] = (line[x] == '1' ? true : false);
+                    _doorTileGrid[y, x] = line[x] - '0';
+
+                    if (line[x] != '0')
+                        _collision[y, x] = TileType.DOOR;
+                }
+            }
+
+            // 부쉬 타일맵의 정보를 불러온다.
+            string bushMapName = mapName + "_BushMap";
+
+            text = File.ReadAllText($"{pathPrefix}/{bushMapName}.txt");
+            reader = new StringReader(text);
+
+            MinX = int.Parse(reader.ReadLine());
+            MaxX = int.Parse(reader.ReadLine());
+            MinY = int.Parse(reader.ReadLine());
+            MaxY = int.Parse(reader.ReadLine());
+
+            xCount = MaxX - MinX + 1;
+            yCount = MaxY - MinY + 1;
+
+            // 부쉬 타일맵의 정보를 불러온다.
+            for (int y = 0; y < yCount; y++)
+            {
+                string line = reader.ReadLine();
+                for (int x = 0; x < xCount; x++)
+                {
+                    _bushTileGrid[y, x] = line[x] - '0';
+
+                    if (line[x] != '0')
+                        _collision[y, x] = TileType.BUSH;
                 }
             }
         }
@@ -230,7 +366,9 @@ namespace Server
                     // 벽으로 막혀서 갈 수 없으면 스킵
                     if (next.Y != dest.Y || next.X != dest.X)
                     {
-                        if (CanGo(Pos2Cell(next), checkObjects) == false) // CellPos
+                        TileType tile = GetTileType(Pos2Cell(next), checkObjects);
+
+                        if (tile == TileType.COLLISION)
                             continue;
                     }
 

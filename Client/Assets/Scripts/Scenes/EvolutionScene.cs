@@ -353,12 +353,12 @@ public class EvolutionScene : BaseScene
                 break;
             case EvolutionSceneState.MOVING_SCENE:
                 {
-                    if (Managers.Network.Packet is C_ReturnGame)
-                        Managers.Scene.LoadScene(Define.Scene.Game);
-                    else if (Managers.Network.Packet is C_EnterPokemonEvolutionScene)
+                    if (Managers.Network.Packet is C_EnterPokemonEvolutionScene)
                         Managers.Scene.LoadScene(Define.Scene.Evolution);
                     else if (Managers.Network.Packet is C_EnterMoveSelectionScene)
                         Managers.Scene.LoadScene(Define.Scene.MoveSelection);
+                    //else if (Managers.Network.Packet is C_ReturnGame)
+                    //    Managers.Scene.LoadScene(Define.Scene.Game);
                 }
                 break;
         }

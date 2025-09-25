@@ -335,7 +335,7 @@ public class PokemonListScene : BaseScene
                     Managers.Network.SavePacket(returnGamePacket);
 
                     // ¾À º¯°æ
-                    Managers.Scene.LoadScene(Define.Scene.Game);
+                    // Managers.Scene.LoadScene(Define.Scene.Game);
                 }
                 break;
             case PokemonListSceneState.MOVING_TO_SUMMARY_SCENE:
@@ -376,6 +376,11 @@ public class PokemonListScene : BaseScene
         {
             _actionSelectBox.gameObject.SetActive(true);
             _actionSelectBox.UIState = GridLayoutSelectBoxState.SELECTING;
+        }
+        else if (state == PokemonListSceneState.MOVING_TO_SUMMARY_SCENE)
+        {
+            _actionSelectBox.gameObject.SetActive(true);
+            _actionSelectBox.UIState = GridLayoutSelectBoxState.NONE;
         }
         else
             _actionSelectBox.gameObject.SetActive(false);

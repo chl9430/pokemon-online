@@ -83,20 +83,22 @@ namespace Server
 
         public Item UsedItem { set { _usedItem = value; } }
 
-        public void MakeWildPokemon(int locationNum)
+        public void MakeWildPokemon(int roomId, int bushNum)
         {
-            if (DataManager.WildPKMLocationDict.TryGetValue(locationNum, out WildPokemonAppearData[] wildPokemonDatas))
+            if (DataManager.WildPKMLocationDict.TryGetValue(roomId, out BushInfo[] bushInfos))
             {
-                WildPokemonAppearData wildPokemonData = wildPokemonDatas[0];
+                BushInfo bushInfo = bushInfos[bushNum - 1];
+                WildPokemonAppearInfo[] wildPokemonInfos = bushInfo.wildPokemons;
+                WildPokemonAppearInfo wildPokemonInfo = wildPokemonInfos[0];
 
                 int ran = _random.Next(100);
 
                 int totalRateCnt = 0;
 
-                for (int i = 0; i < wildPokemonDatas.Length; i++)
+                for (int i = 0; i < wildPokemonInfos.Length; i++)
                 {
                     int rateCnt = 0;
-                    int appearRate = wildPokemonDatas[i].appearRate;
+                    int appearRate = wildPokemonInfos[i].appearRate;
 
                     bool found = false;
 
@@ -109,7 +111,7 @@ namespace Server
                         }
                         else
                         {
-                            wildPokemonData = wildPokemonDatas[i];
+                            wildPokemonInfo = wildPokemonInfos[i];
                             found = true;
                             break;
                         }
@@ -119,7 +121,7 @@ namespace Server
                         break;
                 }
 
-                _wildPokemon = new Pokemon(wildPokemonData.pokemonName, wildPokemonData.pokemonName, wildPokemonData.pokemonLevel, _player.Name, _player.Id);
+                _wildPokemon = new Pokemon(wildPokemonInfo.pokemonName, wildPokemonInfo.pokemonName, wildPokemonInfo.pokemonLevel, _player.Name, _player.Id);
             }
             else
             {

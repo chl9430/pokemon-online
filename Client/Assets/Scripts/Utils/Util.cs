@@ -48,7 +48,6 @@ public class Util
             }
         }
 
-        Debug.Log($"Cannot find {typeof(T)} component in {name} gameobject!");
         return null;
     }
 

@@ -1,3 +1,4 @@
+using Google.Protobuf;
 using Google.Protobuf.Protocol;
 using UnityEngine;
 using UnityEngine.Tilemaps;
@@ -7,10 +8,10 @@ public class MyPlayerController : PlayerController
     bool _isLoading = false;
     float moveTimerLimit = 0.15f;
     BaseScene _scene;
-    PokemonAppearanceTile _pokemonTile;
+    IMessage _packet;
 
     public bool IsLoading { set {  _isLoading = value; } }
-    public PokemonAppearanceTile PokemonTile {  set { _pokemonTile = value; } }
+    public IMessage Packet { set  { _packet = value; } }
 
     void Awake()
     {
@@ -38,7 +39,6 @@ public class MyPlayerController : PlayerController
     protected override void UpdateController()
     {
         // base.UpdateController();
-
         if (_isLoading)
             return;
 
@@ -71,60 +71,164 @@ public class MyPlayerController : PlayerController
         {
             if (Dir == MoveDir.Up)
             {
-                State = CreatureState.Walk;
-                SetToNextPos();
+                // 문 검사
+                if (Managers.Map.IsDoor(CellPos) && _packet is S_GetDoorDestDir)
+                {
+                    MoveDir destDir = ((S_GetDoorDestDir)_packet).DestDir;
+
+                    if (destDir == MoveDir.Up)
+                    {
+                        _isLoading = true;
+
+                        ((GameScene)_scene).SaveEnterScenePacket();
+                    }
+                }
+                else
+                {
+                    State = CreatureState.Walk;
+                    SetToNextPos();
+                }
             }
             else
             {
                 Dir = MoveDir.Up;
-                C_Move movePacket = new C_Move();
-                movePacket.PosInfo = PosInfo;
-                Managers.Network.Send(movePacket);
+
+                // 문 검사
+                if (Managers.Map.IsDoor(CellPos) && _packet is S_GetDoorDestDir)
+                {
+                    MoveDir destDir = ((S_GetDoorDestDir)_packet).DestDir;
+
+                    if (destDir == MoveDir.Up)
+                    {
+                        State = CreatureState.Idle;
+                        _isLoading = true;
+
+                        ((GameScene)_scene).SaveEnterScenePacket();
+                    }
+                }
             }
         }
         else if (Input.GetKeyDown(KeyCode.DownArrow))
         {
             if (Dir == MoveDir.Down)
             {
-                State = CreatureState.Walk;
-                SetToNextPos();
+                // 문 검사
+                if (Managers.Map.IsDoor(CellPos) && _packet is S_GetDoorDestDir)
+                {
+                    MoveDir destDir = ((S_GetDoorDestDir)_packet).DestDir;
+
+                    if (destDir == MoveDir.Down)
+                    {
+                        _isLoading = true;
+
+                        ((GameScene)_scene).SaveEnterScenePacket();
+                    }
+                }
+                else
+                {
+                    State = CreatureState.Walk;
+                    SetToNextPos();
+                }
             }
             else
             {
                 Dir = MoveDir.Down;
-                C_Move movePacket = new C_Move();
-                movePacket.PosInfo = PosInfo;
-                Managers.Network.Send(movePacket);
+
+                // 문 검사
+                if (Managers.Map.IsDoor(CellPos) && _packet is S_GetDoorDestDir)
+                {
+                    MoveDir destDir = ((S_GetDoorDestDir)_packet).DestDir;
+
+                    if (destDir == MoveDir.Down)
+                    {
+                        State = CreatureState.Idle;
+                        _isLoading = true;
+
+                        ((GameScene)_scene).SaveEnterScenePacket();
+                    }
+                }
             }
         }
         else if (Input.GetKeyDown(KeyCode.LeftArrow))
         {
             if (Dir == MoveDir.Left)
             {
-                State = CreatureState.Walk;
-                SetToNextPos();
+                // 문 검사
+                if (Managers.Map.IsDoor(CellPos) && _packet is S_GetDoorDestDir)
+                {
+                    MoveDir destDir = ((S_GetDoorDestDir)_packet).DestDir;
+
+                    if (destDir == MoveDir.Left)
+                    {
+                        _isLoading = true;
+
+                        ((GameScene)_scene).SaveEnterScenePacket();
+                    }
+                }
+                else
+                {
+                    State = CreatureState.Walk;
+                    SetToNextPos();
+                }
             }
             else
             {
                 Dir = MoveDir.Left;
-                C_Move movePacket = new C_Move();
-                movePacket.PosInfo = PosInfo;
-                Managers.Network.Send(movePacket);
+
+                // 문 검사
+                if (Managers.Map.IsDoor(CellPos) && _packet is S_GetDoorDestDir)
+                {
+                    MoveDir destDir = ((S_GetDoorDestDir)_packet).DestDir;
+
+                    if (destDir == MoveDir.Left)
+                    {
+                        State = CreatureState.Idle;
+                        _isLoading = true;
+
+                        ((GameScene)_scene).SaveEnterScenePacket();
+                    }
+                }
             }
         }
         else if (Input.GetKeyDown(KeyCode.RightArrow))
         {
             if (Dir == MoveDir.Right)
             {
-                State = CreatureState.Walk;
-                SetToNextPos();
+                // 문 검사
+                if (Managers.Map.IsDoor(CellPos) && _packet is S_GetDoorDestDir)
+                {
+                    MoveDir destDir = ((S_GetDoorDestDir)_packet).DestDir;
+
+                    if (destDir == MoveDir.Right)
+                    {
+                        _isLoading = true;
+
+                        ((GameScene)_scene).SaveEnterScenePacket();
+                    }
+                }
+                else
+                {
+                    State = CreatureState.Walk;
+                    SetToNextPos();
+                }
             }
             else
             {
                 Dir = MoveDir.Right;
-                C_Move movePacket = new C_Move();
-                movePacket.PosInfo = PosInfo;
-                Managers.Network.Send(movePacket);
+
+                // 문 검사
+                if (Managers.Map.IsDoor(CellPos) && _packet is S_GetDoorDestDir)
+                {
+                    MoveDir destDir = ((S_GetDoorDestDir)_packet).DestDir;
+
+                    if (destDir == MoveDir.Right)
+                    {
+                        State = CreatureState.Idle;
+                        _isLoading = true;
+
+                        ((GameScene)_scene).SaveEnterScenePacket();
+                    }
+                }
             }
         }
     }
@@ -243,45 +347,222 @@ public class MyPlayerController : PlayerController
 
         transform.position = initPos + ((destPos - initPos) * t);
 
+        // 한칸 이동이 끝났다면
         if (moveTimer > curAnimLength)
         {
             moveTimer = 0f;
             transform.position = destPos;
 
-            // 몬스터 스폰 (풀숲도 그리드 방식으로 수정이 필요)
-            if (_pokemonTile != null)
+            if (((GameScene)_scene).DidMeetWildPokemon() == false)
             {
-                if (_pokemonTile.AppearPokemon())
+                if (Input.GetKey(KeyCode.UpArrow))
                 {
-                    State = CreatureState.Fight;
-                    _scene.DoNextAction(State);
-                    return;
-                }
-            }
+                    if (Dir == MoveDir.Up)
+                    {
+                        // 문 검사
+                        if (Managers.Map.IsDoor(CellPos) && _packet is S_GetDoorDestDir)
+                        {
+                            MoveDir destDir = ((S_GetDoorDestDir)_packet).DestDir;
 
-            if (Input.GetKey(KeyCode.UpArrow))
-            {
-                Dir = MoveDir.Up;
-                SetToNextPos();
-            }
-            else if (Input.GetKey(KeyCode.DownArrow))
-            {
-                Dir = MoveDir.Down;
-                SetToNextPos();
-            }
-            else if (Input.GetKey(KeyCode.LeftArrow))
-            {
-                Dir = MoveDir.Left;
-                SetToNextPos();
-            }
-            else if (Input.GetKey(KeyCode.RightArrow))
-            {
-                Dir = MoveDir.Right;
-                SetToNextPos();
-            }
-            else
-            {
-                State = CreatureState.Idle;
+                            if (destDir == MoveDir.Up)
+                            {
+                                State = CreatureState.Idle;
+                                _isLoading = true;
+
+                                ((GameScene)_scene).SaveEnterScenePacket();
+                            }
+                            else
+                                SetToNextPos();
+                        }
+                        else
+                        {
+                            State = CreatureState.Walk;
+                            SetToNextPos();
+                        }
+                    }
+                    else
+                    {
+                        Dir = MoveDir.Up;
+
+                        // 문 검사
+                        if (Managers.Map.IsDoor(CellPos) && _packet is S_GetDoorDestDir)
+                        {
+                            MoveDir destDir = ((S_GetDoorDestDir)_packet).DestDir;
+
+                            if (destDir == MoveDir.Up)
+                            {
+                                State = CreatureState.Idle;
+                                _isLoading = true;
+
+                                ((GameScene)_scene).SaveEnterScenePacket();
+                            }
+                            else
+                                SetToNextPos();
+                        }
+                        else
+                        {
+                            State = CreatureState.Walk;
+                            SetToNextPos();
+                        }
+                    }
+                }
+                else if (Input.GetKey(KeyCode.DownArrow))
+                {
+                    if (Dir == MoveDir.Down)
+                    {
+                        // 문 검사
+                        if (Managers.Map.IsDoor(CellPos) && _packet is S_GetDoorDestDir)
+                        {
+                            MoveDir destDir = ((S_GetDoorDestDir)_packet).DestDir;
+
+                            if (destDir == MoveDir.Down)
+                            {
+                                State = CreatureState.Idle;
+                                _isLoading = true;
+
+                                ((GameScene)_scene).SaveEnterScenePacket();
+                            }
+                            else
+                                SetToNextPos();
+                        }
+                        else
+                        {
+                            State = CreatureState.Walk;
+                            SetToNextPos();
+                        }
+                    }
+                    else
+                    {
+                        Dir = MoveDir.Down;
+
+                        // 문 검사
+                        if (Managers.Map.IsDoor(CellPos) && _packet is S_GetDoorDestDir)
+                        {
+                            MoveDir destDir = ((S_GetDoorDestDir)_packet).DestDir;
+
+                            if (destDir == MoveDir.Down)
+                            {
+                                State = CreatureState.Idle;
+                                _isLoading = true;
+
+                                ((GameScene)_scene).SaveEnterScenePacket();
+                            }
+                            else
+                                SetToNextPos();
+                        }
+                        else
+                        {
+                            State = CreatureState.Walk;
+                            SetToNextPos();
+                        }
+                    }
+                }
+                else if (Input.GetKey(KeyCode.LeftArrow))
+                {
+                    if (Dir == MoveDir.Left)
+                    {
+                        // 문 검사
+                        if (Managers.Map.IsDoor(CellPos) && _packet is S_GetDoorDestDir)
+                        {
+                            MoveDir destDir = ((S_GetDoorDestDir)_packet).DestDir;
+
+                            if (destDir == MoveDir.Left)
+                            {
+                                State = CreatureState.Idle;
+                                _isLoading = true;
+
+                                ((GameScene)_scene).SaveEnterScenePacket();
+                            }
+                            else
+                                SetToNextPos();
+                        }
+                        else
+                        {
+                            State = CreatureState.Walk;
+                            SetToNextPos();
+                        }
+                    }
+                    else
+                    {
+                        Dir = MoveDir.Left;
+
+                        // 문 검사
+                        if (Managers.Map.IsDoor(CellPos) && _packet is S_GetDoorDestDir)
+                        {
+                            MoveDir destDir = ((S_GetDoorDestDir)_packet).DestDir;
+
+                            if (destDir == MoveDir.Left)
+                            {
+                                State = CreatureState.Idle;
+                                _isLoading = true;
+
+                                ((GameScene)_scene).SaveEnterScenePacket();
+                            }
+                            else
+                                SetToNextPos();
+                        }
+                        else
+                        {
+                            State = CreatureState.Walk;
+                            SetToNextPos();
+                        }
+                    }
+                }
+                else if (Input.GetKey(KeyCode.RightArrow))
+                {
+                    if (Dir == MoveDir.Right)
+                    {
+                        // 문 검사
+                        if (Managers.Map.IsDoor(CellPos) && _packet is S_GetDoorDestDir)
+                        {
+                            MoveDir destDir = ((S_GetDoorDestDir)_packet).DestDir;
+
+                            if (destDir == MoveDir.Right)
+                            {
+                                State = CreatureState.Idle;
+                                _isLoading = true;
+
+                                ((GameScene)_scene).SaveEnterScenePacket();
+                            }
+                            else
+                                SetToNextPos();
+                        }
+                        else
+                        {
+                            State = CreatureState.Walk;
+                            SetToNextPos();
+                        }
+                    }
+                    else
+                    {
+                        Dir = MoveDir.Right;
+
+                        // 문 검사
+                        if (Managers.Map.IsDoor(CellPos) && _packet is S_GetDoorDestDir)
+                        {
+                            MoveDir destDir = ((S_GetDoorDestDir)_packet).DestDir;
+
+                            if (destDir == MoveDir.Right)
+                            {
+                                State = CreatureState.Idle;
+                                _isLoading = true;
+
+                                ((GameScene)_scene).SaveEnterScenePacket();
+                            }
+                            else
+                                SetToNextPos();
+                        }
+                        else
+                        {
+                            State = CreatureState.Walk;
+                            SetToNextPos();
+                        }
+                    }
+                }
+                else
+                {
+                    State = CreatureState.Idle;
+                }
             }
         }
     }

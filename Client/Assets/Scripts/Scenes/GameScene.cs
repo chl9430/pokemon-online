@@ -1,9 +1,12 @@
-﻿using Google.Protobuf;
+﻿using DG.Tweening;
+using Google.Protobuf;
 using Google.Protobuf.Protocol;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public enum GameSceneState
 {
@@ -18,17 +21,18 @@ public enum GameSceneState
 public class GameScene : BaseScene
 {
     int _selectedMenuBtnIdx;
+    IMessage _packet;
     GameSceneState _sceneState = GameSceneState.NONE;
     ObjectContents _contents;
 
     [SerializeField] GridLayoutSelectBox _menuSelectBox;
     [SerializeField] List<DynamicButton> _menuBtns;
 
+    public IMessage Packet {  get { return _packet; } }
+
     protected override void Init()
     {
         base.Init();
-
-        SceneType = Define.Scene.Game;
 
         Screen.SetResolution(1280, 720, false);
     }
@@ -37,26 +41,73 @@ public class GameScene : BaseScene
     {
         base.Start();
 
-        Managers.Map.LoadMap(1);
-
         // 테스트 시 사용.
         if (Managers.Network.Packet == null)
         {
-            C_CreatePlayer createPlayerPacket = new C_CreatePlayer();
-            createPlayerPacket.Gender = PlayerGender.PlayerFemale;
-            createPlayerPacket.Name = "TEST";
+            C_EnterRoom enterRoomPacket = new C_EnterRoom();
+            enterRoomPacket.PlayerId = -1;
 
-            Managers.Network.Send(createPlayerPacket);
+            SceneType = Define.Scene.Game;
+
+            Managers.Network.Send(enterRoomPacket);
         }
         else
+        {
             Managers.Network.SendSavedPacket();
+        }
     }
 
     public override void UpdateData(IMessage packet)
     {
         if (_contents == null)
         {
-            if (packet is S_SendTalk)
+            if (packet is S_EnterRoom)
+            {
+                _enterEffect.PlayEffect("FadeIn");
+
+                S_EnterRoom s_enterRoomPacket = packet as S_EnterRoom;
+                PlayerInfo playerInfo = s_enterRoomPacket.PlayerInfo;
+                int roomId = s_enterRoomPacket.RoomId;
+                RoomType roomType = s_enterRoomPacket.RoomType;
+
+                Managers.Map.LoadMap(roomId, roomType);
+
+                Managers.Object.PlayerInfo = playerInfo;
+
+                // 내 플레이어 생성
+                GameObject myPlayer = null;
+
+                if (playerInfo.PlayerGender == PlayerGender.PlayerMale)
+                    myPlayer = Managers.Resource.Instantiate("Creature/MyPlayerMale");
+                else if (playerInfo.PlayerGender == PlayerGender.PlayerFemale)
+                    myPlayer = Managers.Resource.Instantiate("Creature/MyPlayerFemale");
+
+                myPlayer.name = $"{playerInfo.PlayerName}_{playerInfo.ObjectInfo.ObjectId}";
+
+                Managers.Object.Add(myPlayer, playerInfo.ObjectInfo);
+                Managers.Object.MyPlayer = myPlayer.GetComponent<MyPlayerController>();
+
+                PlayerController pc = myPlayer.GetComponent<PlayerController>();
+                pc.PlayerName = playerInfo.PlayerName;
+                pc.PlayerGender = playerInfo.PlayerGender;
+
+                // 메뉴 버튼 데이터 채우기
+                for (int i = 0; i < _menuBtns.Count; i++)
+                {
+                    _menuBtns[i].BtnData = Util.FindChild<TextMeshProUGUI>(_menuBtns[i].gameObject, "ContentText", true).text;
+                }
+
+                _menuSelectBox.SetSelectBoxContent(_menuBtns, 4, 1);
+            }
+            else if (packet is S_MeetWildPokemon)
+            {
+                _packet = packet as S_MeetWildPokemon;
+            }
+            else if (packet is S_GetDoorDestDir)
+            {
+                Managers.Object.MyPlayer.Packet = packet;
+            }
+            else if (packet is S_SendTalk)
             {
                 Managers.Object.MyPlayer.IsLoading = false;
                 S_SendTalk sendTalkPacket = packet as S_SendTalk;
@@ -85,45 +136,6 @@ public class GameScene : BaseScene
         {
             _contents.UpdateData(packet);
             return;
-        }
-
-        switch (_sceneState)
-        {
-            case GameSceneState.NONE:
-                {
-                    _enterEffect.PlayEffect("FadeIn");
-
-                    S_EnterRoom s_enterRoomPacket = packet as S_EnterRoom;
-                    PlayerInfo playerInfo = s_enterRoomPacket.PlayerInfo;
-
-                    Managers.Object.PlayerInfo = playerInfo;
-
-                    // 내 플레이어 생성
-                    GameObject myPlayer = null;
-
-                    if (playerInfo.PlayerGender == PlayerGender.PlayerMale)
-                        myPlayer = Managers.Resource.Instantiate("Creature/MyPlayerMale");
-                    else if (playerInfo.PlayerGender == PlayerGender.PlayerFemale)
-                        myPlayer = Managers.Resource.Instantiate("Creature/MyPlayerFemale");
-
-                    myPlayer.name = $"{playerInfo.PlayerName}_{playerInfo.ObjectInfo.ObjectId}";
-
-                    Managers.Object.Add(myPlayer, playerInfo.ObjectInfo);
-                    Managers.Object.MyPlayer = myPlayer.GetComponent<MyPlayerController>();
-
-                    PlayerController pc = myPlayer.GetComponent<PlayerController>();
-                    pc.PlayerName = playerInfo.PlayerName;
-                    pc.PlayerGender = playerInfo.PlayerGender;
-
-                    // 메뉴 버튼 데이터 채우기
-                    for (int i = 0; i < _menuBtns.Count; i++)
-                    {
-                        _menuBtns[i].BtnData = Util.FindChild<TextMeshProUGUI>(_menuBtns[i].gameObject, "ContentText", true).text;
-                    }
-
-                    _menuSelectBox.SetSelectBoxContent(_menuBtns, 4, 1);
-                }
-                break;
         }
     }
 
@@ -188,14 +200,14 @@ public class GameScene : BaseScene
                         }
                         else if (inputEvent == Define.InputSelectBoxEvent.SELECT)
                         {
-                            if (_menuBtns[_selectedMenuBtnIdx].BtnData as string == "POKEMON")
+                            if (_menuBtns[_selectedMenuBtnIdx].BtnData as string == "Pokemon")
                             {
                                 _enterEffect.PlayEffect("FadeOut");
 
                                 _sceneState = GameSceneState.MOVING_TO_POKEMON_SCENE;
                                 ActiveUIBySceneState(_sceneState);
                             }
-                            else if (_menuBtns[_selectedMenuBtnIdx].BtnData as string == "BAG")
+                            else if (_menuBtns[_selectedMenuBtnIdx].BtnData as string == "Bag")
                             {
                                 _enterEffect.PlayEffect("FadeOut");
 
@@ -212,8 +224,10 @@ public class GameScene : BaseScene
                 break;
             case GameSceneState.WILD_POKEMON_APPEARING_EFFECT:
                 {
-                    // 씬 변경
-                    Managers.Scene.LoadScene(Define.Scene.Battle);
+                    if (Managers.Network.Packet is C_EnterPokemonBattleScene)
+                        Managers.Scene.LoadScene(Define.Scene.Battle);
+                    else if (Managers.Network.Packet is C_EnterRoom)
+                        Managers.Scene.LoadScene(Define.Scene.Game);
                 }
                 break;
             case GameSceneState.MOVING_TO_POKEMON_SCENE:
@@ -266,6 +280,55 @@ public class GameScene : BaseScene
     public override void FinishContents()
     {
         _contents = null;
+    }
+
+    public bool DidMeetWildPokemon()
+    {
+        if (_packet is S_MeetWildPokemon)
+        {
+            S_MeetWildPokemon meetPokemonPacket = _packet as S_MeetWildPokemon;
+            int roomId = meetPokemonPacket.RoomId;
+            int bushNum = meetPokemonPacket.BushNum;
+
+            _packet = null;
+
+            C_EnterPokemonBattleScene enterPokemonBattleScene = new C_EnterPokemonBattleScene();
+            enterPokemonBattleScene.PlayerId = Managers.Object.PlayerInfo.ObjectInfo.ObjectId;
+            enterPokemonBattleScene.LocationNum = roomId;
+            enterPokemonBattleScene.BushNum = bushNum;
+
+            Managers.Network.SavePacket(enterPokemonBattleScene);
+
+            Managers.Object.MyPlayer.State = CreatureState.Fight;
+
+            ScreenEffecter = Managers.Resource.Instantiate("UI/GameScene/PokemonAppearEffect", ScreenEffecterZone).GetComponent<ScreenEffecter>();
+            ScreenEffecter.PlayEffect("PokemonAppear");
+
+            _sceneState = GameSceneState.WILD_POKEMON_APPEARING_EFFECT;
+
+            return true;
+        }
+        else
+            return false;
+    }
+
+    public void SaveEnterScenePacket()
+    {
+        C_EnterRoom enterRoomPacket = new C_EnterRoom();
+        enterRoomPacket.PlayerId = Managers.Object.PlayerInfo.ObjectInfo.ObjectId;
+
+        string mapName = GameObject.FindAnyObjectByType<Grid>().name;
+        int roomId = int.Parse(mapName.Substring(mapName.Length - 1));
+        RoomType roomType = (RoomType)Enum.Parse(typeof(RoomType), mapName.Substring(0, mapName.Length - 2));
+
+        enterRoomPacket.PrevRoomId = roomId;
+        enterRoomPacket.PrevRoomType = roomType;
+
+        Managers.Network.SavePacket(enterRoomPacket);
+
+        _enterEffect.PlayEffect("FadeOut");
+
+        _sceneState = GameSceneState.WILD_POKEMON_APPEARING_EFFECT;
     }
 
     public override void Clear()

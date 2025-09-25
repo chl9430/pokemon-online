@@ -29,7 +29,7 @@ public class SelectArea : MonoBehaviour
             _uiState = value;
 
             if (_uiState == SelectAreaState.SELECTING)
-                _scene.DoNextAction(_x * _col + _y);
+                _scene.DoNextAction(_btnGrid[_x, _y].BtnData);
         }
     }
 

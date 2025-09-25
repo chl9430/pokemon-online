@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Google.Protobuf.Protocol;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -13,21 +14,32 @@ namespace Server
         object _lock = new object();
 
         Dictionary<int, GameRoom> _rooms = new Dictionary<int, GameRoom>();
+        Dictionary<int, GameRoom> _pokemonCenterRooms = new Dictionary<int, GameRoom>();
         Dictionary<int, PokemonExchangeRoom> _exchangeRooms = new Dictionary<int, PokemonExchangeRoom>();
 
         int _roomId = 1;
+        int _pokemonCenterId = 1;
         int _exchangeRoomId = 1;
 
-        public GameRoom Add(int mapId)
+        public GameRoom Add(int mapId, RoomType roomType)
         {
             GameRoom gameRoom = new GameRoom();
-            gameRoom.Push(gameRoom.Init, mapId);
+            gameRoom.Push(gameRoom.Init, mapId, roomType);
 
             lock (_lock)
             {
-                gameRoom.RoomId = _roomId;
-                _rooms.Add(_roomId, gameRoom);
-                _roomId++;
+                if (roomType == RoomType.Map)
+                {
+                    gameRoom.RoomId = _roomId;
+                    _rooms.Add(_roomId, gameRoom);
+                    _roomId++;
+                }
+                else if (roomType == RoomType.PokemonCenter)
+                {
+                    gameRoom.RoomId = _pokemonCenterId;
+                    _pokemonCenterRooms.Add(_pokemonCenterId, gameRoom);
+                    _pokemonCenterId++;
+                }
             }
 
             return gameRoom;
@@ -63,15 +75,18 @@ namespace Server
             }
         }
 
-        public GameRoom Find(int roomId)
+        public GameRoom Find(int roomId, RoomType roomType)
         {
             lock (_lock)
             {
                 GameRoom room = null;
-                if (_rooms.TryGetValue(roomId, out room))
-                    return room;
 
-                return null;
+                if (roomType == RoomType.Map)
+                    _rooms.TryGetValue(roomId, out room);
+                else if (roomType == RoomType.PokemonCenter)
+                    _pokemonCenterRooms.TryGetValue(roomId, out room);
+
+                return room;
             }
         }
 

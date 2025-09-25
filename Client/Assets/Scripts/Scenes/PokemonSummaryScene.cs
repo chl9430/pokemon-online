@@ -2,6 +2,7 @@ using Google.Protobuf;
 using Google.Protobuf.Protocol;
 using System;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.Playables;
 
@@ -21,8 +22,11 @@ public class PokemonSummaryScene : BaseScene
     PokemonSummarySceneState _sceneState = PokemonSummarySceneState.NONE;
 
     [SerializeField] PokemonSummaryUI summaryUI;
+    [SerializeField] SelectArea _moveSelectArea;
+    [SerializeField] TextMeshProUGUI _moveDescriptionText;
+    [SerializeField] TextMeshProUGUI _movePowerText;
+    [SerializeField] TextMeshProUGUI _moveAccuracyText;
     [SerializeField] CategorySlider _slider;
-    [SerializeField] List<SliderContent> _sliderContents;
     [SerializeField] RectTransform _indicator;
     [SerializeField] ScriptBoxUI _scriptBox;
 
@@ -39,10 +43,39 @@ public class PokemonSummaryScene : BaseScene
 
         if (Managers.Scene.Data is PokemonSummary)
         {
-            summaryUI.FillPokemonBasicInfo(Managers.Scene.Data as PokemonSummary);
-            summaryUI.FillPokemonSummary(Managers.Scene.Data as PokemonSummary);
+            PokemonSummary pokemonSum = Managers.Scene.Data as PokemonSummary;
+            summaryUI.FillPokemonBasicInfo(pokemonSum);
+            summaryUI.FillPokemonSummary(pokemonSum);
 
-            _slider.UpdateSliderContents(_sliderContents);
+            // 슬라이더 설정
+            //List<object> sliderContents = new List<object>();
+            //foreach (ItemCategory itemCategory in sortedKeys)
+            //{
+            //    sliderContents.Add(itemCategory);
+            //}
+            //_categorySlider.CreateSlideContents(sliderContents);
+
+            // 기술 버튼 선택 기능 세팅
+            List<object> moves = new List<object>();
+            for (int i = 0; i < pokemonSum.PokemonMoves.Count; i++)
+            {
+                moves.Add(pokemonSum.PokemonMoves[i]);
+            }
+            _moveSelectArea.FillButtonGrid(moves.Count, 1, moves);
+
+            // 기술 버튼 위치 조정
+            List<DynamicButton> btns = _moveSelectArea.ChangeBtnGridDataToList();
+            for (int i = 0; i < btns.Count; i++)
+            {
+                DynamicButton btn = btns[i];
+                RectTransform rt = btn.GetComponent<RectTransform>();
+
+                rt.anchorMin = new Vector2(0, 1 - ((i + 1) * 0.25f));
+                rt.anchorMax = new Vector2(1, 1 - (i * 0.25f));
+
+                PokemonMoveCard moveCard = btns[i].GetComponent<PokemonMoveCard>();
+                moveCard.FillMoveCard(pokemonSum.PokemonMoves[i]);
+            }
 
             _enterEffect.PlayEffect("FadeIn");
         }
@@ -86,7 +119,15 @@ public class PokemonSummaryScene : BaseScene
 
             summaryUI.FillPokemonSummary(dummySummary);
 
-            _slider.UpdateSliderContents(_sliderContents);
+            //_slider.UpdateSliderContents(_sliderContents);
+
+            // 기술 버튼 선택 기능 세팅
+            List<object> moves = new List<object>();
+            for (int i = 0; i < dummySummary.PokemonMoves.Count; i++)
+            {
+                moves.Add(dummySummary.PokemonMoves[i]);
+            }
+            _moveSelectArea.FillButtonGrid(moves.Count, 1, moves);
 
             _enterEffect.PlayEffect("FadeIn");
         }
@@ -151,11 +192,24 @@ public class PokemonSummaryScene : BaseScene
                             ActiveUIBySceneState(_sceneState);
                         }
                     }
+                    else if (value is PokemonMoveSummary)
+                    {
+                        PokemonMoveSummary moveSum = value as PokemonMoveSummary;
+
+                        _moveDescriptionText.text = moveSum.MoveDescription;
+                        _movePowerText.text = moveSum.MovePower.ToString();
+                        _moveAccuracyText.text = moveSum.MoveAccuracy.ToString();
+                    }
                     else
                     {
                         int selectedIdx = _slider.CurIdx;
 
-                        _indicator.anchorMax = new Vector2(((float)selectedIdx + 1f) / (float)_sliderContents.Count, 1f);
+                        _indicator.anchorMax = new Vector2(((float)selectedIdx + 1f) / (float)_slider.SliderContents.Count, 1f);
+
+                        if (selectedIdx == 2)
+                            _moveSelectArea.UIState = SelectAreaState.SELECTING;
+                        else
+                            _moveSelectArea.UIState = SelectAreaState.NONE;
                     }
                 }
                 break;
@@ -206,7 +260,7 @@ public class PokemonSummaryScene : BaseScene
                     Managers.Network.SavePacket(returnGamePacket);
 
                     // 씬 변경
-                    Managers.Scene.LoadScene(Define.Scene.Game);
+                    // Managers.Scene.LoadScene(Define.Scene.Game);
                 }
                 break;
         }

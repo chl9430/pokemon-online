@@ -1,27 +1,32 @@
 {
     "wildPKMLocations": [
         {
-            "locationNum": "1",
-            "wildPokemons": [
+            "roomId": "1",
+            "bushes": [
                 {
-                    "pokemonName": "Pikachu",
-                    "pokemonLevel": "2",
-                    "appearRate":  "10"
-                },
-                {
-                    "pokemonName": "Charmander",
-                    "pokemonLevel": "3",
-                    "appearRate": "20"
-                },
-                {
-                    "pokemonName": "Bulbasaur",
-                    "pokemonLevel": "3",
-                    "appearRate": "40"
-                },
-                {
-                    "pokemonName": "Squirtle",
-                    "pokemonLevel": "3",
-                    "appearRate": "30"
+                    "bushNum": "1",
+                    "wildPokemons": [
+                        {
+                            "pokemonName": "Pikachu",
+                            "pokemonLevel": "5",
+                            "appearRate": "0"
+                        },
+                        {
+                            "pokemonName": "Charmander",
+                            "pokemonLevel": "5",
+                            "appearRate": "0"
+                        },
+                        {
+                            "pokemonName": "Bulbasaur",
+                            "pokemonLevel": "5",
+                            "appearRate": "100"
+                        },
+                        {
+                            "pokemonName": "Squirtle",
+                            "pokemonLevel": "5",
+                            "appearRate": "0"
+                        }
+                    ]
                 }
             ]
         }

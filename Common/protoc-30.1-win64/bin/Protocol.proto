@@ -4,14 +4,18 @@ package Protocol;
 option csharp_namespace = "Google.Protobuf.Protocol";
 
 enum MsgId {
+  // °ÔÀÓ ¾À
   S_ENTER_GAME = 0;
   C_EXIT_GAME = 1;
-  S_ENTER_ROOM = 2;
+  C_ENTER_ROOM = 100;
+  S_ENTER_ROOM = 110;
   S_LEAVE_ROOM = 3;
   C_ENTER_POKEMON_LIST_SCENE = 40;
   S_ENTER_POKEMON_LIST_SCENE = 41;
   C_ENTER_POKEMON_BATTLE_SCENE = 42;
   S_ENTER_POKEMON_BATTLE_SCENE = 43;
+  S_MEET_WILD_POKEMON = 150;
+  S_GET_DOOR_DEST_DIR = 160;
 
   // Æ÷ÄÏ¸ó ±³È¯ ¾À
   C_ENTER_POKEMON_EXCHANGE_SCENE = 400;
@@ -91,10 +95,10 @@ enum CreatureState {
 }
 
 enum MoveDir {
-  UP = 0;
-  DOWN = 1;
-  LEFT = 2;
-  RIGHT = 3;
+  Up = 0;
+  Down = 1;
+  Left = 2;
+  Right = 3;
 }
 
 enum GameObjectType {
@@ -104,6 +108,12 @@ enum GameObjectType {
   PROJECTILE = 3;
 }
 
+enum RoomType {
+    None = 0;
+    Map = 1;
+    PokemonCenter = 2;
+}
+
 message S_EnterGame {
 }
 
@@ -111,8 +121,16 @@ message C_ExitGame {
 	int32 objectId = 1;
 }
 
+message C_EnterRoom {
+    int32 playerId = 1;
+    int32 prevRoomId = 2;
+    RoomType prevRoomType = 3;
+}
+
 message S_EnterRoom {
     PlayerInfo playerInfo = 1;
+    int32 roomId = 2;
+    RoomType roomType = 3;
 }
 
 message S_LeaveRoom {
@@ -171,6 +189,17 @@ message S_EnterPokemonListScene
     repeated PokemonSummary pokemonSums = 2;
 }
 
+message S_MeetWildPokemon
+{
+    int32 roomId = 1;
+    int32 bushNum = 2;
+}
+
+message S_GetDoorDestDir
+{
+    MoveDir destDir = 1;
+}
+
 message C_AccessPokemonSummary
 {
     int32 playerId = 1;
@@ -182,6 +211,10 @@ message S_AccessPokemonSummary
     PokemonSummary pokemonSum = 1;
 }
 
+
+
+
+// Æ÷ÄÏ¸ó ±³È¯ ¾À
 message C_EnterPokemonExchangeScene
 {
     int32 playerId = 1;
@@ -309,6 +342,7 @@ message C_EnterPokemonBattleScene
 {
     int32 playerId = 1;
     int32 locationNum = 2;
+    int32 bushNum = 3;
 }
 
 message S_EnterPokemonBattleScene

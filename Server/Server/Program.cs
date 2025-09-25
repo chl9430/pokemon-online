@@ -1,4 +1,5 @@
-﻿using ServerCore;
+﻿using Google.Protobuf.Protocol;
+using ServerCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,8 +18,10 @@ namespace Server
             ConfigManager.LoadConfig();
             DataManager.LoadData();
 
-            GameRoom room = RoomManager.Instance.Add(1);
+            GameRoom room = RoomManager.Instance.Add(1, RoomType.Map);
+            GameRoom pokemonCenterRoom = RoomManager.Instance.Add(1, RoomType.PokemonCenter);
             room.TickRoom(50);
+            pokemonCenterRoom.TickRoom(50);
 
             // DNS (Domain Name System)
             string host = Dns.GetHostName();

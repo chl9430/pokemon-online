@@ -2,6 +2,8 @@ using System.Collections.Generic;
 using System;
 using System.IO;
 using UnityEngine;
+using UnityEngine.Tilemaps;
+using Google.Protobuf.Protocol;
 
 public struct Pos
 {
@@ -38,6 +40,7 @@ public class MapManager : MonoBehaviour
     public int SizeY { get { return MaxY - MinY + 1; } }
 
     bool[,] _collision;
+    int[,] _doorMap;
 
     public bool CanGo(Vector3Int cellPos)
     {
@@ -51,17 +54,44 @@ public class MapManager : MonoBehaviour
         return !_collision[y, x];
     }
 
-    public void LoadMap(int mapId)
+    public bool IsDoor(Vector3Int cellPos)
+    {
+        if (cellPos.x < MinX || cellPos.x > MaxX)
+            return false;
+        if (cellPos.y < MinY || cellPos.y > MaxY)
+            return false;
+
+        int x = cellPos.x - MinX;
+        int y = MaxY - cellPos.y;
+
+        if (_doorMap[y, x] > 0)
+            return true;
+        else
+            return false;
+    }
+
+    public void LoadMap(int mapId, RoomType roomType)
     {
         DestroyMap();
 
-        string mapName = "Map_" + mapId.ToString("000");
+        string mapName = $"{roomType.ToString()}_" + mapId.ToString();
         GameObject go = Managers.Resource.Instantiate($"Map/{mapName}");
-        go.name = "Map";
+        go.name = mapName;
 
         GameObject collision = Util.FindChild(go, "Tilemap_Collision", true);
         if (collision != null)
             collision.SetActive(false);
+
+        int doorId = 1;
+        while (true)
+        {
+            Tilemap tileMap = Util.FindChild<Tilemap>(go, $"Tilemap_Door_{doorId}", true);
+
+            if (tileMap != null)
+                tileMap.gameObject.SetActive(false);
+            else
+                break;
+        }
 
         CurrentGrid = go.GetComponent<Grid>();
 
@@ -83,17 +113,44 @@ public class MapManager : MonoBehaviour
             string line = reader.ReadLine();
             for (int x = 0; x < xCount; x++)
             {
-                _collision[y, x] = (line[x] == '1' ? true : false);
+                if (line[x] == '1' || line[x] == '3')
+                {
+                    _collision[y, x] = true;
+                }
+                else
+                    _collision[y, x] = false;
+            }
+        }
+
+        txt = Managers.Resource.Load<TextAsset>($"Map/{mapName}_DoorMap");
+        reader = new StringReader(txt.text);
+
+        MinX = int.Parse(reader.ReadLine());
+        MaxX = int.Parse(reader.ReadLine());
+        MinY = int.Parse(reader.ReadLine());
+        MaxY = int.Parse(reader.ReadLine());
+
+        xCount = MaxX - MinX + 1;
+        yCount = MaxY - MinY + 1;
+        _doorMap = new int[yCount, xCount];
+
+        for (int y = 0; y < yCount; y++)
+        {
+            string line = reader.ReadLine();
+            for (int x = 0; x < xCount; x++)
+            {
+                _doorMap[y, x] = line[x] - '0';
             }
         }
     }
 
     public void DestroyMap()
     {
-        GameObject map = GameObject.Find("Map");
+        Grid map = GameObject.FindAnyObjectByType<Grid>();
         if (map != null)
         {
-            GameObject.Destroy(map);
+            Debug.Log(map);
+            GameObject.Destroy(map.gameObject);
             CurrentGrid = null;
         }
     }

@@ -26,6 +26,9 @@ class PacketManager
         _onRecv.Add((ushort)MsgId.CExitGame, MakePacket<C_ExitGame>);
         _handler.Add((ushort)MsgId.CExitGame, PacketHandler.C_ExitGameHandler);
 
+        _onRecv.Add((ushort)MsgId.CEnterRoom, MakePacket<C_EnterRoom>);
+        _handler.Add((ushort)MsgId.CEnterRoom, PacketHandler.C_EnterRoomHandler);
+
         _onRecv.Add((ushort)MsgId.CEnterPokemonListScene, MakePacket<C_EnterPokemonListScene>);
         _handler.Add((ushort)MsgId.CEnterPokemonListScene, PacketHandler.C_EnterPokemonListSceneHandler);
 

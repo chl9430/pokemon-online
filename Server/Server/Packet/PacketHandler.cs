@@ -7,6 +7,41 @@ using System.Numerics;
 
 public class PacketHandler
 {
+    public static void C_EnterRoomHandler(PacketSession session, IMessage packet)
+    {
+        C_EnterRoom enterRoom = packet as C_EnterRoom;
+        int playerId = enterRoom.PlayerId;
+        int prevRoomId = enterRoom.PrevRoomId;
+        RoomType prevRoomType = enterRoom.PrevRoomType;
+
+        ClientSession clientSession = session as ClientSession;
+
+        Console.WriteLine(
+            $"=====================\n" +
+            $"C_EnterRoom\n" +
+            $"{enterRoom}\n" +
+            $"=====================\n"
+            );
+
+        Player player = ObjectManager.Instance.Find(playerId);
+
+        if (player == null)
+        {
+            player = MakeTestPlayer(clientSession, CreatureState.Idle);
+        }
+
+        GameRoom room = player.Room;
+        if (room == null)
+        {
+            GameRoom testRoom = RoomManager.Instance.Find(1, RoomType.PokemonCenter);
+            testRoom.Push(testRoom.EnterRoom, player);
+        }
+        else
+        {
+            room.Push(room.MoveAnotherRoom, player);
+        }
+    }
+
     public static void C_MoveHandler(PacketSession session, IMessage packet)
     {
         C_Move movePacket = packet as C_Move;
@@ -61,8 +96,8 @@ public class PacketHandler
             clientSession.MyPlayer = player;
         }
 
-        GameRoom room = RoomManager.Instance.Find(1);
-        room.Push(room.EnterRoom, player);
+        //GameRoom room = RoomManager.Instance.Find(1, RoomType.Map);
+        //room.Push(room.EnterRoom, player);
     }
 
     public static void C_SwitchPokemonHandler(PacketSession session, IMessage packet)
@@ -211,8 +246,11 @@ public class PacketHandler
         C_EnterPokemonBattleScene c_EnterBattleScenePacket = packet as C_EnterPokemonBattleScene;
         int playerId = c_EnterBattleScenePacket.PlayerId;
         int locationNum = c_EnterBattleScenePacket.LocationNum;
+        int bushNum = c_EnterBattleScenePacket.BushNum;
 
         ClientSession clientSession = session as ClientSession;
+
+        S_LeaveRoom a = null;
 
         Console.WriteLine($"" +
             $"=====================\n" +
@@ -231,7 +269,7 @@ public class PacketHandler
 
         player.Info.PosInfo.State = CreatureState.Fight;
         player.BattleRoom = new PrivateBattleRoom(player, player.Pokemons);
-        player.BattleRoom.MakeWildPokemon(locationNum);
+        player.BattleRoom.MakeWildPokemon(locationNum, bushNum);
 
         S_EnterPokemonBattleScene s_EnterBattleScenePacket = new S_EnterPokemonBattleScene();
         s_EnterBattleScenePacket.PlayerInfo = player.MakePlayerInfo();
@@ -257,13 +295,14 @@ public class PacketHandler
             $"=====================\n"
             );
 
-        GameRoom room = RoomManager.Instance.Find(1);
         Player player = ObjectManager.Instance.Find(playerId);
 
         // 테스트용 플레이어
         if (player == null)
         {
             player = MakeTestPlayer(clientSession, CreatureState.Exchanging);
+
+            GameRoom room = RoomManager.Instance.Find(1, RoomType.Map);
 
             room.Push(room.EnterRoom, player);
 
@@ -300,6 +339,9 @@ public class PacketHandler
         }
         else
         {
+            GameRoom room = RoomManager.Instance.Find(player.Room.RoomId, player.Room.RoomType);
+            player.PosInfo.State = CreatureState.Exchanging;
+
             if (player.ExchangeRoom == null)
                 player.TalkRoom.CreatePokmeonExchangeRoom(player);
 
@@ -308,15 +350,13 @@ public class PacketHandler
                 PokemonExchangeRoom exchangeRoom = player.ExchangeRoom;
                 exchangeRoom.Push(exchangeRoom.ReturnRoom, player);
             }
+
+            //S_Move movePacket = new S_Move();
+            //movePacket.ObjectId = player.Info.ObjectId;
+            //movePacket.PosInfo = player.PosInfo;
+
+            //room.Push(room.Broadcast, player, movePacket);
         }
-
-        player.PosInfo.State = CreatureState.Exchanging;
-
-        S_Move movePacket = new S_Move();
-        movePacket.ObjectId = player.Info.ObjectId;
-        movePacket.PosInfo = player.PosInfo;
-
-        room.Push(room.Broadcast, player, movePacket);
     }
 
     public static void C_ChooseExchangePokemonHandler(PacketSession session, IMessage packet)
@@ -334,7 +374,6 @@ public class PacketHandler
             $"=====================\n"
             );
 
-        GameRoom room = RoomManager.Instance.Find(1);
         Player player = ObjectManager.Instance.Find(playerId);
 
         PokemonExchangeRoom exchangeRoom = player.ExchangeRoom;
@@ -582,7 +621,7 @@ public class PacketHandler
         {
             player = MakeTestPlayer(clientSession, CreatureState.PokemonEvolving);
             player.BattleRoom = new PrivateBattleRoom(player, player.Pokemons);
-            player.BattleRoom.MakeWildPokemon(1);
+            player.BattleRoom.MakeWildPokemon(1, 1);
             player.BattleRoom.EvolvePokemons.Add(player.Pokemons[0]);
             player.BattleRoom.EvolvePokemons.Add(player.Pokemons[1]);
             player.BattleRoom.EvolvePokemons.Add(player.Pokemons[2]);
@@ -758,7 +797,7 @@ public class PacketHandler
         {
             player = MakeTestPlayer(clientSession, CreatureState.PokemonEvolving);
             player.BattleRoom = new PrivateBattleRoom(player, player.Pokemons);
-            player.BattleRoom.MakeWildPokemon(1);
+            player.BattleRoom.MakeWildPokemon(1, 1);
             player.BattleRoom.EvolvePokemons.Add(player.Pokemons[0]);
             player.BattleRoom.EvolvePokemons.Add(player.Pokemons[1]);
             player.BattleRoom.EvolvePokemons.Add(player.Pokemons[2]);
@@ -886,10 +925,10 @@ public class PacketHandler
 
         // 플레이어 포켓몬
         player.Pokemons = new List<Pokemon>();
-        player.Pokemons.Add(new Pokemon("Bulbasaur", "BUBAS", 15, player.Name, -1));
-        player.Pokemons.Add(new Pokemon("Squirtle", "SKIRT", 14, player.Name, -1));
-        player.Pokemons.Add(new Pokemon("Charmander", "CHAKI", 14, player.Name, -1));
-        player.Pokemons.Add(new Pokemon("Pikachu", "PIKAO", 5, player.Name, -1));
+        player.Pokemons.Add(new Pokemon("Bulbasaur", "Belletti", 15, player.Name, -1));
+        player.Pokemons.Add(new Pokemon("Squirtle", "Salamaker", 14, player.Name, -1));
+        player.Pokemons.Add(new Pokemon("Charmander", "Chevillar", 14, player.Name, -1));
+        player.Pokemons.Add(new Pokemon("Pikachu", "Pizteck", 5, player.Name, -1));
 
         // 플레이어 아이템
         player.AddItem(ItemCategory.PokeBall, "Monster Ball", 99);
