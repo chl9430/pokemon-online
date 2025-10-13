@@ -12,11 +12,11 @@ namespace Server
         public static ObjectManager Instance { get; } = new ObjectManager();
 
         object _lock = new object();
-        Dictionary<int, Player> _players = new Dictionary<int, Player>();
+        Dictionary<GameObjectType, Dictionary<int, GameObject>> _objs = new Dictionary<GameObjectType, Dictionary<int, GameObject>>();
 
         int _counter = 0;
 
-        public Dictionary<int, Player> Players { get { return _players; } }
+        public Dictionary<int, GameObject> Players { get { return _objs[GameObjectType.Player]; } }
 
         public T Add<T>() where T : GameObject, new()
         {
@@ -28,7 +28,21 @@ namespace Server
 
                 if (gameObject.ObjectType == GameObjectType.Player)
                 {
-                    _players.Add(gameObject.Id, gameObject as Player);
+                    if (_objs.ContainsKey(GameObjectType.Player) == false)
+                    {
+                        _objs.Add(GameObjectType.Player, new Dictionary<int, GameObject>());
+                    }
+
+                    _objs[GameObjectType.Player].Add(gameObject.Id, gameObject as Player);
+                }
+                else if (gameObject.ObjectType == GameObjectType.Npc)
+                {
+                    if (_objs.ContainsKey(GameObjectType.Npc) == false)
+                    {
+                        _objs.Add(GameObjectType.Npc, new Dictionary<int, GameObject>());
+                    }
+
+                    _objs[GameObjectType.Npc].Add(gameObject.Id, gameObject as NPC);
                 }
             }
 
@@ -56,7 +70,7 @@ namespace Server
             lock (_lock)
             {
                 if (objectType == GameObjectType.Player)
-                    return _players.Remove(objectId);
+                    return _objs[GameObjectType.Player].Remove(objectId);
             }
 
             return false;
@@ -70,9 +84,9 @@ namespace Server
             {
                 if (objectType == GameObjectType.Player)
                 {
-                    Player player = null;
-                    if (_players.TryGetValue(objectId, out player))
-                        return player;
+                    GameObject player = null;
+                    if (_objs[GameObjectType.Player].TryGetValue(objectId, out player))
+                        return player as Player;
                 }
             }
 

@@ -22,6 +22,7 @@ public struct PokeBallDictData
     public string itemName;
     public string itemDescription;
     public float catchRate;
+    public int price;
 }
 
 public struct PokemonMoveDictData
@@ -108,6 +109,19 @@ public struct RoomDoorPathDictData
 {
     public RoomType roomType;
     public RoomInfo[] rooms;
+}
+
+public struct ShopItemInfo
+{
+    public ItemCategory itemCategory;
+    public string itemName;
+    public int price;
+}
+
+public struct FriendlyShopItemDictData
+{
+    public int shopRoomId;
+    public ShopItemInfo[] shopItemInfos;
 }
 
 namespace Server
@@ -232,6 +246,24 @@ namespace Server
                 RoomInfo[] sortedRoomList = roomList.OrderBy(item => item.roomId).ToArray();
 
                 dict.Add(data.roomType, sortedRoomList);
+            }
+            return dict;
+        }
+    }
+    #endregion
+
+    #region FriendlyShopItem
+    [Serializable]
+    public class FriendlyShopItem : ILoader<int, ShopItemInfo[]>
+    {
+        public List<FriendlyShopItemDictData> shopItems = new List<FriendlyShopItemDictData>();
+
+        public Dictionary<int, ShopItemInfo[]> MakeDict()
+        {
+            Dictionary<int, ShopItemInfo[]> dict = new Dictionary<int, ShopItemInfo[]>();
+            foreach (FriendlyShopItemDictData data in shopItems)
+            {
+                dict.Add(data.shopRoomId, data.shopItemInfos);
             }
             return dict;
         }

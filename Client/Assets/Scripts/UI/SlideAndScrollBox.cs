@@ -1,14 +1,6 @@
 using NUnit.Framework;
 using System.Collections.Generic;
 using UnityEngine;
-using static UnityEngine.Rendering.DebugUI.Table;
-struct SlideAndScrollBoxData
-{
-    public int slideIdx;
-    public int scrollBoxIdx;
-    public int scrollCnt;
-    public int maxView;
-}
 
 public enum SlideAndScrollBoxState
 {
@@ -22,16 +14,12 @@ public class SlideAndScrollBox : MonoBehaviour
     int _scrollCnt = 0;
     float _heightPerContent;
     BaseScene _scene;
-    int _row;
-    int _col;
-    int _x;
-    int _y;
-    protected DynamicButton[,] _btnGrid;
+    int _curIdx;
+    protected List<DynamicButton> _btnGrid;
     SlideAndScrollBoxState _state;
 
     [SerializeField] int _scrollBoxMaxView;
     [SerializeField] DynamicButton _btn;
-    [SerializeField] Transform _btnPos;
 
     public SlideAndScrollBoxState State
     {
@@ -50,7 +38,7 @@ public class SlideAndScrollBox : MonoBehaviour
                     _scene = Managers.Scene.CurrentScene;
 
                 if (_btnGrid != null)
-                    _scene.DoNextAction(_btnGrid[_x, _y].BtnData);
+                    _scene.DoNextAction(_btnGrid[_curIdx].BtnData);
             }
         }
     }
@@ -79,70 +67,64 @@ public class SlideAndScrollBox : MonoBehaviour
         if (_btnGrid == null)
             return;
 
-        if (_btnGrid.GetLength(0) == 1 && _btnGrid.GetLength(1) == 1)
+        if (_btnGrid.Count == 1)
             return;
 
         if (Input.GetKeyDown(KeyCode.DownArrow))
         {
-            if (_x == _row - 1 || _btnGrid[_x + 1, _y] == null)
+            if (_curIdx == _btnGrid.Count - 1 || _btnGrid[_curIdx + 1] == null)
                 return;
 
-            _btnGrid[_x, _y].SetSelectedOrNotSelected(false);
+            _btnGrid[_curIdx].SetSelectedOrNotSelected(false);
 
-            _x++;
+            _curIdx++;
 
-            _btnGrid[_x, _y].SetSelectedOrNotSelected(true);
+            _btnGrid[_curIdx].SetSelectedOrNotSelected(true);
 
             if (_curPosInScrollBox == _scrollBoxMaxView - 1)
             {
                 _scrollCnt++;
 
-                for (int i = 0; i < _btnGrid.GetLength(0); i++)
+                foreach (DynamicButton btn in _btnGrid)
                 {
-                    for (int j = 0; j < _btnGrid.GetLength(1); j++)
-                    {
-                        RectTransform rt = _btnGrid[i, j].GetComponent<RectTransform>();
+                    RectTransform rt = _btnGrid[_curIdx].GetComponent<RectTransform>();
 
-                        rt.anchorMin = new Vector2(0, rt.anchorMin.y + _heightPerContent);
-                        rt.anchorMax = new Vector2(1, rt.anchorMax.y + _heightPerContent);
-                    }
+                    rt.anchorMin = new Vector2(0, rt.anchorMin.y + _heightPerContent);
+                    rt.anchorMax = new Vector2(1, rt.anchorMax.y + _heightPerContent);
                 }
             }
             else
                 _curPosInScrollBox++;
 
-            _scene.DoNextAction(_btnGrid[_x, _y].BtnData);
+            _scene.DoNextAction(_btnGrid[_curIdx].BtnData);
         }
         else if (Input.GetKeyDown(KeyCode.UpArrow))
         {
-            if (_x == 0 || _btnGrid[_x - 1, _y] == null)
+            if (_curIdx == 0 || _btnGrid[_curIdx - 1] == null)
                 return;
 
-            _btnGrid[_x, _y].SetSelectedOrNotSelected(false);
+            _btnGrid[_curIdx].SetSelectedOrNotSelected(false);
 
-            _x--;
+            _curIdx--;
 
-            _btnGrid[_x, _y].SetSelectedOrNotSelected(true);
+            _btnGrid[_curIdx].SetSelectedOrNotSelected(true);
 
             if (_curPosInScrollBox == 0)
             {
                 _scrollCnt--;
 
-                for (int i = 0; i < _btnGrid.GetLength(0); i++)
+                foreach (DynamicButton btn in _btnGrid)
                 {
-                    for (int j = 0; j < _btnGrid.GetLength(1); j++)
-                    {
-                        RectTransform rt = _btnGrid[i, j].GetComponent<RectTransform>();
+                    RectTransform rt = _btnGrid[_curIdx].GetComponent<RectTransform>();
 
-                        rt.anchorMin = new Vector2(0, rt.anchorMin.y - _heightPerContent);
-                        rt.anchorMax = new Vector2(1, rt.anchorMax.y - _heightPerContent);
-                    }
+                    rt.anchorMin = new Vector2(0, rt.anchorMin.y + _heightPerContent);
+                    rt.anchorMax = new Vector2(1, rt.anchorMax.y + _heightPerContent);
                 }
             }
             else
                 _curPosInScrollBox--;
 
-            _scene.DoNextAction(_btnGrid[_x, _y].BtnData);
+            _scene.DoNextAction(_btnGrid[_curIdx].BtnData);
         }
         else if (Input.GetKeyDown(KeyCode.D))
         {
@@ -162,21 +144,18 @@ public class SlideAndScrollBox : MonoBehaviour
         _curPosInScrollBox = 0;
         _scrollCnt = 0;
 
-        for (int i = 0; i < _btnGrid.GetLength(0); i++)
+        foreach (DynamicButton btn in _btnGrid)
         {
-            for (int j = 0; j < _btnGrid.GetLength(1); j++)
-            {
-                RectTransform rt = _btnGrid[i, j].GetComponent<RectTransform>();
+            RectTransform rt = btn.GetComponent<RectTransform>();
 
-                float height = curHeight - _heightPerContent;
+            float height = curHeight - _heightPerContent;
 
-                rt.anchorMax = new Vector2(1, curHeight);
-                rt.anchorMin = new Vector2(0, height);
-                rt.pivot = new Vector2(0.5f, 0.5f);
-                rt.offsetMin = Vector2.zero;
-                rt.offsetMax = Vector2.zero;
-                rt.localScale = Vector3.one;
-            }
+            rt.anchorMax = new Vector2(1, curHeight);
+            rt.anchorMin = new Vector2(0, height);
+            rt.pivot = new Vector2(0.5f, 0.5f);
+            rt.offsetMin = Vector2.zero;
+            rt.offsetMax = Vector2.zero;
+            rt.localScale = Vector3.one;
 
             curHeight -= _heightPerContent;
         }
@@ -187,13 +166,9 @@ public class SlideAndScrollBox : MonoBehaviour
         // 기존에 있던 버튼들 삭제
         if (_btnGrid != null)
         {
-            for (int i = 0; i < _btnGrid.GetLength(0); i++)
+            foreach (DynamicButton btn in _btnGrid)
             {
-                for (int j = 0; j < _btnGrid.GetLength(1); j++)
-                {
-                    if (_btnGrid[i, j] != null)
-                        Destroy(_btnGrid[i, j].gameObject);
-                }
+                Destroy(btn.gameObject);
             }
         }
 
@@ -202,69 +177,77 @@ public class SlideAndScrollBox : MonoBehaviour
 
     public void CreateScrollAreaButtons(List<object> datas, int row, int col)
     {
-        _row = row;
-        _col = col;
-        _x = 0;
-        _y = 0;
+        ClearBtnGrid();
+
+        _curIdx = 0;
 
         if (_scene == null)
             _scene = Managers.Scene.CurrentScene;
 
         if (_btnGrid == null)
-            _btnGrid = new DynamicButton[_row, _col];
+            _btnGrid = new List<DynamicButton>();
 
-        for (int i = 0; i < _btnGrid.GetLength(0); i++)
+        foreach (object data in datas)
         {
-            for (int j = 0; j < _btnGrid.GetLength(1); j++)
-            {
-                if (_row > _col)
-                {
-                    if (i * _col + j < datas.Count)
-                    {
-                        DynamicButton btn = GameObject.Instantiate(_btn, _btnPos);
+            DynamicButton btn = GameObject.Instantiate(_btn, gameObject.transform);
+            btn.BtnData =data;
+            btn.SetSelectedOrNotSelected(false);
 
-                        _btnGrid[i, j] = btn;
-                        _btnGrid[i, j].BtnData = datas[i * _col + j];
-                        _btnGrid[i, j].SetSelectedOrNotSelected(false);
-                    }
-                }
-                else
-                {
-                    if (i * _row + j < datas.Count)
-                    {
-                        DynamicButton btn = GameObject.Instantiate(_btn, _btnPos);
-
-                        _btnGrid[i, j] = btn;
-                        _btnGrid[i, j].BtnData = datas[i * _row + j];
-                        _btnGrid[i, j].SetSelectedOrNotSelected(false);
-                    }
-                }
-            }
+            _btnGrid.Add(btn);
         }
 
-        _btnGrid[_x, _y].SetSelectedOrNotSelected(true);
+        _btnGrid[_curIdx].SetSelectedOrNotSelected(true);
 
         UpdateScrollBoxContents();
     }
 
     public List<DynamicButton> ChangeBtnGridDataToList()
     {
-        List<DynamicButton> btns = new List<DynamicButton>();
-
-        for (int i = 0; i < _btnGrid.GetLength(0); i++)
-        {
-            for (int j = 0; j < _btnGrid.GetLength(1); j++)
-            {
-                if (_btnGrid[i, j] != null)
-                    btns.Add(_btnGrid[i, j]);
-            }
-        }
-
-        return btns;
+        return _btnGrid;
     }
 
     public object GetScrollBoxContent()
     {
-        return _btnGrid[_x, _y].BtnData;
+        return _btnGrid[_curIdx].BtnData;
+    }
+
+    public int GetSelectedIdx()
+    {
+        return _curIdx;
+    }
+
+    public DynamicButton GetSelectedBtn()
+    {
+        return _btnGrid[_curIdx];
+    }
+
+    public void DeleteBtn(int idx)
+    {
+        if (_curIdx == _btnGrid.Count - 1)
+            _curIdx--;
+
+        Destroy(_btnGrid[idx].gameObject);
+        _btnGrid.RemoveAt(idx);
+
+        _btnGrid[_curIdx].SetSelectedOrNotSelected(true);
+
+        float curHeight = 1f;
+        _heightPerContent = 1f / ((float)_scrollBoxMaxView);
+
+        foreach (DynamicButton btn in _btnGrid)
+        {
+            RectTransform rt = btn.GetComponent<RectTransform>();
+
+            float height = curHeight - _heightPerContent;
+
+            rt.anchorMax = new Vector2(1, curHeight);
+            rt.anchorMin = new Vector2(0, height);
+            rt.pivot = new Vector2(0.5f, 0.5f);
+            rt.offsetMin = Vector2.zero;
+            rt.offsetMax = Vector2.zero;
+            rt.localScale = Vector3.one;
+
+            curHeight -= _heightPerContent;
+        }
     }
 }

@@ -1,0 +1,24 @@
+{
+    "shopItems": [
+        {
+            "shopRoomId": "1",
+            "shopItemInfos": [
+                {
+                    "itemCategory": "PokeBall",
+                    "itemName": "Monster Ball",
+                    "price": "200"
+                },
+                {
+                    "itemCategory": "PokeBall",
+                    "itemName": "Great Ball",
+                    "price": "600"
+                },
+                {
+                    "itemCategory": "PokeBall",
+                    "itemName": "Ultra Ball",
+                    "price": "1000"
+                }
+            ]
+        }
+    ]
+} 

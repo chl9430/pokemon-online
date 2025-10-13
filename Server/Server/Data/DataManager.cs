@@ -20,6 +20,7 @@ namespace Server
         public static Dictionary<string, PokeBallDictData> PokeBallItemDict { get; private set; } = new Dictionary<string, PokeBallDictData>();
         public static Dictionary<PokemonType, EffectivenessData[]> TypeEffectivenessDict { get; private set; } = new Dictionary<PokemonType, EffectivenessData[]>();
         public static Dictionary<RoomType, RoomInfo[]> RoomDoorPathDict { get; private set; } = new Dictionary<RoomType, RoomInfo[]>();
+        public static Dictionary<int, ShopItemInfo[]> ShopItemDict { get; private set; } = new Dictionary<int, ShopItemInfo[]>();
 
         public static void LoadData()
         {
@@ -29,6 +30,7 @@ namespace Server
             PokeBallItemDict = LoadJson<PokeBallData, string, PokeBallDictData>("PokeBallItemData").MakeDict();
             TypeEffectivenessDict = LoadJson<TypeEffectiveness, PokemonType, EffectivenessData[]>("PokemonTypeEffectivenessData").MakeDict();
             RoomDoorPathDict = LoadJson<RoomDoorPath, RoomType, RoomInfo[]>("RoomDoorPathData").MakeDict();
+            ShopItemDict = LoadJson<FriendlyShopItem, int, ShopItemInfo[]>("FriendlyShopItemData").MakeDict();
         }
 
         static Loader LoadJson<Loader, Key, Value>(string path) where Loader : ILoader<Key,Value>

@@ -3,6 +3,7 @@ using Google.Protobuf.Protocol;
 using Server;
 using ServerCore;
 using System.Diagnostics;
+using System.Net.Sockets;
 using System.Numerics;
 
 public class PacketHandler
@@ -33,7 +34,7 @@ public class PacketHandler
         GameRoom room = player.Room;
         if (room == null)
         {
-            GameRoom testRoom = RoomManager.Instance.Find(1, RoomType.PokemonCenter);
+            GameRoom testRoom = RoomManager.Instance.Find(1, RoomType.FriendlyShop);
             testRoom.Push(testRoom.EnterRoom, player);
         }
         else
@@ -161,23 +162,8 @@ public class PacketHandler
             );
 
         Player player = ObjectManager.Instance.Find(playerId);
-        player.PosInfo.State = CreatureState.Idle;
-        var players = player.Room.Players;
-
-        S_EnterRoom enterPacket = new S_EnterRoom();
-        enterPacket.PlayerInfo = player.MakePlayerInfo();
-
-        player.Session.Send(enterPacket);
-
-        S_Spawn spawnPacket = new S_Spawn();
-        foreach (Player p in players.Values)
-        {
-            if (player != p)
-            {
-                spawnPacket.Players.Add(p.MakePlayerInfo());
-            }
-        }
-        player.Session.Send(spawnPacket);
+        GameRoom room = player.Room;
+        room.Push(room.EnterRoom, player);
     }
 
     public static void C_AccessPokemonSummaryHandler(PacketSession session, IMessage packet)
@@ -279,6 +265,167 @@ public class PacketHandler
             s_EnterBattleScenePacket.PlayerPokemonSums.Add(pokemon.MakePokemonSummary());
 
         player.Session.Send(s_EnterBattleScenePacket);
+    }
+
+    public static void C_ShopItemListHandler(PacketSession session, IMessage packet)
+    {
+        C_ShopItemList shopItemPacket = packet as C_ShopItemList;
+        int playerId = shopItemPacket.PlayerId;
+
+        ClientSession clientSession = session as ClientSession;
+
+        Console.WriteLine($"" +
+            $"=====================\n" +
+            $"C_ShopItemList\n" +
+            $"{shopItemPacket}\n" +
+            $"=====================\n"
+            );
+
+        Player player = ObjectManager.Instance.Find(playerId);
+
+        S_ShopItemList s_ShopItemPacket = new S_ShopItemList();
+        if (player.Room is FriendlyShop)
+        {
+            FriendlyShop shopRoom = (FriendlyShop)player.Room;
+
+            List<Item> itemList = shopRoom.ShopItems;
+
+            foreach (Item item in itemList)
+            {
+                s_ShopItemPacket.ShopItemSums.Add(item.MakeItemSummary());
+            }
+        }
+
+        player.Session.Send(s_ShopItemPacket);
+    }
+
+    public static void C_GetItemCountHandler(PacketSession session, IMessage packet)
+    {
+        C_GetItemCount getCountPacket = packet as C_GetItemCount;
+        int playerId = getCountPacket.PlayerId;
+        ItemCategory itemCategory = getCountPacket.ItemCategory;
+        string itemName = getCountPacket.ItemName;
+
+        ClientSession clientSession = session as ClientSession;
+
+        Console.WriteLine($"" +
+            $"=====================\n" +
+            $"C_GetItemCount\n" +
+            $"{getCountPacket}\n" +
+            $"=====================\n"
+            );
+
+        Player player = ObjectManager.Instance.Find(playerId);
+
+        S_GetItemCount s_GetCountPacket = new S_GetItemCount();
+
+        var items = player.Items;
+        foreach (Item item in items[itemCategory])
+        {
+            if (item.ItemName == itemName)
+            {
+                s_GetCountPacket.ItemCount = item.ItemCount;
+                break;
+            }
+        }
+
+        player.Session.Send(s_GetCountPacket);
+    }
+
+    public static void C_BuyItemHandler(PacketSession session, IMessage packet)
+    {
+        C_BuyItem buyItemPacket = packet as C_BuyItem;
+        int playerId = buyItemPacket.PlayerId;
+        int quantity = buyItemPacket.ItemQuantity;
+        int itemIdx = buyItemPacket.ItemIdx;
+
+        ClientSession clientSession = session as ClientSession;
+
+        Console.WriteLine($"" +
+            $"=====================\n" +
+            $"C_BuyItem\n" +
+            $"{buyItemPacket}\n" +
+            $"=====================\n"
+            );
+
+        Player player = ObjectManager.Instance.Find(playerId);
+
+        FriendlyShop friendlyShopRoom = player.Room as FriendlyShop;
+
+        if (friendlyShopRoom != null)
+        {
+            friendlyShopRoom.Push(friendlyShopRoom.BuyItem, player, itemIdx, quantity);
+        }
+    }
+
+    public static void C_SellItemHandler(PacketSession session, IMessage packet)
+    {
+        C_SellItem sellItemPacket = packet as C_SellItem;
+        int playerId = sellItemPacket.PlayerId;
+        ItemCategory itemCategory = sellItemPacket.ItemCategory;
+        int quantity = sellItemPacket.ItemQuantity;
+        int itemIdx = sellItemPacket.ItemIdx;
+
+        ClientSession clientSession = session as ClientSession;
+
+        Console.WriteLine($"" +
+            $"=====================\n" +
+            $"C_SellItem\n" +
+            $"{sellItemPacket}\n" +
+            $"=====================\n"
+            );
+
+        Player player = ObjectManager.Instance.Find(playerId);
+
+        S_SellItem s_SellItemPacket = player.SellItem(itemCategory, itemIdx, quantity);
+
+        player.Session.Send(s_SellItemPacket);
+    }
+
+    public static void C_RestorePokemonHandler(PacketSession session, IMessage packet)
+    {
+        C_RestorePokemon restorePacket = packet as C_RestorePokemon;
+        int playerId = restorePacket.PlayerId;
+
+        ClientSession clientSession = session as ClientSession;
+
+        Console.WriteLine($"" +
+            $"=====================\n" +
+            $"C_RestorePokemon\n" +
+            $"{restorePacket}\n" +
+            $"=====================\n"
+            );
+
+        Player player = ObjectManager.Instance.Find(playerId);
+
+        List<Pokemon> pokemons = player.Pokemons;
+
+        foreach (Pokemon pokemon in pokemons)
+            pokemon.RestorePokemon();
+
+        S_RestorePokemon s_RestorePacket = new S_RestorePokemon();
+        s_RestorePacket.PokemonCount = pokemons.Count;
+
+        player.Session.Send(s_RestorePacket);
+    }
+
+    public static void C_FinishNpcTalkHandler(PacketSession session, IMessage packet)
+    {
+        C_FinishNpcTalk finishTalkPacket = packet as C_FinishNpcTalk;
+        int playerId = finishTalkPacket.PlayerId;
+
+        ClientSession clientSession = session as ClientSession;
+
+        Console.WriteLine($"" +
+            $"=====================\n" +
+            $"C_FinishNpcTalk\n" +
+            $"{finishTalkPacket}\n" +
+            $"=====================\n"
+            );
+
+        Player player = ObjectManager.Instance.Find(playerId);
+
+        player.TalkingNPC = null;
     }
 
     public static void C_EnterPokemonExchangeSceneHandler(PacketSession session, IMessage packet)
@@ -508,6 +655,15 @@ public class PacketHandler
 
                             otherPlayer.Session.Send(s_ReceiveTalkPacket);
                         }
+                        else if (obj.ObjectType == GameObjectType.Npc)
+                        {
+                            player.TalkingNPC = obj as NPC;
+
+                            S_GetNpcTalk npcTalkPacket = new S_GetNpcTalk();
+                            npcTalkPacket.NpcId = obj.Id;
+
+                            player.Session.Send(npcTalkPacket);
+                        }
                     }
                 }
                 break;
@@ -630,7 +786,7 @@ public class PacketHandler
         player.Info.PosInfo.State = CreatureState.PokemonEvolving;
 
         S_EnterPokemonEvolutionScene s_EnterEvolutionPacket = new S_EnterPokemonEvolutionScene();
-        Pokemon myPokemon = player.BattleRoom.GetEvolutionPokemon();
+        Pokemon myPokemon = player.BattleRoom.SetEvolutionPokemon();
 
         s_EnterEvolutionPacket.PlayerInfo = player.MakePlayerInfo();
         s_EnterEvolutionPacket.PokemonSum = myPokemon.MakePokemonSummary();
@@ -868,8 +1024,7 @@ public class PacketHandler
             );
 
         Player player = ObjectManager.Instance.Find(playerId);
-        Pokemon myPokemon = player.BattleRoom.GetEvolutionPokemon();
-        player.BattleRoom._curEvolutionIdx++;
+        Pokemon myPokemon = player.BattleRoom.GetCurEvolvePokemon();
 
         S_MoveSceneToEvolveScene s_EvolveScenePacket = new S_MoveSceneToEvolveScene();
         s_EvolveScenePacket.PlayerInfo = player.MakePlayerInfo();
@@ -926,8 +1081,8 @@ public class PacketHandler
         // 플레이어 포켓몬
         player.Pokemons = new List<Pokemon>();
         player.Pokemons.Add(new Pokemon("Bulbasaur", "Belletti", 15, player.Name, -1));
-        player.Pokemons.Add(new Pokemon("Squirtle", "Salamaker", 14, player.Name, -1));
-        player.Pokemons.Add(new Pokemon("Charmander", "Chevillar", 14, player.Name, -1));
+        player.Pokemons.Add(new Pokemon("Squirtle", "Salamaker", 15, player.Name, -1));
+        player.Pokemons.Add(new Pokemon("Charmander", "Chevillar", 15, player.Name, -1));
         player.Pokemons.Add(new Pokemon("Pikachu", "Pizteck", 5, player.Name, -1));
 
         // 플레이어 아이템
@@ -944,6 +1099,8 @@ public class PacketHandler
         player.AddItem(ItemCategory.PokeBall, "Great Ball", 10);
         player.AddItem(ItemCategory.PokeBall, "Great Ball", 10);
         player.AddItem(ItemCategory.PokeBall, "Great Ball", 50);
+
+        player.Money += 10000;
 
         clientSession.MyPlayer = player;
 

@@ -35,6 +35,24 @@ class PacketManager
         _onRecv.Add((ushort)MsgId.CEnterPokemonBattleScene, MakePacket<C_EnterPokemonBattleScene>);
         _handler.Add((ushort)MsgId.CEnterPokemonBattleScene, PacketHandler.C_EnterPokemonBattleSceneHandler);
 
+        _onRecv.Add((ushort)MsgId.CShopItemList, MakePacket<C_ShopItemList>);
+        _handler.Add((ushort)MsgId.CShopItemList, PacketHandler.C_ShopItemListHandler);
+
+        _onRecv.Add((ushort)MsgId.CGetItemCount, MakePacket<C_GetItemCount>);
+        _handler.Add((ushort)MsgId.CGetItemCount, PacketHandler.C_GetItemCountHandler);
+
+        _onRecv.Add((ushort)MsgId.CBuyItem, MakePacket<C_BuyItem>);
+        _handler.Add((ushort)MsgId.CBuyItem, PacketHandler.C_BuyItemHandler);
+
+        _onRecv.Add((ushort)MsgId.CSellItem, MakePacket<C_SellItem>);
+        _handler.Add((ushort)MsgId.CSellItem, PacketHandler.C_SellItemHandler);
+
+        _onRecv.Add((ushort)MsgId.CRestorePokemon, MakePacket<C_RestorePokemon>);
+        _handler.Add((ushort)MsgId.CRestorePokemon, PacketHandler.C_RestorePokemonHandler);
+
+        _onRecv.Add((ushort)MsgId.CFinishNpcTalk, MakePacket<C_FinishNpcTalk>);
+        _handler.Add((ushort)MsgId.CFinishNpcTalk, PacketHandler.C_FinishNpcTalkHandler);
+
         _onRecv.Add((ushort)MsgId.CEnterPokemonExchangeScene, MakePacket<C_EnterPokemonExchangeScene>);
         _handler.Add((ushort)MsgId.CEnterPokemonExchangeScene, PacketHandler.C_EnterPokemonExchangeSceneHandler);
 

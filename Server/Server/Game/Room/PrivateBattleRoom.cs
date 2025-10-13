@@ -26,9 +26,10 @@ namespace Server
         bool _enemyTurn = false;
 
         int _curExpIdx = 0;
-        public int _curEvolutionIdx = 0;
+        int _curEvolutionIdx = 0;
         List<Pokemon> _getExpPokemons;
         List<Pokemon> _evolvePokemons;
+        Pokemon _curEvolvePokemon;
 
         PokemonMove _learnableMove;
 
@@ -528,7 +529,7 @@ namespace Server
             }
             else if (_player.Info.PosInfo.State == CreatureState.PokemonEvolving)
             {
-                pokemonSum = _evolvePokemons[_curEvolutionIdx].MakePokemonSummary();
+                pokemonSum = _curEvolvePokemon.MakePokemonSummary();
             }
 
             enterMoveScenePacket.PokemonSum = pokemonSum;
@@ -621,9 +622,16 @@ namespace Server
                 return true;
         }
 
-        public Pokemon GetEvolutionPokemon()
+        public Pokemon SetEvolutionPokemon()
         {
-            return _evolvePokemons[_curEvolutionIdx];
+            _curEvolvePokemon = _evolvePokemons[_curEvolutionIdx];
+            _curEvolutionIdx++;
+            return _curEvolvePokemon;
+        }
+
+        public Pokemon GetCurEvolvePokemon()
+        {
+            return _curEvolvePokemon;
         }
 
         public S_PokemonEvolution EvolvePokemon(bool isEvolution)
@@ -632,15 +640,15 @@ namespace Server
 
             if (isEvolution)
             {
-                _evolvePokemons[_curEvolutionIdx].PokemonEvolution();
-                _learnableMove = _evolvePokemons[_curEvolutionIdx].CheckNewLearnableMove();
+                _curEvolvePokemon.PokemonEvolution();
+                _learnableMove = _curEvolvePokemon.CheckNewLearnableMove();
 
-                evolutionPacket.EvolvePokemonSum = _evolvePokemons[_curEvolutionIdx].MakePokemonSummary();
+                evolutionPacket.EvolvePokemonSum = _curEvolvePokemon.MakePokemonSummary();
 
                 if (_learnableMove != null)
                     evolutionPacket.NewMoveSum = _learnableMove.MakePokemonMoveSummary();
-                else
-                    _curEvolutionIdx++;
+                //else
+                //    _curEvolutionIdx++;
             }
 
             return evolutionPacket;

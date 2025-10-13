@@ -11,17 +11,19 @@ namespace Server
 {
     public class Player : GameObject
     {
-        string _name;
+        //string _name;
         List<Pokemon> pokemons;
         Dictionary<ItemCategory, List<Item>> _items;
         PlayerTalkRoom _talkRoom;
         PrivateBattleRoom _battleRoom;
         PokemonExchangeRoom _exchangeRoom;
+        NPC _talkingNpc;
         PlayerGender _gender;
+        int _money;
 
         public ClientSession Session { get; set; }
 
-        public string Name { get { return _name; } set { _name = value; } }
+        //public string Name { get { return _name; } set { _name = value; } }
 
         public PlayerGender Gender { get { return _gender; } set { _gender = value; } }
 
@@ -39,7 +41,12 @@ namespace Server
         public PlayerTalkRoom TalkRoom { get { return _talkRoom; } set { _talkRoom = value; } }
 
         public PrivateBattleRoom BattleRoom { get { return _battleRoom; } set { _battleRoom = value; } }
+
         public PokemonExchangeRoom ExchangeRoom { get { return _exchangeRoom; } set { _exchangeRoom = value; } }
+
+        public NPC TalkingNPC { set { _talkingNpc = value; } }
+
+        public int Money { get { return _money; } set { _money = value; } }
 
         public Player()
         {
@@ -115,31 +122,38 @@ namespace Server
             playerInfo.ObjectInfo = Info;
             playerInfo.PlayerName = Name;
             playerInfo.PlayerGender = Gender;
+            playerInfo.Money = _money;
+
+            if (_talkingNpc != null)
+                playerInfo.NpcInfo = _talkingNpc.MakeNPCInfo();
 
             return playerInfo;
         }
 
         public void AddItem(ItemCategory itemCategory, string itemName, int itemCnt)
         {
-            if (itemCnt > 99)
+            if (itemCnt > 999)
                 Console.WriteLine("Cannot add too many items!");
 
             if (_items.TryGetValue(itemCategory, out List<Item> categoryItems))
             {
-                foreach (Item item in categoryItems)
-                {
-                    if (item.ItemName == itemName)
-                    {
-                        if (item.ItemCount + itemCnt <= 99)
-                        {
-                            item.ItemCount += itemCnt;
-                            return;
-                        }
-                    }
-                }
+                Item item = categoryItems.Find(item => item.ItemName == itemName);
 
-                if (itemCategory == ItemCategory.PokeBall)
-                    categoryItems.Add(new PokeBall(itemName, itemCnt));
+                if (item != null)
+                {
+                    if (item.ItemCount + itemCnt <= 999)
+                    {
+                        item.ItemCount += itemCnt;
+                        return;
+                    }
+                    else
+                        return;
+                }
+                else
+                {
+                    if (itemCategory == ItemCategory.PokeBall)
+                        categoryItems.Add(new PokeBall(itemName, itemCnt));
+                }
             }
             else
             {
@@ -163,6 +177,29 @@ namespace Server
                 _items[itemCategory].RemoveAt(itemOrder);
 
             return usedItem;
+        }
+
+        public S_SellItem SellItem(ItemCategory itemCategory, int itemOrder, int itemQuantity)
+        {
+            S_SellItem sellItemPacket = new S_SellItem();
+
+            Item selectedItem = _items[itemCategory][itemOrder];
+
+            _money += selectedItem.Price / 2 * itemQuantity;
+
+            selectedItem.ItemCount -= itemQuantity;
+
+            if (selectedItem.ItemCount <= 0)
+            {
+                _items[itemCategory].RemoveAt(itemOrder);
+                sellItemPacket.ItemQuantity = 0;
+            }
+            else
+                sellItemPacket.ItemQuantity = selectedItem.ItemCount;
+
+            sellItemPacket.Money = _money;
+
+            return sellItemPacket;
         }
     }
 }

@@ -20,6 +20,10 @@ namespace Server
         public GameRoom Room { get; set; }
         public ObjectInfo Info { get; set; } = new ObjectInfo();
         public PositionInfo PosInfo { get; private set; } = new PositionInfo();
+        string _name;
+
+        public string Name { get { return _name; } set { _name = value; } }
+
 
         public GameObject()
         {

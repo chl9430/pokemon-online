@@ -44,6 +44,24 @@ class PacketManager
         _onRecv.Add((ushort)MsgId.SGetDoorDestDir, MakePacket<S_GetDoorDestDir>);
         _handler.Add((ushort)MsgId.SGetDoorDestDir, PacketHandler.S_GetDoorDestDirHandler);
 
+        _onRecv.Add((ushort)MsgId.SGetNpcTalk, MakePacket<S_GetNpcTalk>);
+        _handler.Add((ushort)MsgId.SGetNpcTalk, PacketHandler.S_GetNpcTalkHandler);
+
+        _onRecv.Add((ushort)MsgId.SShopItemList, MakePacket<S_ShopItemList>);
+        _handler.Add((ushort)MsgId.SShopItemList, PacketHandler.S_ShopItemListHandler);
+
+        _onRecv.Add((ushort)MsgId.SGetItemCount, MakePacket<S_GetItemCount>);
+        _handler.Add((ushort)MsgId.SGetItemCount, PacketHandler.S_GetItemCountHandler);
+
+        _onRecv.Add((ushort)MsgId.SBuyItem, MakePacket<S_BuyItem>);
+        _handler.Add((ushort)MsgId.SBuyItem, PacketHandler.S_BuyItemHandler);
+
+        _onRecv.Add((ushort)MsgId.SSellItem, MakePacket<S_SellItem>);
+        _handler.Add((ushort)MsgId.SSellItem, PacketHandler.S_SellItemHandler);
+
+        _onRecv.Add((ushort)MsgId.SRestorePokemon, MakePacket<S_RestorePokemon>);
+        _handler.Add((ushort)MsgId.SRestorePokemon, PacketHandler.S_RestorePokemonHandler);
+
         _onRecv.Add((ushort)MsgId.SEnterPokemonExchangeScene, MakePacket<S_EnterPokemonExchangeScene>);
         _handler.Add((ushort)MsgId.SEnterPokemonExchangeScene, PacketHandler.S_EnterPokemonExchangeSceneHandler);
 

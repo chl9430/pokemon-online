@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 8263769055ffec5439d3c69f723d0076
+guid: 6ba53d01ec709354db1fb145fe3c1bae
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 2114909609436847282
-    second: PokemonCenter_Inside_0
+      213: 8820750333905487423
+    second: PokemonCenter_Inside 1_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -100,7 +100,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: PokemonCenter_Inside_0
+      name: PokemonCenter_Inside 1_0
       rect:
         serializedVersion: 2
         x: 0
@@ -115,8 +115,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 2bc1b82a51ba95d10800000000000000
-      internalID: 2114909609436847282
+      spriteID: f3648d0c1b9996a70800000000000000
+      internalID: 8820750333905487423
       vertices: []
       indices: 
       edges: []
@@ -125,7 +125,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 5f715154c801177458faccc545de95ea
+    spriteID: 83c8494957e8761458876f8da85590f6
     internalID: 0
     vertices: []
     indices: 
@@ -135,7 +135,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      PokemonCenter_Inside_0: 2114909609436847282
+      PokemonCenter_Inside 1_0: 8820750333905487423
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

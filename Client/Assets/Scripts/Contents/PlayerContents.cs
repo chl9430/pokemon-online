@@ -32,9 +32,7 @@ public enum PlayerContentState
 
 public class PlayerContents : ObjectContents
 {
-    bool _isLoading;
     ScriptBoxUI _scriptBox;
-    BaseScene _scene;
     PlayerContentState _state = PlayerContentState.NONE;
 
     void Start()
@@ -56,7 +54,7 @@ public class PlayerContents : ObjectContents
             if (otherPlayer == null)
                 return;
             else
-                Managers.Object.MyPlayer.State = CreatureState.Talk;
+                ((GameScene)_scene).MyPlayer.State = CreatureState.Talk;
 
             if (otherPlayer.ObjectInfo.PosInfo.State == CreatureState.Idle)
             {
@@ -98,7 +96,7 @@ public class PlayerContents : ObjectContents
             if (otherPlayer == null)
                 return;
             else
-                Managers.Object.MyPlayer.State = CreatureState.Talk;
+                ((GameScene)_scene).MyPlayer.State = CreatureState.Talk;
 
             List<string> scripts = new List<string>() {
                 $"Hello! I am {otherPlayer.PlayerName}!",
@@ -211,7 +209,7 @@ public class PlayerContents : ObjectContents
                                 if (!_isLoading)
                                 {
                                     C_PlayerTalk talkPacket = new C_PlayerTalk();
-                                    talkPacket.PlayerId = Managers.Object.MyPlayer.Id;
+                                    talkPacket.PlayerId = ((GameScene)_scene).MyPlayer.Id;
                                     talkPacket.TalkRequestType = TalkRequestType.RequestBattle;
 
                                     Managers.Network.Send(talkPacket);
@@ -223,7 +221,7 @@ public class PlayerContents : ObjectContents
                                 if (!_isLoading)
                                 {
                                     C_PlayerTalk talkPacket = new C_PlayerTalk();
-                                    talkPacket.PlayerId = Managers.Object.MyPlayer.Id;
+                                    talkPacket.PlayerId = ((GameScene)_scene).MyPlayer.Id;
                                     talkPacket.TalkRequestType = TalkRequestType.RequestExchange;
 
                                     Managers.Network.Send(talkPacket);
@@ -232,7 +230,7 @@ public class PlayerContents : ObjectContents
                             else if (selectBox.GetSelectedBtnData() as string == "Cancel")
                             {
                                 C_PlayerTalk talkPacket = new C_PlayerTalk();
-                                talkPacket.PlayerId = Managers.Object.MyPlayer.Id;
+                                talkPacket.PlayerId = ((GameScene)_scene).MyPlayer.Id;
                                 talkPacket.TalkRequestType = TalkRequestType.CancelTalk;
 
                                 Managers.Network.Send(talkPacket);
@@ -283,7 +281,7 @@ public class PlayerContents : ObjectContents
                             if (selectBox.GetSelectedBtnData() as string == "Yes")
                             {
                                 C_PlayerTalk talkPacket = new C_PlayerTalk();
-                                talkPacket.PlayerId = Managers.Object.MyPlayer.Id;
+                                talkPacket.PlayerId = ((GameScene)_scene).MyPlayer.Id;
                                 talkPacket.TalkRequestType = TalkRequestType.AcceptBattle;
 
                                 Managers.Network.Send(talkPacket);
@@ -300,7 +298,7 @@ public class PlayerContents : ObjectContents
                             else if (selectBox.GetSelectedBtnData() as string == "No")
                             {
                                 C_PlayerTalk talkPacket = new C_PlayerTalk();
-                                talkPacket.PlayerId = Managers.Object.MyPlayer.Id;
+                                talkPacket.PlayerId = ((GameScene)_scene).MyPlayer.Id;
                                 talkPacket.TalkRequestType = TalkRequestType.Reject;
 
                                 Managers.Network.Send(talkPacket);
@@ -329,7 +327,7 @@ public class PlayerContents : ObjectContents
                             if (selectBox.GetSelectedBtnData() as string == "Yes")
                             {
                                 C_PlayerTalk talkPacket = new C_PlayerTalk();
-                                talkPacket.PlayerId = Managers.Object.MyPlayer.Id;
+                                talkPacket.PlayerId = ((GameScene)_scene).MyPlayer.Id;
                                 talkPacket.TalkRequestType = TalkRequestType.AcceptExchange;
 
                                 Managers.Network.Send(talkPacket);
@@ -346,7 +344,7 @@ public class PlayerContents : ObjectContents
                             else if (selectBox.GetSelectedBtnData() as string == "No")
                             {
                                 C_PlayerTalk talkPacket = new C_PlayerTalk();
-                                talkPacket.PlayerId = Managers.Object.MyPlayer.Id;
+                                talkPacket.PlayerId = ((GameScene)_scene).MyPlayer.Id;
                                 talkPacket.TalkRequestType = TalkRequestType.Reject;
 
                                 Managers.Network.Send(talkPacket);
@@ -390,7 +388,7 @@ public class PlayerContents : ObjectContents
                     _state = PlayerContentState.NONE;
                     _scene.FinishContents();
                     _scriptBox.gameObject.SetActive(false);
-                    Managers.Object.MyPlayer.State = CreatureState.Idle;
+                    ((GameScene)_scene).MyPlayer.State = CreatureState.Idle;
                 }
                 break;
             case PlayerContentState.SENDER_REJECTING_ACTION:
@@ -398,7 +396,7 @@ public class PlayerContents : ObjectContents
                     _state = PlayerContentState.NONE;
                     _scene.FinishContents();
                     _scriptBox.gameObject.SetActive(false);
-                    Managers.Object.MyPlayer.State = CreatureState.Idle;
+                    ((GameScene)_scene).MyPlayer.State = CreatureState.Idle;
                 }
                 break;
             case PlayerContentState.RECEIVER_CANCEL_ANSWER:
@@ -406,7 +404,7 @@ public class PlayerContents : ObjectContents
                     _state = PlayerContentState.NONE;
                     _scene.FinishContents();
                     _scriptBox.gameObject.SetActive(false);
-                    Managers.Object.MyPlayer.State = CreatureState.Idle;
+                    ((GameScene)_scene).MyPlayer.State = CreatureState.Idle;
                 }
                 break;
             case PlayerContentState.SENDER_CANCEL_ACTION:
@@ -414,7 +412,7 @@ public class PlayerContents : ObjectContents
                     _state = PlayerContentState.NONE;
                     _scene.FinishContents();
                     _scriptBox.gameObject.SetActive(false);
-                    Managers.Object.MyPlayer.State = CreatureState.Idle;
+                    ((GameScene)_scene).MyPlayer.State = CreatureState.Idle;
                 }
                 break;
             case PlayerContentState.MOVING_TO_THE_BATTLE_SCENE:

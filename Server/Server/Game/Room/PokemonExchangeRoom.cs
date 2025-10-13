@@ -20,12 +20,14 @@ public struct ExchangeInfo
 
 namespace Server
 {
-    public class PokemonExchangeRoom : GameRoom
+    public class PokemonExchangeRoom : JobSerializer
     {
+        int _roomId;
         int _maxPlayerCount = 2;
         List<ExchangeInfo> _exchangePlayers = new List<ExchangeInfo>();
 
-        public int MaxPlayerCount {  get { return _maxPlayerCount; } }
+        public int RoomId { get { return _roomId; } set { _roomId = value; } }
+        public int MaxPlayerCount { get { return _maxPlayerCount; } }
         public List<ExchangeInfo> ExchangePlayers { get { return _exchangePlayers; } }
 
         public void EnterRoom(Player player)
@@ -292,7 +294,7 @@ namespace Server
                 // 교환방을 나가고 교환방 삭제
                 Player p = info.player;
                 p.ExchangeRoom = null;
-                RoomManager.Instance.RemoveExchangeRoom(RoomId);
+                RoomManager.Instance.RemoveExchangeRoom(_roomId);
             }
         }
     }

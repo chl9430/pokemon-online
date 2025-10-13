@@ -82,7 +82,7 @@ namespace Server
         int[,] _doorTileGrid;
         GameObject[,] _objects;
 
-        public TileType GetTileType(Vector2Int cellPos, bool checkObjects = true)
+        public TileType GetTileType(Vector2Int cellPos)
         {
             if (cellPos.x < MinX || cellPos.x > MaxX)
                 return TileType.COLLISION;
@@ -92,7 +92,6 @@ namespace Server
             int x = cellPos.x - MinX;
             int y = MaxY - cellPos.y;
 
-            // return !_collision[y, x] && (!checkObjects || _objects[y, x] == null);
             return _collision[y, x];
         }
 
@@ -105,10 +104,11 @@ namespace Server
 
             int x = cellPos.x - MinX;
             int y = MaxY - cellPos.y;
+
             return _objects[y, x];
         }
 
-        public int GetBushNmuber(Vector2Int cellPos)
+        public int GetBushId(Vector2Int cellPos)
         {
             if (cellPos.x < MinX || cellPos.x > MaxX)
                 return 0;
@@ -117,6 +117,7 @@ namespace Server
 
             int x = cellPos.x - MinX;
             int y = MaxY - cellPos.y;
+
             return _bushTileGrid[y, x];
         }
 
@@ -129,6 +130,7 @@ namespace Server
 
             int x = cellPos.x - MinX;
             int y = MaxY - cellPos.y;
+
             return _doorTileGrid[y, x];
         }
 
@@ -142,7 +144,9 @@ namespace Server
                 {
                     if (_doorTileGrid[i, j] == doorId)
                     {
-                        doorPos = GetTilePos(j, i);
+                        doorPos.x = j + MinX;
+                        doorPos.y = MaxY - i;
+
                         return doorPos;
                     }
                 }
@@ -159,6 +163,36 @@ namespace Server
             pos.y = MaxY - y;
 
             return pos;
+        }
+
+        public void SetObj(int x, int y, GameObject obj)
+        {
+            _objects[x, y] = obj;
+        }
+
+        public void ApplyMove(GameObject gameObject, Vector2Int dest)
+        {
+            ApplyLeave(gameObject);
+
+            if (gameObject.Room == null)
+                return;
+            if (gameObject.Room.Map != this)
+                return;
+
+            PositionInfo posInfo = gameObject.PosInfo;
+            TileType tile = GetTileType(dest);
+            if (tile == TileType.COLLISION)
+            {
+                return;
+            }
+
+            int x = dest.x - MinX;
+            int y = MaxY - dest.y;
+            _objects[y, x] = gameObject;
+
+            posInfo.PosX = dest.x;
+            posInfo.PosY = dest.y;
+            return;
         }
 
         public bool ApplyLeave(GameObject gameObject)
@@ -180,31 +214,6 @@ namespace Server
                 _objects[y, x] = null;
 
             return true;
-        }
-
-        public void ApplyMove(GameObject gameObject, Vector2Int dest)
-        {
-            ApplyLeave(gameObject);
-
-            if (gameObject.Room == null)
-                return;
-            if (gameObject.Room.Map != this)
-                return;
-
-            PositionInfo posInfo = gameObject.PosInfo;
-            TileType tile = GetTileType(dest, true);
-            if (tile == TileType.COLLISION)
-            {
-                return;
-            }
-
-            int x = dest.x - MinX;
-            int y = MaxY - dest.y;
-            _objects[y, x] = gameObject;
-
-            posInfo.PosX = dest.x;
-            posInfo.PosY = dest.y;
-            return;
         }
 
         public void LoadMap(int mapId, RoomType roomType, string pathPrefix = "../../../../../Common/MapData")
@@ -366,7 +375,7 @@ namespace Server
                     // 벽으로 막혀서 갈 수 없으면 스킵
                     if (next.Y != dest.Y || next.X != dest.X)
                     {
-                        TileType tile = GetTileType(Pos2Cell(next), checkObjects);
+                        TileType tile = GetTileType(Pos2Cell(next));
 
                         if (tile == TileType.COLLISION)
                             continue;

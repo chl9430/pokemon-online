@@ -72,11 +72,15 @@ public class MapManager : MonoBehaviour
 
     public void LoadMap(int mapId, RoomType roomType)
     {
-        DestroyMap();
+        // DestroyMap();
 
         string mapName = $"{roomType.ToString()}_" + mapId.ToString();
         GameObject go = Managers.Resource.Instantiate($"Map/{mapName}");
         go.name = mapName;
+
+        GameObject baseTile = Util.FindChild(go, "Tilemap_Base", true);
+        if (baseTile != null)
+            baseTile.SetActive(false);
 
         GameObject collision = Util.FindChild(go, "Tilemap_Collision", true);
         if (collision != null)
@@ -88,12 +92,15 @@ public class MapManager : MonoBehaviour
             Tilemap tileMap = Util.FindChild<Tilemap>(go, $"Tilemap_Door_{doorId}", true);
 
             if (tileMap != null)
+            {
                 tileMap.gameObject.SetActive(false);
+                doorId++;
+            }
             else
                 break;
         }
 
-        CurrentGrid = go.GetComponent<Grid>();
+        CurrentGrid = Util.FindChild<Grid>(go);
 
         // Collision 관련 파일
         TextAsset txt = Managers.Resource.Load<TextAsset>($"Map/{mapName}");

@@ -1215,8 +1215,8 @@ public class BattleScene : BaseScene
                         Managers.Scene.LoadScene(Define.Scene.Bag);
                     else if (Managers.Network.Packet is C_EnterPokemonListScene)
                         Managers.Scene.LoadScene(Define.Scene.PokemonList);
-                    //else if (Managers.Network.Packet is C_ReturnGame)
-                    //    Managers.Scene.LoadScene(Define.Scene.Game);
+                    else if (Managers.Network.Packet is C_ReturnGame)
+                        Managers.Scene.LoadScene(Define.Scene.Game);
                     else if (Managers.Network.Packet is C_EnterPokemonEvolutionScene)
                         Managers.Scene.LoadScene(Define.Scene.Evolution);
                     else if (Managers.Network.Packet is C_EnterMoveSelectionScene)

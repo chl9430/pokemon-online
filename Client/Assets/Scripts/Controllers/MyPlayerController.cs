@@ -10,12 +10,12 @@ public class MyPlayerController : PlayerController
     BaseScene _scene;
     IMessage _packet;
 
-    public bool IsLoading { set {  _isLoading = value; } }
+    public bool IsLoading {  set  { _isLoading = value; } }
+
     public IMessage Packet { set  { _packet = value; } }
 
     void Awake()
     {
-        _isLoading = true;
     }
 
     protected override void Start()
@@ -39,8 +39,6 @@ public class MyPlayerController : PlayerController
     protected override void UpdateController()
     {
         // base.UpdateController();
-        if (_isLoading)
-            return;
 
         switch (State)
         {
@@ -78,9 +76,13 @@ public class MyPlayerController : PlayerController
 
                     if (destDir == MoveDir.Up)
                     {
-                        _isLoading = true;
+                        State = CreatureState.NoneState;
 
                         ((GameScene)_scene).SaveEnterScenePacket();
+                    }
+                    else
+                    {
+                        // 움직임 수정 필요
                     }
                 }
                 else
@@ -100,8 +102,7 @@ public class MyPlayerController : PlayerController
 
                     if (destDir == MoveDir.Up)
                     {
-                        State = CreatureState.Idle;
-                        _isLoading = true;
+                        State = CreatureState.NoneState;
 
                         ((GameScene)_scene).SaveEnterScenePacket();
                     }
@@ -119,7 +120,7 @@ public class MyPlayerController : PlayerController
 
                     if (destDir == MoveDir.Down)
                     {
-                        _isLoading = true;
+                        State = CreatureState.NoneState;
 
                         ((GameScene)_scene).SaveEnterScenePacket();
                     }
@@ -141,8 +142,7 @@ public class MyPlayerController : PlayerController
 
                     if (destDir == MoveDir.Down)
                     {
-                        State = CreatureState.Idle;
-                        _isLoading = true;
+                        State = CreatureState.NoneState;
 
                         ((GameScene)_scene).SaveEnterScenePacket();
                     }
@@ -160,7 +160,7 @@ public class MyPlayerController : PlayerController
 
                     if (destDir == MoveDir.Left)
                     {
-                        _isLoading = true;
+                        State = CreatureState.NoneState;
 
                         ((GameScene)_scene).SaveEnterScenePacket();
                     }
@@ -182,8 +182,7 @@ public class MyPlayerController : PlayerController
 
                     if (destDir == MoveDir.Left)
                     {
-                        State = CreatureState.Idle;
-                        _isLoading = true;
+                        State = CreatureState.NoneState;
 
                         ((GameScene)_scene).SaveEnterScenePacket();
                     }
@@ -201,7 +200,7 @@ public class MyPlayerController : PlayerController
 
                     if (destDir == MoveDir.Right)
                     {
-                        _isLoading = true;
+                        State = CreatureState.NoneState;
 
                         ((GameScene)_scene).SaveEnterScenePacket();
                     }
@@ -223,8 +222,7 @@ public class MyPlayerController : PlayerController
 
                     if (destDir == MoveDir.Right)
                     {
-                        State = CreatureState.Idle;
-                        _isLoading = true;
+                        State = CreatureState.NoneState;
 
                         ((GameScene)_scene).SaveEnterScenePacket();
                     }
@@ -320,7 +318,7 @@ public class MyPlayerController : PlayerController
                 _isLoading = true;
 
                 C_RequestDataById c_RequestDataPacket = new C_RequestDataById();
-                c_RequestDataPacket.PlayerId = Managers.Object.MyPlayer.Id;
+                c_RequestDataPacket.PlayerId = Id;
                 c_RequestDataPacket.RequestType = RequestType.CheckObjectInMap;
 
                 Managers.Network.Send(c_RequestDataPacket);
@@ -366,8 +364,7 @@ public class MyPlayerController : PlayerController
 
                             if (destDir == MoveDir.Up)
                             {
-                                State = CreatureState.Idle;
-                                _isLoading = true;
+                                State = CreatureState.NoneState;
 
                                 ((GameScene)_scene).SaveEnterScenePacket();
                             }
@@ -391,8 +388,7 @@ public class MyPlayerController : PlayerController
 
                             if (destDir == MoveDir.Up)
                             {
-                                State = CreatureState.Idle;
-                                _isLoading = true;
+                                State = CreatureState.NoneState;
 
                                 ((GameScene)_scene).SaveEnterScenePacket();
                             }
@@ -417,8 +413,7 @@ public class MyPlayerController : PlayerController
 
                             if (destDir == MoveDir.Down)
                             {
-                                State = CreatureState.Idle;
-                                _isLoading = true;
+                                State = CreatureState.NoneState;
 
                                 ((GameScene)_scene).SaveEnterScenePacket();
                             }
@@ -442,8 +437,7 @@ public class MyPlayerController : PlayerController
 
                             if (destDir == MoveDir.Down)
                             {
-                                State = CreatureState.Idle;
-                                _isLoading = true;
+                                State = CreatureState.NoneState;
 
                                 ((GameScene)_scene).SaveEnterScenePacket();
                             }
@@ -468,8 +462,7 @@ public class MyPlayerController : PlayerController
 
                             if (destDir == MoveDir.Left)
                             {
-                                State = CreatureState.Idle;
-                                _isLoading = true;
+                                State = CreatureState.NoneState;
 
                                 ((GameScene)_scene).SaveEnterScenePacket();
                             }
@@ -493,8 +486,7 @@ public class MyPlayerController : PlayerController
 
                             if (destDir == MoveDir.Left)
                             {
-                                State = CreatureState.Idle;
-                                _isLoading = true;
+                                State = CreatureState.NoneState;
 
                                 ((GameScene)_scene).SaveEnterScenePacket();
                             }
@@ -519,8 +511,7 @@ public class MyPlayerController : PlayerController
 
                             if (destDir == MoveDir.Right)
                             {
-                                State = CreatureState.Idle;
-                                _isLoading = true;
+                                State = CreatureState.NoneState;
 
                                 ((GameScene)_scene).SaveEnterScenePacket();
                             }
@@ -544,8 +535,7 @@ public class MyPlayerController : PlayerController
 
                             if (destDir == MoveDir.Right)
                             {
-                                State = CreatureState.Idle;
-                                _isLoading = true;
+                                State = CreatureState.NoneState;
 
                                 ((GameScene)_scene).SaveEnterScenePacket();
                             }

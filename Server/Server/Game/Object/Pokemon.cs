@@ -391,6 +391,18 @@ namespace Server
             return stat;
         }
 
+        public void RestorePokemon()
+        {
+            _pokemonStat.Hp = _pokemonStat.MaxHp;
+            _pokemonInfo.PokemonStatus = PokemonStatusCondition.StatusNone;
+            _noPPMove.CurPP = _noPPMove.MaxPP;
+
+            foreach (PokemonMove move in _pokemonMoves)
+            {
+                move.CurPP = move.MaxPP;
+            }
+        }
+
         public PokemonSummary MakePokemonSummary()
         {
             PokemonSummary pokemonSum = new PokemonSummary();

@@ -1,6 +1,7 @@
 ﻿using Google.Protobuf.Protocol;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Metrics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -13,33 +14,34 @@ namespace Server
 
         object _lock = new object();
 
-        Dictionary<int, GameRoom> _rooms = new Dictionary<int, GameRoom>();
-        Dictionary<int, GameRoom> _pokemonCenterRooms = new Dictionary<int, GameRoom>();
+        Dictionary<RoomType, Dictionary<int, GameRoom>> _rooms = new Dictionary<RoomType, Dictionary<int, GameRoom>>();
         Dictionary<int, PokemonExchangeRoom> _exchangeRooms = new Dictionary<int, PokemonExchangeRoom>();
 
-        int _roomId = 1;
-        int _pokemonCenterId = 1;
         int _exchangeRoomId = 1;
 
         public GameRoom Add(int mapId, RoomType roomType)
         {
-            GameRoom gameRoom = new GameRoom();
-            gameRoom.Push(gameRoom.Init, mapId, roomType);
+            GameRoom gameRoom = null;
 
             lock (_lock)
             {
-                if (roomType == RoomType.Map)
+                if (_rooms.ContainsKey(roomType) == false)
+                    _rooms.Add(roomType, new Dictionary<int, GameRoom>());
+
+                if (roomType == RoomType.FriendlyShop)
                 {
-                    gameRoom.RoomId = _roomId;
-                    _rooms.Add(_roomId, gameRoom);
-                    _roomId++;
+                    gameRoom = new FriendlyShop(roomType, _rooms[roomType].Count + 1);
                 }
                 else if (roomType == RoomType.PokemonCenter)
                 {
-                    gameRoom.RoomId = _pokemonCenterId;
-                    _pokemonCenterRooms.Add(_pokemonCenterId, gameRoom);
-                    _pokemonCenterId++;
+                    gameRoom = new PokemonCenter(roomType, _rooms[roomType].Count + 1);
                 }
+                else
+                {
+                    gameRoom = new GameRoom(roomType, _rooms[roomType].Count + 1);
+                }
+                
+                _rooms[roomType].Add(mapId, gameRoom);
             }
 
             return gameRoom;
@@ -59,11 +61,11 @@ namespace Server
             return exchangeRoom;
         }
 
-        public bool Remove(int roomId)
+        public bool Remove(RoomType roomType, int roomId)
         {
             lock (_lock)
             {
-                return _rooms.Remove(roomId);
+                return _rooms[roomType].Remove(roomId);
             }
         }
 
@@ -81,10 +83,7 @@ namespace Server
             {
                 GameRoom room = null;
 
-                if (roomType == RoomType.Map)
-                    _rooms.TryGetValue(roomId, out room);
-                else if (roomType == RoomType.PokemonCenter)
-                    _pokemonCenterRooms.TryGetValue(roomId, out room);
+                _rooms[roomType].TryGetValue(roomId, out room);
 
                 return room;
             }

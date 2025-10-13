@@ -162,6 +162,66 @@ public class PacketHandler
         scene.UpdateData(doorDestDirPacket);
     }
 
+    public static void S_GetNpcTalkHandler(PacketSession session, IMessage packet)
+    {
+        S_GetNpcTalk npcTalkPacket = packet as S_GetNpcTalk;
+
+        Debug.Log($"S_GetNpcTalk : {npcTalkPacket}");
+
+        BaseScene scene = Managers.Scene.CurrentScene;
+        scene.UpdateData(npcTalkPacket);
+    }
+
+    public static void S_ShopItemListHandler(PacketSession session, IMessage packet)
+    {
+        S_ShopItemList itemListPacket = packet as S_ShopItemList;
+
+        Debug.Log($"S_ShopItemList : {itemListPacket}");
+
+        BaseScene scene = Managers.Scene.CurrentScene;
+        scene.UpdateData(itemListPacket);
+    }
+
+    public static void S_GetItemCountHandler(PacketSession session, IMessage packet)
+    {
+        S_GetItemCount getItemCountPacket = packet as S_GetItemCount;
+
+        Debug.Log($"S_GetItemCount : {getItemCountPacket}");
+
+        BaseScene scene = Managers.Scene.CurrentScene;
+        scene.UpdateData(getItemCountPacket);
+    }
+
+    public static void S_BuyItemHandler(PacketSession session, IMessage packet)
+    {
+        S_BuyItem buyItemPacket = packet as S_BuyItem;
+
+        Debug.Log($"S_BuyItem : {buyItemPacket}");
+
+        BaseScene scene = Managers.Scene.CurrentScene;
+        scene.UpdateData(buyItemPacket);
+    }
+
+    public static void S_SellItemHandler(PacketSession session, IMessage packet)
+    {
+        S_SellItem sellItemPacket = packet as S_SellItem;
+
+        Debug.Log($"S_SellItem : {sellItemPacket}");
+
+        BaseScene scene = Managers.Scene.CurrentScene;
+        scene.UpdateData(sellItemPacket);
+    }
+
+    public static void S_RestorePokemonHandler(PacketSession session, IMessage packet)
+    {
+        S_RestorePokemon restorePacket = packet as S_RestorePokemon;
+
+        Debug.Log($"S_RestorePokemon : {restorePacket}");
+
+        BaseScene scene = Managers.Scene.CurrentScene;
+        scene.UpdateData(restorePacket);
+    }
+
     public static void S_CheckAndApplyRemainedExpHandler(PacketSession session, IMessage packet)
     {
         S_CheckAndApplyRemainedExp s_CheckAndApplyExpPacket = packet as S_CheckAndApplyRemainedExp;

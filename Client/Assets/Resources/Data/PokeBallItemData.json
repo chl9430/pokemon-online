@@ -3,17 +3,20 @@
         {
             "itemName": "Monster Ball",
             "itemDescription": "A device for catching wild Pokémon. It's thrown like a ball at a Pokémon, comfortably encapsulating its target.",
-            "catchRate": "1.0"
+            "catchRate": "1.0",
+            "price":  "200"
         },
         {
             "itemName": "Great Ball",
             "itemDescription": "A good, high-performance Poké Ball that provides a higher success rate for catching Pokémon than a standard Poké Ball.",
-            "catchRate": "1.5"
+            "catchRate": "1.5",
+            "price": "600"
         },
         {
             "itemName": "Ultra Ball",
             "itemDescription": "An ultra-high-performance Poké Ball that provides a higher success rate for catching Pokémon than a Great Ball.",
-            "catchRate": "2.0"
+            "catchRate": "2.0",
+            "price": "1200"
         }
     ]
 } 

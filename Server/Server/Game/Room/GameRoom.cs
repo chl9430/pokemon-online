@@ -14,28 +14,31 @@ namespace Server
 {
     public class GameRoom : JobSerializer
     {
-        public int RoomId { get; set; }
+        int _roomId;
         RoomType _roomType;
         RoomInfo _roomInfo;
-        Dictionary<int, Player> _players = new Dictionary<int, Player>();
+        protected Dictionary<GameObjectType, Dictionary<int, GameObject>> _objs = new Dictionary<GameObjectType, Dictionary<int, GameObject>>();
         Random _ran;
 
-        public Dictionary<int, Player> Players { get { return _players; } }
+        public int RoomId { get { return _roomId; } }
+
+        public Dictionary<int, GameObject> Players { get { return _objs[GameObjectType.Player]; } }
 
         public Map Map { get; private set; } = new Map();
 
         public RoomType RoomType { get { return _roomType; } }
 
-        public void Init(int mapId, RoomType roomType)
+        public GameRoom(RoomType roomType, int roomId)
         {
+            _roomId = roomId;
             _roomType = roomType;
 
             if (DataManager.RoomDoorPathDict.TryGetValue(roomType, out RoomInfo[] value))
             {
-                _roomInfo = value[RoomId - 1];
+                _roomInfo = value[roomId - 1];
             }
 
-            Map.LoadMap(mapId, roomType);
+            Map.LoadMap(roomId, roomType);
         }
 
         public void Update()
@@ -53,7 +56,14 @@ namespace Server
             if (type == GameObjectType.Player)
             {
                 Player player = gameObject as Player;
-                _players.Add(gameObject.Id, player);
+
+                if (_objs.ContainsKey(GameObjectType.Player) == false)
+                {
+                    _objs.Add(GameObjectType.Player, new Dictionary<int, GameObject>());
+                    _objs[GameObjectType.Player].Add(gameObject.Id, player);
+                }
+
+                player.PosInfo.State = CreatureState.Idle;
                 player.Room = this;
 
                 Vector2Int playerInitPos = new Vector2Int(player.CellPos.x, player.CellPos.y);
@@ -71,11 +81,19 @@ namespace Server
                     enterPacket.RoomId = _roomInfo.roomId;
                     enterPacket.RoomType = _roomType;
 
+                    if (_objs.ContainsKey(GameObjectType.Npc) == true)
+                    {
+                        foreach (NPC npc in _objs[GameObjectType.Npc].Values)
+                        {
+                            enterPacket.NpcInfos.Add(npc.MakeNPCInfo());
+                        }
+                    }
+
                     player.Session.Send(enterPacket);
 
                     // 본인한테 타인 정보 전송
                     S_Spawn spawnPacket = new S_Spawn();
-                    foreach (Player p in _players.Values)
+                    foreach (Player p in _objs[GameObjectType.Player].Values)
                     {
                         if (player != p)
                         {
@@ -119,8 +137,8 @@ namespace Server
 
             if (type == GameObjectType.Player)
             {
-                Player player = null;
-                if (_players.Remove(gameObject.Id, out player) == false)
+                GameObject player = null;
+                if (_objs[GameObjectType.Player].Remove(gameObject.Id, out player) == false)
                     return;
 
                 Map.ApplyLeave(player);
@@ -128,7 +146,7 @@ namespace Server
 
                 // 본인한테 정보 전송
                 S_LeaveRoom leavePacket = new S_LeaveRoom();
-                player.Session.Send(leavePacket);
+                ((Player)player).Session.Send(leavePacket);
             }
 
             {
@@ -209,7 +227,7 @@ namespace Server
 
                     if (metPokemonRate < 20)
                     {
-                        int bushNum = Map.GetBushNmuber(new Vector2Int(movePosInfo.PosX, movePosInfo.PosY));
+                        int bushNum = Map.GetBushId(new Vector2Int(movePosInfo.PosX, movePosInfo.PosY));
 
                         S_MeetWildPokemon meetPokemonPacket = new S_MeetWildPokemon();
                         meetPokemonPacket.RoomId = RoomId;
@@ -251,7 +269,7 @@ namespace Server
 
         public void Broadcast(Player player, IMessage packet)
         {
-            foreach (Player p in _players.Values)
+            foreach (Player p in _objs[GameObjectType.Player].Values)
             {
                 // 게임 맵에 있지 않은 플레이어들에겐 브로드캐스트를 할 필요가 없다.
                 if (p.Id != player.Id && p.Info.PosInfo.State != CreatureState.Fight && p.Info.PosInfo.State != CreatureState.Exchanging)

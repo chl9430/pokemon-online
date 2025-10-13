@@ -1,6 +1,7 @@
 using Google.Protobuf;
 using Google.Protobuf.Collections;
 using Google.Protobuf.Protocol;
+using NUnit.Framework.Constraints;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,7 +15,12 @@ public enum BagSceneState
     SLIDER_READY = 1,
     SCROLL_BOX_READY = 2,
     WAITING_ACTION = 3,
-    MOVING_TO_SCENE = 4
+    ASKING_QUANTITY_TO_SELL = 4,
+    SELECTING_QUANTITY_TO_SELL = 5,
+    ASKING_TO_SELL = 6,
+    SELECTING_TO_SELL = 7,
+    SUCCESS_SELL_SCRIPTING = 8,
+    MOVING_TO_SCENE = 9,
 }
 
 public class BagScene : BaseScene
@@ -34,6 +40,80 @@ public class BagScene : BaseScene
     [SerializeField] GridLayoutSelectBox _gridSelectBox;
     [SerializeField] Image _itemImg;
     [SerializeField] TextMeshProUGUI _itemDescription;
+    [SerializeField] ScriptBoxUI _scriptBox;
+    [SerializeField] CountingBox _countingBox;
+    [SerializeField] TextMeshProUGUI _countingText;
+    [SerializeField] TextMeshProUGUI _totalSellPrice;
+    [SerializeField] GameObject _moneyBox;
+    [SerializeField] TextMeshProUGUI _moneyText;
+
+    public BagSceneState State
+    {
+        set
+        {
+            _sceneState = value;
+
+            if (_sceneState == BagSceneState.SLIDER_READY)
+            {
+                _categorySlider.SliderState = SliderState.WAITING_INPUT;
+            }
+            if (_sceneState == BagSceneState.SCROLL_BOX_READY)
+            {
+                _scrollBox.State = SlideAndScrollBoxState.SELECTING;
+
+                _scriptBox.gameObject.SetActive(false);
+                _scriptBox.HideSelectBox();
+
+                _countingBox.gameObject.SetActive(false);
+                _countingBox.State = CountingBoxState.NONE;
+
+                _moneyBox.gameObject.SetActive(false);
+            }
+            else if (_sceneState == BagSceneState.WAITING_ACTION)
+            {
+                _categorySlider.SliderState = SliderState.NONE;
+
+                _scrollBox.State = SlideAndScrollBoxState.NONE;
+
+                _gridSelectBox.UIState = GridLayoutSelectBoxState.SELECTING;
+                _gridSelectBox.gameObject.SetActive(true);
+            }
+            else if (_sceneState == BagSceneState.ASKING_QUANTITY_TO_SELL)
+            {
+                _categorySlider.SliderState = SliderState.NONE;
+
+                _scrollBox.State = SlideAndScrollBoxState.NONE;
+
+                _scriptBox.gameObject.SetActive(true);
+            }
+            else if (_sceneState == BagSceneState.SELECTING_QUANTITY_TO_SELL)
+            {
+                _countingBox.gameObject.SetActive(true);
+                _countingBox.State = CountingBoxState.SELECTING;
+
+                _moneyBox.gameObject.SetActive(true);
+            }
+            else if (_sceneState == BagSceneState.ASKING_TO_SELL)
+            {
+                _countingBox.gameObject.SetActive(false);
+                _countingBox.State = CountingBoxState.NONE;
+            }
+            else if (_sceneState == BagSceneState.SELECTING_TO_SELL)
+            {
+
+            }
+            else if (_sceneState == BagSceneState.SUCCESS_SELL_SCRIPTING)
+            {
+                _scriptBox.HideSelectBox();
+            }
+            else if (_sceneState == BagSceneState.MOVING_TO_SCENE)
+            {
+                _categorySlider.SliderState = SliderState.NONE;
+
+                _scrollBox.State = SlideAndScrollBoxState.NONE;
+            }
+        }
+    }
 
 
     protected override void Init()
@@ -77,6 +157,8 @@ public class BagScene : BaseScene
 
             // 플레이어 정보 저장
             _playerInfo = info;
+
+            _moneyText.text = info.Money.ToString();
 
             // 인벤토리 채우기
             foreach (var pair in inventory)
@@ -148,6 +230,49 @@ public class BagScene : BaseScene
 
             _sceneState = BagSceneState.NONE;
         }
+        else if (_packet is S_SellItem)
+        {
+            int money = ((S_SellItem)_packet).Money;
+            int itemQuantity = ((S_SellItem)_packet).ItemQuantity;
+            Item selectedItem = _scrollBox.GetScrollBoxContent() as Item;
+            int count = _countingBox.GetCurrentCount();
+
+            _moneyText.text = money.ToString();
+
+            if (itemQuantity <= 0)
+            {
+                int selectedItemIdx = _scrollBox.GetSelectedIdx();
+
+                _scrollBox.DeleteBtn(selectedItemIdx);
+            }
+            else
+                selectedItem.ItemCnt = itemQuantity;
+
+            // 아이템 이미지, 설명 갱신
+            DynamicButton btn = _scrollBox.GetSelectedBtn();
+            Item newSelectedItem = _scrollBox.GetScrollBoxContent() as Item;
+            Texture2D image = newSelectedItem.ItemImg;
+
+            _itemImg.sprite = Sprite.Create(image, new Rect(0, 0, image.width, image.height), Vector2.one * 0.5f);
+            _itemImg.SetNativeSize();
+
+            _itemDescription.text = (newSelectedItem).ItemDescription;
+
+            TextMeshProUGUI tmp = Util.FindChild<TextMeshProUGUI>(btn.gameObject, "ItemName", true);
+            tmp.text = newSelectedItem.ItemName;
+
+            tmp = Util.FindChild<TextMeshProUGUI>(btn.gameObject, "ItemCount", true);
+            tmp.text = $"x{newSelectedItem.ItemCnt}";
+
+            // 상태 변경
+            State = BagSceneState.SUCCESS_SELL_SCRIPTING;
+
+            List<string> scripts = new List<string>()
+            {
+                $"Turned over the {selectedItem.ItemName} and received ${selectedItem.ItemPrice / 2 * count}."
+            };
+            _scriptBox.BeginScriptTyping(scripts);
+        }
     }
 
     public override void DoNextAction(object value = null)
@@ -157,14 +282,12 @@ public class BagScene : BaseScene
         {
             case BagSceneState.NONE:
                 {
-                    _sceneState = BagSceneState.SLIDER_READY;
-                    ActiveUIBySceneState(_sceneState);
+                    State = BagSceneState.SLIDER_READY;
                 }
                 break;
             case BagSceneState.SLIDER_READY:
                 {
-                    _sceneState = BagSceneState.SCROLL_BOX_READY;
-                    ActiveUIBySceneState(_sceneState);
+                    State = BagSceneState.SCROLL_BOX_READY;
                 }
                 break;
             case BagSceneState.SCROLL_BOX_READY:
@@ -232,8 +355,7 @@ public class BagScene : BaseScene
                             _scrollDownArrow.gameObject.SetActive(false);
                         }
 
-                        _sceneState = BagSceneState.SCROLL_BOX_READY;
-                        ActiveUIBySceneState(_sceneState);
+                        State = BagSceneState.SCROLL_BOX_READY;
                     }
                     else if (value is Item)
                     {
@@ -281,8 +403,7 @@ public class BagScene : BaseScene
 
                                 Managers.Network.SavePacket(returnGamePacket);
 
-                                _sceneState = BagSceneState.MOVING_TO_SCENE;
-                                ActiveUIBySceneState(_sceneState);
+                                State = BagSceneState.MOVING_TO_SCENE;
                             }
                             else if (_playerInfo.ObjectInfo.PosInfo.State == CreatureState.Fight)
                             {
@@ -295,12 +416,23 @@ public class BagScene : BaseScene
 
                                 Managers.Network.SavePacket(itemToBattlePacket);
 
-                                _sceneState = BagSceneState.MOVING_TO_SCENE;
-                                ActiveUIBySceneState(_sceneState);
+                                State = BagSceneState.MOVING_TO_SCENE;
+                            }
+                            else if (_playerInfo.ObjectInfo.PosInfo.State == CreatureState.Shopping)
+                            {
+                                _enterEffect.PlayEffect("FadeOut");
+
+                                C_ReturnGame returnGamePacket = new C_ReturnGame();
+                                returnGamePacket.PlayerId = _playerInfo.ObjectInfo.ObjectId;
+
+                                Managers.Network.SavePacket(returnGamePacket);
+
+                                State = BagSceneState.MOVING_TO_SCENE;
                             }
                         }
                         else if (inputEvent == Define.InputSelectBoxEvent.SELECT)
                         {
+                            Debug.Log(_playerInfo.ObjectInfo.PosInfo.State);
                             Item selectedItem = _scrollBox.GetScrollBoxContent() as Item;
 
                             if (selectedItem.ItemCategory == ItemCategory.PokeBall)
@@ -313,8 +445,17 @@ public class BagScene : BaseScene
                                         "Use","Cancel"
                                     };
                                     _gridSelectBox.CreateButtons(btnNames, 1, 400, 100);
-                                    _sceneState = BagSceneState.WAITING_ACTION;
-                                    ActiveUIBySceneState(_sceneState);
+                                    State = BagSceneState.WAITING_ACTION;
+                                }
+                                else if (_playerInfo.ObjectInfo.PosInfo.State == CreatureState.Shopping)
+                                {
+                                    State = BagSceneState.ASKING_QUANTITY_TO_SELL;
+
+                                    List<string> scripts = new List<string>()
+                                    {
+                                        $"{selectedItem.ItemName}?\nHow many would you like to sell?"
+                                    };
+                                    _scriptBox.BeginScriptTyping(scripts);
                                 }
                                 else
                                 {
@@ -324,8 +465,7 @@ public class BagScene : BaseScene
                                         "Cancel"
                                     };
                                     _gridSelectBox.CreateButtons(btnNames, 1, 400, 100);
-                                    _sceneState = BagSceneState.WAITING_ACTION;
-                                    ActiveUIBySceneState(_sceneState);
+                                    State = BagSceneState.WAITING_ACTION;
                                 }
                             }
                         }
@@ -340,8 +480,7 @@ public class BagScene : BaseScene
 
                         if (inputEvent == Define.InputSelectBoxEvent.BACK)
                         {
-                            _sceneState = BagSceneState.SLIDER_READY;
-                            ActiveUIBySceneState(_sceneState);
+                            State = BagSceneState.SLIDER_READY;
                         }
                         else if (inputEvent == Define.InputSelectBoxEvent.SELECT)
                         {
@@ -360,14 +499,14 @@ public class BagScene : BaseScene
 
                                     _enterEffect.PlayEffect("FadeOut");
 
-                                    _sceneState = BagSceneState.MOVING_TO_SCENE;
-                                    ActiveUIBySceneState(_sceneState);
+                                    _gridSelectBox.UIState = GridLayoutSelectBoxState.NONE;
+
+                                    State = BagSceneState.MOVING_TO_SCENE;
                                 }
                             }
                             else if (selectedAction == "Cancel")
                             {
-                                _sceneState = BagSceneState.SLIDER_READY;
-                                ActiveUIBySceneState(_sceneState);
+                                State = BagSceneState.SLIDER_READY;
                             }
                         }
                     }
@@ -377,31 +516,110 @@ public class BagScene : BaseScene
                 {
                     if (Managers.Network.Packet is C_ItemSceneToBattleScene)
                         Managers.Scene.LoadScene(Define.Scene.Battle);
-                    //else if (Managers.Network.Packet is C_ReturnGame)
-                    //    Managers.Scene.LoadScene(Define.Scene.Game);
+                    else if (Managers.Network.Packet is C_ReturnGame)
+                        Managers.Scene.LoadScene(Define.Scene.Game);
                 }
                 break;
-        }
-    }
+            case BagSceneState.ASKING_QUANTITY_TO_SELL:
+                {
+                    Item selectedItem = _scrollBox.GetScrollBoxContent() as Item;
 
-    void ActiveUIBySceneState(BagSceneState state)
-    {
-        if (state == BagSceneState.SLIDER_READY)
-        {
-            _gridSelectBox.UIState = GridLayoutSelectBoxState.NONE;
-            _gridSelectBox.gameObject.SetActive(false);
-            _categorySlider.SliderState = SliderState.WAITING_INPUT;
-        }
-        if (state == BagSceneState.SCROLL_BOX_READY)
-        {
-            _scrollBox.State = SlideAndScrollBoxState.SELECTING;
-        }
-        else if (state == BagSceneState.WAITING_ACTION)
-        {
-            _categorySlider.SliderState = SliderState.NONE;
-            _scrollBox.State = SlideAndScrollBoxState.NONE;
-            _gridSelectBox.UIState = GridLayoutSelectBoxState.SELECTING;
-            _gridSelectBox.gameObject.SetActive(true);
+                    _countingBox.SetMaxValue(selectedItem.ItemCnt);
+
+                    State = BagSceneState.SELECTING_QUANTITY_TO_SELL;
+                }
+                break;
+            case BagSceneState.SELECTING_QUANTITY_TO_SELL:
+                {
+                    Item selectedItem = _scrollBox.GetScrollBoxContent() as Item;
+                    int count = _countingBox.GetCurrentCount();
+
+                    int totalSellPrice = (selectedItem.ItemPrice / 2) * count;
+
+                    if (value is Define.InputSelectBoxEvent)
+                    {
+                        Define.InputSelectBoxEvent inputEvent = (Define.InputSelectBoxEvent)value;
+
+                        if (inputEvent == Define.InputSelectBoxEvent.BACK)
+                        {
+                            State = BagSceneState.SLIDER_READY;
+                        }
+                        else if (inputEvent == Define.InputSelectBoxEvent.SELECT)
+                        {
+                            List<string> scripts = new List<string>()
+                            {
+                                $"I can pay ${totalSellPrice}.\nWould that be okay?"
+                            };
+                            _scriptBox.BeginScriptTyping(scripts);
+
+                            State = BagSceneState.ASKING_TO_SELL;
+                        }
+                    }
+                    else
+                    {
+                        _countingText.text = $"×{count}";
+                        _totalSellPrice.text = $"${totalSellPrice.ToString()}";
+                    }
+                }
+                break;
+            case BagSceneState.ASKING_TO_SELL:
+                {
+                    State = BagSceneState.SELECTING_TO_SELL;
+
+                    List<string> btns = new List<string>()
+                    {
+                        "Yes",
+                        "No"
+                    };
+                    _scriptBox.CreateSelectBox(btns, btns.Count, 1, 400, 100);
+                }
+                break;
+            case BagSceneState.SELECTING_TO_SELL:
+                {
+                    Item selectedItem = _scrollBox.GetScrollBoxContent() as Item;
+                    int selectedItemIdx = _scrollBox.GetSelectedIdx();
+                    int count = _countingBox.GetCurrentCount();
+
+                    if (value is Define.InputSelectBoxEvent)
+                    {
+                        Define.InputSelectBoxEvent inputEvent = (Define.InputSelectBoxEvent)value;
+
+                        if (inputEvent == Define.InputSelectBoxEvent.BACK)
+                        {
+                            State = BagSceneState.SLIDER_READY;
+                        }
+                        else if (inputEvent == Define.InputSelectBoxEvent.SELECT)
+                        {
+                            GridLayoutSelectBox selectBox = _scriptBox.ScriptSelectBox;
+
+                            if (selectBox.GetSelectedBtnData() as string == "Yes")
+                            {
+                                if (!_isLoading)
+                                {
+                                    _isLoading = true;
+
+                                    C_SellItem sellItem = new C_SellItem();
+                                    sellItem.PlayerId = _playerInfo.ObjectInfo.ObjectId;
+                                    sellItem.ItemCategory = selectedItem.ItemCategory;
+                                    sellItem.ItemQuantity = count;
+                                    sellItem.ItemIdx = selectedItemIdx;
+
+                                    Managers.Network.Send(sellItem);
+                                }
+                            }
+                            else if (selectBox.GetSelectedBtnData() as string == "No")
+                            {
+                                State = BagSceneState.SLIDER_READY;
+                            }
+                        }
+                    }
+                }
+                break;
+            case BagSceneState.SUCCESS_SELL_SCRIPTING:
+                {
+                    State = BagSceneState.SLIDER_READY;
+                }
+                break;
         }
     }
 

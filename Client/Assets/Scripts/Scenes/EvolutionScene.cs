@@ -357,8 +357,8 @@ public class EvolutionScene : BaseScene
                         Managers.Scene.LoadScene(Define.Scene.Evolution);
                     else if (Managers.Network.Packet is C_EnterMoveSelectionScene)
                         Managers.Scene.LoadScene(Define.Scene.MoveSelection);
-                    //else if (Managers.Network.Packet is C_ReturnGame)
-                    //    Managers.Scene.LoadScene(Define.Scene.Game);
+                    else if (Managers.Network.Packet is C_ReturnGame)
+                        Managers.Scene.LoadScene(Define.Scene.Game);
                 }
                 break;
         }

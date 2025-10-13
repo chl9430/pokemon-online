@@ -14,6 +14,10 @@ public abstract class BaseScene : MonoBehaviour
     public Transform ScreenEffecterZone { get { return _screenEffecterZone; } }
     public Define.Scene SceneType { get; protected set; } = Define.Scene.Unknown;
 
+    protected MyPlayerController _myPlayer;
+
+    public MyPlayerController MyPlayer { get { return _myPlayer; } }
+
 	void Awake()
 	{
 		Init();

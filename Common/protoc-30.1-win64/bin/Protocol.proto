@@ -16,6 +16,18 @@ enum MsgId {
   S_ENTER_POKEMON_BATTLE_SCENE = 43;
   S_MEET_WILD_POKEMON = 150;
   S_GET_DOOR_DEST_DIR = 160;
+  S_GET_NPC_TALK = 170;
+  C_SHOP_ITEM_LIST = 180;
+  S_SHOP_ITEM_LIST = 190;
+  C_GET_ITEM_COUNT = 700;
+  S_GET_ITEM_COUNT = 710;
+  C_BUY_ITEM = 720;
+  S_BUY_ITEM = 730;
+  C_SELL_ITEM = 740;
+  S_SELL_ITEM = 750;
+  C_RESTORE_POKEMON = 760;
+  S_RESTORE_POKEMON = 770;
+  C_FINISH_NPC_TALK = 780;
 
   // 포켓몬 교환 씬
   C_ENTER_POKEMON_EXCHANGE_SCENE = 400;
@@ -83,15 +95,17 @@ enum MsgId {
 }
 
 enum CreatureState {
-  IDLE = 0;
-  CHANGE_DIR = 1;
-  WALK = 2;
-  RUN = 3;
-  WATCH_MENU = 4;
-  FIGHT = 5;
-  TALK = 6;
-  EXCHANGING = 7;
-  POKEMON_EVOLVING = 8;
+    NoneState = 0;
+    Idle = 1;
+    ChangeDir = 2;
+    Walk = 3;
+    Run = 4;
+    WatchMenu = 5;
+    Fight = 6;
+    Talk = 7;
+    Exchanging = 8;
+    PokemonEvolving = 9;
+    Shopping = 10;
 }
 
 enum MoveDir {
@@ -106,12 +120,14 @@ enum GameObjectType {
   PLAYER = 1;
   POKEMON = 2;
   PROJECTILE = 3;
+  NPC = 4;
 }
 
 enum RoomType {
     None = 0;
     Map = 1;
     PokemonCenter = 2;
+    FriendlyShop = 3;
 }
 
 message S_EnterGame {
@@ -131,6 +147,7 @@ message S_EnterRoom {
     PlayerInfo playerInfo = 1;
     int32 roomId = 2;
     RoomType roomType = 3;
+    repeated NPCInfo npcInfos = 4;
 }
 
 message S_LeaveRoom {
@@ -170,6 +187,74 @@ message S_SendTalk
 message S_ReceiveTalk
 {
     PlayerInfo playerInfo = 1;
+}
+
+message S_GetNpcTalk
+{
+    int32 npcId = 1;
+}
+
+message C_ShopItemList
+{
+    int32 playerId = 1;
+}
+
+message S_ShopItemList
+{
+    repeated ItemSummary shopItemSums = 1;
+}
+
+message C_GetItemCount
+{
+    int32 playerId = 1;
+    ItemCategory itemCategory = 2;
+    string itemName = 3;
+}
+
+message S_GetItemCount
+{
+    int32 itemCount = 1;
+}
+
+message C_BuyItem
+{
+    int32 playerId = 1;
+    int32 itemQuantity = 2;
+    int32 itemIdx = 3;
+}
+
+message S_BuyItem
+{
+    bool isBuy = 1;
+}
+
+message C_SellItem
+{
+    int32 playerId = 1;
+    ItemCategory ItemCategory = 2;
+    int32 itemQuantity = 3;
+    int32 itemIdx = 4;
+}
+
+message S_SellItem
+{
+    int32 money = 1;
+    int32 itemQuantity = 2;
+}
+
+message C_RestorePokemon
+{
+    int32 playerId = 1;
+}
+
+message S_RestorePokemon
+{
+    int32 pokemonCount = 1;
+}
+
+message C_FinishNpcTalk
+{
+    int32 playerId = 1;
 }
 
 message C_SwitchPokemon {
@@ -539,6 +624,13 @@ message PlayerInfo {
     ObjectInfo objectInfo = 1;
     string playerName = 2;
     PlayerGender playerGender = 3;
+    int32 money = 4;
+    NPCInfo npcInfo = 5;
+}
+
+message NPCInfo {
+    ObjectInfo objectInfo = 1;
+    string npcName = 2;
 }
 
 message PositionInfo {
@@ -620,6 +712,7 @@ message ItemSummary
     string itemName = 2;
     string itemDescription = 3;
     int32 itemCnt = 4;
+    int32 itemPrice = 5;
 }
 
 message LevelUpStatusDiff
@@ -689,9 +782,9 @@ enum MoveCategory
 
 enum ItemCategory
 {
-    ITEM = 0;
-    POKE_BALL = 1;
-    TECHNICAL_MACHINE = 2;
-    BERRY = 3;
-    KEY_ITEM = 4;
+    Item = 0;
+    PokeBall = 1;
+    TechnicalMachine = 2;
+    Berry = 3;
+    KeyItem = 4;
 }

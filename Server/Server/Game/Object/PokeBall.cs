@@ -22,6 +22,7 @@ namespace Server
                 _itemName = _ballItemDictData.itemName;
                 _itemDescription = _ballItemDictData.itemDescription;
                 _catchRate = _ballItemDictData.catchRate;
+                _price = _ballItemDictData.price;
             }
             else
             {
@@ -37,6 +38,7 @@ namespace Server
                 ItemName = _itemName,
                 ItemDescription = _itemDescription,
                 ItemCnt = _itemCnt,
+                ItemPrice = _price
             };
 
             return itemSum;

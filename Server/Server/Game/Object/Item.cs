@@ -13,9 +13,12 @@ namespace Server
         protected string _itemName;
         protected string _itemDescription;
         protected int _itemCnt;
+        protected int _price;
 
+        public ItemCategory ItemCategory { get { return _itemCategory; } }
         public string ItemName { get { return _itemName; } }
         public int ItemCount { get { return _itemCnt; } set { _itemCnt = value; } }
+        public int Price { get { return _price; } }
 
         public Item(int itemCnt) 
         {

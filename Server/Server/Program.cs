@@ -18,10 +18,12 @@ namespace Server
             ConfigManager.LoadConfig();
             DataManager.LoadData();
 
-            GameRoom room = RoomManager.Instance.Add(1, RoomType.Map);
+            GameRoom mapRoom = RoomManager.Instance.Add(1, RoomType.Map);
             GameRoom pokemonCenterRoom = RoomManager.Instance.Add(1, RoomType.PokemonCenter);
-            room.TickRoom(50);
+            GameRoom friendlyShopRoom = RoomManager.Instance.Add(1, RoomType.FriendlyShop);
+            mapRoom.TickRoom(50);
             pokemonCenterRoom.TickRoom(50);
+            friendlyShopRoom.TickRoom(50);
 
             // DNS (Domain Name System)
             string host = Dns.GetHostName();

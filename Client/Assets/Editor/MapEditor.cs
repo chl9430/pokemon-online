@@ -60,12 +60,18 @@ public class MapEditor
                 // 부쉬 타일 맵 오브젝트들을 모두 가져온다.
                 List<Tilemap> bushMaps = new List<Tilemap>();
 
-                foreach (Transform child in go.transform)
+                int bushId = 1;
+                while (true)
                 {
-                    if (child.name == "Tilemap_Bush")
+                    Tilemap tileMap = Util.FindChild<Tilemap>(go, $"Tilemap_Bush_{bushId}", true);
+
+                    if (tileMap != null)
                     {
-                        bushMaps.Add(child.GetComponent<Tilemap>());
+                        bushMaps.Add(tileMap);
+                        bushId++;
                     }
+                    else
+                        break;
                 }
 
                 // 타일 맵을 순회
@@ -75,14 +81,17 @@ public class MapEditor
                     {
                         bool isThereBush = false;
 
-                        for (int i = 1; i <= bushMaps.Count; i++)
+                        for (int i = 0; i < bushMaps.Count; i++)
                         {
-                            Tilemap tileMap = bushMaps[i - 1];
+                            Tilemap bushMap = bushMaps[i];
 
-                            TileBase tile = tileMap.GetTile(new Vector3Int(x, y, 0));
-                            if (tile != null)
+                            TileBase bushTile = bushMap.GetTile(new Vector3Int(x, y, 0));
+                            if (bushTile != null)
                             {
-                                writer.Write(i);
+                                string name = bushMap.gameObject.name;
+
+                                int bushNum = int.Parse(name.Substring(name.Length - 1));
+                                writer.Write(bushNum);
                                 isThereBush = true;
                                 break;
                             }

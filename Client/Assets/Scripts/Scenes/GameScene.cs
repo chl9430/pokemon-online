@@ -28,7 +28,7 @@ public class GameScene : BaseScene
     [SerializeField] GridLayoutSelectBox _menuSelectBox;
     [SerializeField] List<DynamicButton> _menuBtns;
 
-    public IMessage Packet {  get { return _packet; } }
+    public MyPlayerController MyPlayer { get { return _myPlayer; } }
 
     protected override void Init()
     {
@@ -59,6 +59,8 @@ public class GameScene : BaseScene
 
     public override void UpdateData(IMessage packet)
     {
+        _packet = packet;
+
         if (_contents == null)
         {
             if (packet is S_EnterRoom)
@@ -69,6 +71,7 @@ public class GameScene : BaseScene
                 PlayerInfo playerInfo = s_enterRoomPacket.PlayerInfo;
                 int roomId = s_enterRoomPacket.RoomId;
                 RoomType roomType = s_enterRoomPacket.RoomType;
+                IList npcInfos = s_enterRoomPacket.NpcInfos;
 
                 Managers.Map.LoadMap(roomId, roomType);
 
@@ -85,7 +88,29 @@ public class GameScene : BaseScene
                 myPlayer.name = $"{playerInfo.PlayerName}_{playerInfo.ObjectInfo.ObjectId}";
 
                 Managers.Object.Add(myPlayer, playerInfo.ObjectInfo);
-                Managers.Object.MyPlayer = myPlayer.GetComponent<MyPlayerController>();
+
+                foreach (NPCInfo npcInfo in npcInfos)
+                {
+                    BaseController npcInst = Managers.Resource.Instantiate($"Creature/{npcInfo.NpcName}").GetComponent<BaseController>();
+                    npcInst.name = $"{npcInfo.NpcName}_{npcInfo.ObjectInfo.ObjectId}";
+
+                    Managers.Object.Add(npcInst.gameObject, npcInfo.ObjectInfo);
+
+                    if (roomType == RoomType.FriendlyShop)
+                    {
+                        Grid curGrid = Managers.Map.CurrentGrid;
+                        npcInst.PosInfo.PosX -= 1;
+                        npcInst.SyncPos();
+                    }
+                    else if (roomType == RoomType.PokemonCenter)
+                    {
+                        Grid curGrid = Managers.Map.CurrentGrid;
+                        npcInst.PosInfo.PosY += 1;
+                        npcInst.SyncPos();
+                    }
+                }
+                _myPlayer = myPlayer.GetComponent<MyPlayerController>();
+                _myPlayer.State = CreatureState.NoneState;
 
                 PlayerController pc = myPlayer.GetComponent<PlayerController>();
                 pc.PlayerName = playerInfo.PlayerName;
@@ -105,11 +130,20 @@ public class GameScene : BaseScene
             }
             else if (packet is S_GetDoorDestDir)
             {
-                Managers.Object.MyPlayer.Packet = packet;
+                _myPlayer.Packet = packet;
+            }
+            else if (packet is S_GetNpcTalk)
+            {
+                _myPlayer.IsLoading = false;
+                S_GetNpcTalk npcTalkPacket = packet as S_GetNpcTalk;
+                int npcId = npcTalkPacket.NpcId;
+
+                _contents = Managers.Object.FindById(npcId).GetComponent<ObjectContents>();
+                _contents.UpdateData(packet);
             }
             else if (packet is S_SendTalk)
             {
-                Managers.Object.MyPlayer.IsLoading = false;
+                _myPlayer.IsLoading = false;
                 S_SendTalk sendTalkPacket = packet as S_SendTalk;
                 PlayerInfo otherPlayer = sendTalkPacket.OtherPlayerInfo;
 
@@ -121,7 +155,7 @@ public class GameScene : BaseScene
             }
             else if (packet is S_ReceiveTalk)
             {
-                Managers.Object.MyPlayer.IsLoading = false;
+                _myPlayer.IsLoading = false;
                 S_ReceiveTalk receiveTalkPacket = packet as S_ReceiveTalk;
                 PlayerInfo otherPlayer = receiveTalkPacket.PlayerInfo;
 
@@ -156,7 +190,16 @@ public class GameScene : BaseScene
                     // 씬 상태 변경
                     _sceneState = GameSceneState.MOVING_PLAYER;
                     ActiveUIBySceneState(_sceneState);
-                    Managers.Object.MyPlayer.IsLoading = false;
+                    _myPlayer.State = CreatureState.Idle;
+
+                    // 대화중인 npc가 있는 지 확인
+                    if (Managers.Object.PlayerInfo.NpcInfo != null)
+                    {
+                        NPCInfo npcInfo = Managers.Object.PlayerInfo.NpcInfo;
+
+                        _contents = Managers.Object.FindById(npcInfo.ObjectInfo.ObjectId).GetComponent<ObjectContents>();
+                        _contents.UpdateData(_packet);
+                    }
                 }
                 break;
             case GameSceneState.MOVING_PLAYER:
@@ -193,7 +236,7 @@ public class GameScene : BaseScene
 
                         if (inputEvent == Define.InputSelectBoxEvent.BACK)
                         {
-                            Managers.Object.MyPlayer.State = CreatureState.Idle;
+                            _myPlayer.State = CreatureState.Idle;
 
                             _sceneState = GameSceneState.MOVING_PLAYER;
                             ActiveUIBySceneState(_sceneState);
@@ -233,7 +276,7 @@ public class GameScene : BaseScene
             case GameSceneState.MOVING_TO_POKEMON_SCENE:
                 {
                     C_EnterPokemonListScene enterPokemonListPacket = new C_EnterPokemonListScene();
-                    enterPokemonListPacket.PlayerId = Managers.Object.MyPlayer.Id;
+                    enterPokemonListPacket.PlayerId = _myPlayer.Id;
 
                     Managers.Network.SavePacket(enterPokemonListPacket);
 
@@ -244,7 +287,7 @@ public class GameScene : BaseScene
             case GameSceneState.MOVING_TO_BAG_SCENE:
                 {
                     C_EnterPlayerBagScene enterBagPacket = new C_EnterPlayerBagScene();
-                    enterBagPacket.PlayerId = Managers.Object.MyPlayer.Id;
+                    enterBagPacket.PlayerId = _myPlayer.Id;
 
                     Managers.Network.SavePacket(enterBagPacket);
 
@@ -277,6 +320,11 @@ public class GameScene : BaseScene
         }
     }
 
+    //public void PlayerLock(bool isLock)
+    //{
+    //    _myPlayer.IsLoading = isLock;
+    //}
+
     public override void FinishContents()
     {
         _contents = null;
@@ -299,7 +347,7 @@ public class GameScene : BaseScene
 
             Managers.Network.SavePacket(enterPokemonBattleScene);
 
-            Managers.Object.MyPlayer.State = CreatureState.Fight;
+            _myPlayer.State = CreatureState.Fight;
 
             ScreenEffecter = Managers.Resource.Instantiate("UI/GameScene/PokemonAppearEffect", ScreenEffecterZone).GetComponent<ScreenEffecter>();
             ScreenEffecter.PlayEffect("PokemonAppear");
@@ -317,7 +365,7 @@ public class GameScene : BaseScene
         C_EnterRoom enterRoomPacket = new C_EnterRoom();
         enterRoomPacket.PlayerId = Managers.Object.PlayerInfo.ObjectInfo.ObjectId;
 
-        string mapName = GameObject.FindAnyObjectByType<Grid>().name;
+        string mapName = Managers.Map.CurrentGrid.transform.parent.name;
         int roomId = int.Parse(mapName.Substring(mapName.Length - 1));
         RoomType roomType = (RoomType)Enum.Parse(typeof(RoomType), mapName.Substring(0, mapName.Length - 2));
 
