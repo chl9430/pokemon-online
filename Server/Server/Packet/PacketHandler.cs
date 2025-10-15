@@ -162,6 +162,8 @@ public class PacketHandler
             );
 
         Player player = ObjectManager.Instance.Find(playerId);
+        player.Info.PosInfo.State = CreatureState.Talk;
+
         GameRoom room = player.Room;
         room.Push(room.EnterRoom, player);
     }
@@ -318,16 +320,19 @@ public class PacketHandler
         Player player = ObjectManager.Instance.Find(playerId);
 
         S_GetItemCount s_GetCountPacket = new S_GetItemCount();
+        s_GetCountPacket.Money = player.Money;
 
         var items = player.Items;
+        int totalCount = 0;
         foreach (Item item in items[itemCategory])
         {
             if (item.ItemName == itemName)
             {
-                s_GetCountPacket.ItemCount = item.ItemCount;
-                break;
+                totalCount += item.ItemCount;
             }
         }
+
+        s_GetCountPacket.ItemCount = totalCount;
 
         player.Session.Send(s_GetCountPacket);
     }
@@ -487,7 +492,6 @@ public class PacketHandler
         else
         {
             GameRoom room = RoomManager.Instance.Find(player.Room.RoomId, player.Room.RoomType);
-            player.PosInfo.State = CreatureState.Exchanging;
 
             if (player.ExchangeRoom == null)
                 player.TalkRoom.CreatePokmeonExchangeRoom(player);
@@ -497,12 +501,8 @@ public class PacketHandler
                 PokemonExchangeRoom exchangeRoom = player.ExchangeRoom;
                 exchangeRoom.Push(exchangeRoom.ReturnRoom, player);
             }
-
-            //S_Move movePacket = new S_Move();
-            //movePacket.ObjectId = player.Info.ObjectId;
-            //movePacket.PosInfo = player.PosInfo;
-
-            //room.Push(room.Broadcast, player, movePacket);
+            else
+                player.PosInfo.State = CreatureState.Exchanging;
         }
     }
 
@@ -1100,7 +1100,7 @@ public class PacketHandler
         player.AddItem(ItemCategory.PokeBall, "Great Ball", 10);
         player.AddItem(ItemCategory.PokeBall, "Great Ball", 50);
 
-        player.Money += 10000;
+        player.Money += 1000000;
 
         clientSession.MyPlayer = player;
 

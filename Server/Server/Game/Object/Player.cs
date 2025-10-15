@@ -137,7 +137,7 @@ namespace Server
 
             if (_items.TryGetValue(itemCategory, out List<Item> categoryItems))
             {
-                Item item = categoryItems.Find(item => item.ItemName == itemName);
+                Item item = categoryItems.Find(item => item.ItemName == itemName && (item.ItemCount < 999));
 
                 if (item != null)
                 {
@@ -147,7 +147,13 @@ namespace Server
                         return;
                     }
                     else
-                        return;
+                    {
+                        int remainedCnt = itemCnt - (999 - item.ItemCount);
+                        item.ItemCount = 999;
+
+                        if (itemCategory == ItemCategory.PokeBall)
+                            categoryItems.Add(new PokeBall(itemName, remainedCnt));
+                    }
                 }
                 else
                 {

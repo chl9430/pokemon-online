@@ -20,6 +20,9 @@ public class SlideAndScrollBox : MonoBehaviour
 
     [SerializeField] int _scrollBoxMaxView;
     [SerializeField] DynamicButton _btn;
+    [SerializeField] GameObject _scrollUpArrow;
+    [SerializeField] GameObject _scrollDownArrow;
+    [SerializeField] Transform _btnPos;
 
     public SlideAndScrollBoxState State
     {
@@ -64,6 +67,11 @@ public class SlideAndScrollBox : MonoBehaviour
 
     void ChooseAction()
     {
+        if (Input.GetKeyDown(KeyCode.S))
+        {
+            _scene.DoNextAction(Define.InputSelectBoxEvent.BACK);
+        }
+
         if (_btnGrid == null)
             return;
 
@@ -96,6 +104,26 @@ public class SlideAndScrollBox : MonoBehaviour
             else
                 _curPosInScrollBox++;
 
+            // 아이템 리스트 칸 상, 하 화살표 갱신
+            if (_btnGrid.Count > _scrollBoxMaxView)
+            {
+                if (_scrollCnt == 0)
+                {
+                    _scrollUpArrow.gameObject.SetActive(false);
+                    _scrollDownArrow.gameObject.SetActive(true);
+                }
+                else if (_scrollCnt == _btnGrid.Count - _scrollBoxMaxView)
+                {
+                    _scrollUpArrow.gameObject.SetActive(true);
+                    _scrollDownArrow.gameObject.SetActive(false);
+                }
+                else
+                {
+                    _scrollUpArrow.gameObject.SetActive(true);
+                    _scrollDownArrow.gameObject.SetActive(true);
+                }
+            }
+
             _scene.DoNextAction(_btnGrid[_curIdx].BtnData);
         }
         else if (Input.GetKeyDown(KeyCode.UpArrow))
@@ -124,15 +152,31 @@ public class SlideAndScrollBox : MonoBehaviour
             else
                 _curPosInScrollBox--;
 
+            // 아이템 리스트 칸 상, 하 화살표 갱신
+            if (_btnGrid.Count > _scrollBoxMaxView)
+            {
+                if (_scrollCnt == 0)
+                {
+                    _scrollUpArrow.gameObject.SetActive(false);
+                    _scrollDownArrow.gameObject.SetActive(true);
+                }
+                else if (_scrollCnt == _btnGrid.Count - _scrollBoxMaxView)
+                {
+                    _scrollUpArrow.gameObject.SetActive(true);
+                    _scrollDownArrow.gameObject.SetActive(false);
+                }
+                else
+                {
+                    _scrollUpArrow.gameObject.SetActive(true);
+                    _scrollDownArrow.gameObject.SetActive(true);
+                }
+            }
+
             _scene.DoNextAction(_btnGrid[_curIdx].BtnData);
         }
         else if (Input.GetKeyDown(KeyCode.D))
         {
             _scene.DoNextAction(Define.InputSelectBoxEvent.SELECT);
-        }
-        else if (Input.GetKeyDown(KeyCode.S))
-        {
-            _scene.DoNextAction(Define.InputSelectBoxEvent.BACK);
         }
     }
 
@@ -189,7 +233,7 @@ public class SlideAndScrollBox : MonoBehaviour
 
         foreach (object data in datas)
         {
-            DynamicButton btn = GameObject.Instantiate(_btn, gameObject.transform);
+            DynamicButton btn = GameObject.Instantiate(_btn, _btnPos);
             btn.BtnData =data;
             btn.SetSelectedOrNotSelected(false);
 
@@ -199,6 +243,26 @@ public class SlideAndScrollBox : MonoBehaviour
         _btnGrid[_curIdx].SetSelectedOrNotSelected(true);
 
         UpdateScrollBoxContents();
+
+        ShowUpAndDownArrows();
+    }
+
+    public void ShowUpAndDownArrows()
+    {
+        // 스크롤 상,하 화살표 표시
+        if (_btnGrid != null)
+        {
+            if (_btnGrid.Count > _scrollBoxMaxView)
+            {
+                _scrollUpArrow.gameObject.SetActive(false);
+                _scrollDownArrow.gameObject.SetActive(true);
+            }
+            else
+            {
+                _scrollUpArrow.gameObject.SetActive(false);
+                _scrollDownArrow.gameObject.SetActive(false);
+            }
+        }
     }
 
     public List<DynamicButton> ChangeBtnGridDataToList()

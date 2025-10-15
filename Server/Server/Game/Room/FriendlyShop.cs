@@ -42,7 +42,8 @@ namespace Server
                 if (_objs.ContainsKey(GameObjectType.Npc) == false)
                     _objs.Add(GameObjectType.Npc, new Dictionary<int, GameObject>());
 
-                _objs[GameObjectType.Npc].Add(npc.Id, npc);
+                if (_objs[GameObjectType.Npc].ContainsKey(npc.Id) == false)
+                    _objs[GameObjectType.Npc].Add(npc.Id, npc);
 
                 Vector2Int npcPos = Map.GetTilePos(2, 3);
                 npc.PosInfo.PosX = npcPos.x;
@@ -65,12 +66,15 @@ namespace Server
             if (money >= totalPrice)
             {
                 money -= totalPrice;
+                player.Money = money;
                 player.AddItem(selectedItem.ItemCategory, selectedItem.ItemName, itemQuantity);
                 buyItemPacket.IsBuy = true;
+                buyItemPacket.Money = money;
             }
             else
             {
                 buyItemPacket.IsBuy = false;
+                buyItemPacket.Money = money;
             }
 
             player.Session.Send(buyItemPacket);

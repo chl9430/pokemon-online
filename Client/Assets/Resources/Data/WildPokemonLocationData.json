@@ -7,24 +7,44 @@
                     "bushNum": "1",
                     "wildPokemons": [
                         {
-                            "pokemonName": "Pikachu",
-                            "pokemonLevel": "5",
-                            "appearRate": "0"
-                        },
-                        {
                             "pokemonName": "Charmander",
-                            "pokemonLevel": "5",
-                            "appearRate": "0"
+                            "pokemonLevel": "1",
+                            "appearRate": "20"
                         },
                         {
                             "pokemonName": "Bulbasaur",
-                            "pokemonLevel": "5",
-                            "appearRate": "100"
+                            "pokemonLevel": "1",
+                            "appearRate": "50"
                         },
                         {
                             "pokemonName": "Squirtle",
-                            "pokemonLevel": "5",
-                            "appearRate": "0"
+                            "pokemonLevel": "1",
+                            "appearRate": "30"
+                        }
+                    ]
+                },
+                {
+                    "bushNum": "2",
+                    "wildPokemons": [
+                        {
+                            "pokemonName": "Pikachu",
+                            "pokemonLevel": "1",
+                            "appearRate": "10"
+                        },
+                        {
+                            "pokemonName": "Charmander",
+                            "pokemonLevel": "1",
+                            "appearRate": "20"
+                        },
+                        {
+                            "pokemonName": "Bulbasaur",
+                            "pokemonLevel": "1",
+                            "appearRate": "40"
+                        },
+                        {
+                            "pokemonName": "Squirtle",
+                            "pokemonLevel": "1",
+                            "appearRate": "30"
                         }
                     ]
                 }

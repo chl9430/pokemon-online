@@ -185,6 +185,13 @@ public class PokemonExchangeScene : BaseScene
         }
         else if (packet is S_FinalAnswerToExchange)
         {
+            // 화면 전환 중에 취소 요청이 들어오면
+            if (_state == PokemonExchangeSceneState.MOVING_TO_SUMMARY_SCENE)
+            {
+                Managers.Network.SavePacket(packet);
+                return;
+            }
+
             S_FinalAnswerToExchange finalAnswerPacket = packet as S_FinalAnswerToExchange;
             PokemonSummary myPokemonSum = finalAnswerPacket.MyPokemonSum;
             PokemonSummary otherPokemonSum = finalAnswerPacket.OtherPokemonSum;
@@ -444,7 +451,7 @@ public class PokemonExchangeScene : BaseScene
                     Managers.Network.SavePacket(returnGamePacket);
 
                     // 씬 변경
-                    // Managers.Scene.LoadScene(Define.Scene.Game);
+                    Managers.Scene.LoadScene(Define.Scene.Game);
                 }
                 break;
         }

@@ -541,15 +541,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _screenEffecterZone: {fileID: 1466282143}
   _categorySlider: {fileID: 376939518}
-  _scrollBox: {fileID: 1282927059}
+  _scrollBox: {fileID: 967903699}
   _sliderIndicatorImgs:
   - {fileID: 2046948730}
   - {fileID: 1245782794}
   - {fileID: 766240980}
   - {fileID: 1065385365}
   - {fileID: 312413709}
-  _scrollUpArrow: {fileID: 1491926615}
-  _scrollDownArrow: {fileID: 1089490432}
   _gridSelectBox: {fileID: 812143954}
   _itemImg: {fileID: 832305938}
   _itemDescription: {fileID: 2060577533}
@@ -2026,8 +2024,9 @@ GameObject:
   - component: {fileID: 967903696}
   - component: {fileID: 967903698}
   - component: {fileID: 967903697}
+  - component: {fileID: 967903699}
   m_Layer: 5
-  m_Name: Background
+  m_Name: ItemScrollSelectBox
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2091,6 +2090,23 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 967903695}
   m_CullTransparentMesh: 1
+--- !u!114 &967903699
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 967903695}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 31ca0eb6c4a61e941bea6514a79c60b0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _scrollBoxMaxView: 8
+  _btn: {fileID: -7312385898740315781, guid: 7de2163c391735e468254ced9c158d03, type: 3}
+  _scrollUpArrow: {fileID: 1491926613}
+  _scrollDownArrow: {fileID: 1089490430}
+  _btnPos: {fileID: 1494337791}
 --- !u!1 &992430028
 GameObject:
   m_ObjectHideFlags: 0
@@ -2758,56 +2774,6 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!1 &1282927057
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1282927058}
-  - component: {fileID: 1282927059}
-  m_Layer: 5
-  m_Name: ItemScrollSelectBox
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!224 &1282927058
-RectTransform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1282927057}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1494337791}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
-  m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &1282927059
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1282927057}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 31ca0eb6c4a61e941bea6514a79c60b0, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _scrollBoxMaxView: 8
-  _btn: {fileID: -7312385898740315781, guid: 7de2163c391735e468254ced9c158d03, type: 3}
 --- !u!1 &1354771908
 GameObject:
   m_ObjectHideFlags: 0
@@ -3255,8 +3221,7 @@ RectTransform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 1282927058}
+  m_Children: []
   m_Father: {fileID: 375822764}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0.05}

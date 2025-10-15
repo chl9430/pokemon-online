@@ -10,11 +10,9 @@ public enum PokemonSummarySceneState
 {
     NONE = 0,
     WAITING_INPUT = 1,
-    MOVING_TO_POKEMON_SCENE = 2,
-    SLIDER_MOVING = 3,
-    EXCHANGE_CANCELED_SCRIPTING = 4,
-    EXIT_EXCHANGE_SCRIPTING = 5,
-    MOVING_TO_GAME_SCENE = 6,
+    EXIT_EXCHANGE_SCRIPTING = 2,
+    EXCHANGE_CANCELED_SCRIPTING = 3,
+    MOVING_SCENE = 4,
 }
 
 public class PokemonSummaryScene : BaseScene
@@ -29,6 +27,29 @@ public class PokemonSummaryScene : BaseScene
     [SerializeField] CategorySlider _slider;
     [SerializeField] RectTransform _indicator;
     [SerializeField] ScriptBoxUI _scriptBox;
+
+    public PokemonSummarySceneState State
+    {
+        set
+        {
+            _sceneState = value;
+
+            if (_sceneState == PokemonSummarySceneState.WAITING_INPUT)
+            {
+                _slider.SliderState = SliderState.WAITING_INPUT;
+            }
+            else if (_sceneState == PokemonSummarySceneState.EXIT_EXCHANGE_SCRIPTING)
+            {
+                _slider.SliderState = SliderState.NONE;
+                _moveSelectArea.UIState = SelectAreaState.NONE;
+            }
+            else if (_sceneState == PokemonSummarySceneState.EXCHANGE_CANCELED_SCRIPTING)
+            {
+                _slider.SliderState = SliderState.NONE;
+                _moveSelectArea.UIState = SelectAreaState.NONE;
+            }
+        }
+    }
 
     protected override void Init()
     {
@@ -46,14 +67,6 @@ public class PokemonSummaryScene : BaseScene
             PokemonSummary pokemonSum = Managers.Scene.Data as PokemonSummary;
             summaryUI.FillPokemonBasicInfo(pokemonSum);
             summaryUI.FillPokemonSummary(pokemonSum);
-
-            // 슬라이더 설정
-            //List<object> sliderContents = new List<object>();
-            //foreach (ItemCategory itemCategory in sortedKeys)
-            //{
-            //    sliderContents.Add(itemCategory);
-            //}
-            //_categorySlider.CreateSlideContents(sliderContents);
 
             // 기술 버튼 선택 기능 세팅
             List<object> moves = new List<object>();
@@ -119,8 +132,6 @@ public class PokemonSummaryScene : BaseScene
 
             summaryUI.FillPokemonSummary(dummySummary);
 
-            //_slider.UpdateSliderContents(_sliderContents);
-
             // 기술 버튼 선택 기능 세팅
             List<object> moves = new List<object>();
             for (int i = 0; i < dummySummary.PokemonMoves.Count; i++)
@@ -140,7 +151,7 @@ public class PokemonSummaryScene : BaseScene
             S_ExitPokemonExchangeScene exitExchangePacket = packet as S_ExitPokemonExchangeScene;
             PlayerInfo exitPlayerInfo = exitExchangePacket.ExitPlayerInfo;
 
-            _sceneState = PokemonSummarySceneState.EXIT_EXCHANGE_SCRIPTING;
+            State = PokemonSummarySceneState.EXIT_EXCHANGE_SCRIPTING;
             List<string> scripts = new List<string>()
             {
                 $"{exitPlayerInfo.PlayerName} has ended the exchange."
@@ -155,7 +166,7 @@ public class PokemonSummaryScene : BaseScene
 
             if (myPokemonSum == null || otherPokemonSum == null)
             {
-                _sceneState = PokemonSummarySceneState.EXCHANGE_CANCELED_SCRIPTING;
+                State = PokemonSummarySceneState.EXCHANGE_CANCELED_SCRIPTING;
                 List<string> script = new List<string>()
                 {
                     $"The other party canceled the exchange.",
@@ -173,9 +184,26 @@ public class PokemonSummaryScene : BaseScene
         {
             case PokemonSummarySceneState.NONE:
                 {
-                    // 씬 상태 변경
-                    _sceneState = PokemonSummarySceneState.WAITING_INPUT;
-                    ActiveUIBySceneState(_sceneState);
+                    if (Managers.Network.Packet is S_FinalAnswerToExchange)
+                    {
+                        S_FinalAnswerToExchange finalAnswerPacket = Managers.Network.Packet as S_FinalAnswerToExchange;
+                        PokemonSummary myPokemonSum = finalAnswerPacket.MyPokemonSum;
+                        PokemonSummary otherPokemonSum = finalAnswerPacket.OtherPokemonSum;
+
+                        if (myPokemonSum == null || otherPokemonSum == null)
+                        {
+                            State = PokemonSummarySceneState.EXCHANGE_CANCELED_SCRIPTING;
+                            List<string> script = new List<string>()
+                            {
+                                $"The other party canceled the exchange.",
+                            };
+                            _scriptBox.BeginScriptTyping(script, true);
+                        }
+                    }
+                    else
+                    {
+                        State = PokemonSummarySceneState.WAITING_INPUT;
+                    }
                 }
                 break;
             case PokemonSummarySceneState.WAITING_INPUT:
@@ -186,10 +214,26 @@ public class PokemonSummaryScene : BaseScene
 
                         if (inputEvent == Define.InputSelectBoxEvent.BACK)
                         {
-                            _enterEffect.PlayEffect("FadeOut");
+                            if (Managers.Object.PlayerInfo.ObjectInfo.PosInfo.State == CreatureState.Exchanging)
+                            {
+                                _enterEffect.PlayEffect("FadeOut");
 
-                            _sceneState = PokemonSummarySceneState.MOVING_TO_POKEMON_SCENE;
-                            ActiveUIBySceneState(_sceneState);
+                                C_EnterPokemonExchangeScene enterExchangeScene = new C_EnterPokemonExchangeScene();
+                                enterExchangeScene.PlayerId = Managers.Object.PlayerInfo.ObjectInfo.ObjectId;
+
+                                Managers.Network.SavePacket(enterExchangeScene);
+                            }
+                            else
+                            {
+                                _enterEffect.PlayEffect("FadeOut");
+
+                                C_EnterPokemonListScene enterPokemonPacket = new C_EnterPokemonListScene();
+                                enterPokemonPacket.PlayerId = Managers.Object.PlayerInfo.ObjectInfo.ObjectId;
+
+                                Managers.Network.SavePacket(enterPokemonPacket);
+                            }
+
+                            State = PokemonSummarySceneState.MOVING_SCENE;
                         }
                     }
                     else if (value is PokemonMoveSummary)
@@ -213,64 +257,40 @@ public class PokemonSummaryScene : BaseScene
                     }
                 }
                 break;
-            case PokemonSummarySceneState.MOVING_TO_POKEMON_SCENE:
+            case PokemonSummarySceneState.EXIT_EXCHANGE_SCRIPTING:
                 {
-                    if (Managers.Object.PlayerInfo.ObjectInfo.PosInfo.State == CreatureState.Exchanging)
-                    {
-                        C_EnterPokemonExchangeScene enterExchangeScene = new C_EnterPokemonExchangeScene();
-                        enterExchangeScene.PlayerId = Managers.Object.PlayerInfo.ObjectInfo.ObjectId;
+                    _enterEffect.PlayEffect("FadeOut");
 
-                        Managers.Network.SavePacket(enterExchangeScene);
+                    C_ReturnGame returnGamePacket = new C_ReturnGame();
+                    returnGamePacket.PlayerId = Managers.Object.PlayerInfo.ObjectInfo.ObjectId;
 
-                        // 씬 변경
-                        Managers.Scene.LoadScene(Define.Scene.PokemonExchange);
-                    }
-                    else
-                    {
-                        C_EnterPokemonListScene enterPokemonPacket = new C_EnterPokemonListScene();
-                        enterPokemonPacket.PlayerId = Managers.Object.PlayerInfo.ObjectInfo.ObjectId;
+                    Managers.Network.SavePacket(returnGamePacket);
 
-                        Managers.Network.SavePacket(enterPokemonPacket);
-
-                        // 씬 변경
-                        Managers.Scene.LoadScene(Define.Scene.PokemonList);
-                    }
+                    State = PokemonSummarySceneState.MOVING_SCENE;
                 }
                 break;
             case PokemonSummarySceneState.EXCHANGE_CANCELED_SCRIPTING:
                 {
                     _enterEffect.PlayEffect("FadeOut");
 
-                    _sceneState = PokemonSummarySceneState.MOVING_TO_POKEMON_SCENE;
-                    ActiveUIBySceneState(_sceneState);
+                    C_EnterPokemonExchangeScene enterExchangeScene = new C_EnterPokemonExchangeScene();
+                    enterExchangeScene.PlayerId = Managers.Object.PlayerInfo.ObjectInfo.ObjectId;
+
+                    Managers.Network.SavePacket(enterExchangeScene);
+
+                    State = PokemonSummarySceneState.MOVING_SCENE;
                 }
                 break;
-            case PokemonSummarySceneState.EXIT_EXCHANGE_SCRIPTING:
+            case PokemonSummarySceneState.MOVING_SCENE:
                 {
-                    _enterEffect.PlayEffect("FadeOut");
-
-                    _sceneState = PokemonSummarySceneState.MOVING_TO_GAME_SCENE;
+                    if (Managers.Network.Packet is C_ReturnGame)
+                        Managers.Scene.LoadScene(Define.Scene.Game);
+                    else if (Managers.Network.Packet is C_EnterPokemonExchangeScene)
+                        Managers.Scene.LoadScene(Define.Scene.PokemonExchange);
+                    else if (Managers.Network.Packet is C_EnterPokemonListScene)
+                        Managers.Scene.LoadScene(Define.Scene.PokemonList);
                 }
                 break;
-            case PokemonSummarySceneState.MOVING_TO_GAME_SCENE:
-                {
-                    C_ReturnGame returnGamePacket = new C_ReturnGame();
-                    returnGamePacket.PlayerId = Managers.Object.PlayerInfo.ObjectInfo.ObjectId;
-
-                    Managers.Network.SavePacket(returnGamePacket);
-
-                    // 씬 변경
-                    // Managers.Scene.LoadScene(Define.Scene.Game);
-                }
-                break;
-        }
-    }
-
-    void ActiveUIBySceneState(PokemonSummarySceneState state)
-    {
-        if (_sceneState == PokemonSummarySceneState.WAITING_INPUT)
-        {
-            _slider.SliderState = SliderState.WAITING_INPUT;
         }
     }
 

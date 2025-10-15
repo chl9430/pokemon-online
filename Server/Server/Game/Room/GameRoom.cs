@@ -52,25 +52,29 @@ namespace Server
                 return;
 
             GameObjectType type = ObjectManager.GetObjectTypeById(gameObject.Id);
+            bool isNew = false;
 
             if (type == GameObjectType.Player)
             {
                 Player player = gameObject as Player;
 
                 if (_objs.ContainsKey(GameObjectType.Player) == false)
-                {
                     _objs.Add(GameObjectType.Player, new Dictionary<int, GameObject>());
+
+                if (_objs[GameObjectType.Player].ContainsKey(gameObject.Id) == false)
+                {
                     _objs[GameObjectType.Player].Add(gameObject.Id, player);
+                    isNew = true;
                 }
 
-                player.PosInfo.State = CreatureState.Idle;
                 player.Room = this;
 
                 Vector2Int playerInitPos = new Vector2Int(player.CellPos.x, player.CellPos.y);
 
                 Map.ApplyMove(player, playerInitPos);
 
-                if (player.PosInfo.State != CreatureState.WatchMenu && player.PosInfo.State != CreatureState.Exchanging)
+                // 테스트 환경에서 게임 룸에 없는 경우 패킷 전송 불필요
+                if (IsActiveInGaemRoom(player))
                 {
                     // 본인한테 정보 전송
                     S_EnterRoom enterPacket = new S_EnterRoom();
@@ -123,11 +127,14 @@ namespace Server
             {
                 Player player = gameObject as Player;
 
-                // 타인한테 본인 정보 전송
-                S_Spawn spawnPacket = new S_Spawn();
-                spawnPacket.Players.Add(player.MakePlayerInfo());
+                if (IsActiveInGaemRoom(player) && isNew)
+                {
+                    // 타인한테 본인 정보 전송
+                    S_Spawn spawnPacket = new S_Spawn();
+                    spawnPacket.Players.Add(player.MakePlayerInfo());
 
-                Broadcast(player, spawnPacket);
+                    Broadcast(player, spawnPacket);
+                }
             }
         }
 
@@ -267,14 +274,33 @@ namespace Server
             Broadcast(player, resMovePacket);
         }
 
-        public void Broadcast(Player player, IMessage packet)
+        public void Broadcast(Player myPlayer, IMessage packet)
         {
-            foreach (Player p in _objs[GameObjectType.Player].Values)
+            foreach (Player player in _objs[GameObjectType.Player].Values)
             {
-                // 게임 맵에 있지 않은 플레이어들에겐 브로드캐스트를 할 필요가 없다.
-                if (p.Id != player.Id && p.Info.PosInfo.State != CreatureState.Fight && p.Info.PosInfo.State != CreatureState.Exchanging)
-                    p.Session.Send(packet);
+                if (player.Id != myPlayer.Id)
+                {
+                    if (IsActiveInGaemRoom(player))
+                    {
+                        player.Session.Send(packet);
+                    }
+                }
             }
+        }
+
+        bool IsActiveInGaemRoom(Player player)
+        {
+            // 게임 맵에 있지 않은 플레이어들에겐 브로드캐스트를 할 필요가 없다.
+            if (player.Info.PosInfo.State == CreatureState.Shopping ||
+                player.Info.PosInfo.State == CreatureState.WatchMenu ||
+                player.Info.PosInfo.State == CreatureState.Fight ||
+                player.Info.PosInfo.State == CreatureState.Exchanging ||
+                player.Info.PosInfo.State == CreatureState.PokemonEvolving)
+            {
+                return false;
+            }
+            else
+                return true;
         }
     }
 }

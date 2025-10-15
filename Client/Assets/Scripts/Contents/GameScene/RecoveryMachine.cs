@@ -40,6 +40,7 @@ public class RecoveryMachine : MonoBehaviour
 
         if (_ballAnimFinishCount == _monsterBallInsts.Count)
         {
+            _ballAnimFinishCount = 0;
             return true;
         }
         else

@@ -145,14 +145,6 @@ public class CategorySlider : MonoBehaviour
                 category.MoveContent(5f, _dir);
             }
         }
-        else if (Input.GetKeyDown(KeyCode.D))
-        {
-            _scene.DoNextAction(Define.InputSelectBoxEvent.SELECT);
-        }
-        else if (Input.GetKeyDown(KeyCode.S))
-        {
-            _scene.DoNextAction(Define.InputSelectBoxEvent.BACK);
-        }
     }
 
     public void CountContentMoving()

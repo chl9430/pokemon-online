@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using static UnityEditor.Progress;
 
 public enum FriendlyShopContentsState
 {
@@ -35,6 +34,11 @@ public class FriendlyShopContents : ObjectContents
     [SerializeField] GameObject _shopUIZone;
     [SerializeField] GameObject _inBagCountBox;
     [SerializeField] CountingBox _countingBox;
+    [SerializeField] TextMeshProUGUI _countingText;
+    [SerializeField] TextMeshProUGUI _totalPrice;
+    [SerializeField] GameObject _moneyTextBox;
+    [SerializeField] TextMeshProUGUI _moneyText;
+
     FriendlyShopContentsState _state = FriendlyShopContentsState.NONE;
 
     List<Item> _shopItems;
@@ -91,6 +95,8 @@ public class FriendlyShopContents : ObjectContents
 
                 _countingBox.State = CountingBoxState.NONE;
                 _countingBox.gameObject.SetActive(false);
+
+                _moneyTextBox.gameObject.SetActive(false);
             }
             else if (_state == FriendlyShopContentsState.ASKING_QUANTITY)
             {
@@ -116,6 +122,8 @@ public class FriendlyShopContents : ObjectContents
 
                 _countingBox.State = CountingBoxState.SELECTING;
                 _countingBox.gameObject.SetActive(true);
+
+                _moneyTextBox.gameObject.SetActive(true);
             }
             else if (_state == FriendlyShopContentsState.ASKING_TO_BUY)
             {
@@ -274,9 +282,12 @@ public class FriendlyShopContents : ObjectContents
         else if (_packet is S_BuyItem)
         {
             bool isBuy = (_packet as S_BuyItem).IsBuy;
+            int money = (_packet as S_BuyItem).Money;
 
             if (isBuy)
             {
+                _moneyText.text = "$ " + money.ToString();
+
                 State = FriendlyShopContentsState.SUCCESS_BUY_SCRIPTING;
 
                 List<string> scripts = new List<string>()
@@ -497,9 +508,14 @@ public class FriendlyShopContents : ObjectContents
                     if (_packet is S_GetItemCount)
                     {
                         int itemCount = (_packet as S_GetItemCount).ItemCount;
+                        int money = (_packet as S_GetItemCount).Money;
+
+                        _moneyText.text = "$ " + money.ToString();
 
                         TextMeshProUGUI inBagCountText = Util.FindChild<TextMeshProUGUI>(_inBagCountBox);
                         inBagCountText.text = $"In Bag : {itemCount}";
+
+                        _countingBox.SetMaxValue(999);
 
                         State = FriendlyShopContentsState.SELECTING_QUANTITY;
                     }
@@ -507,6 +523,11 @@ public class FriendlyShopContents : ObjectContents
                 break;
             case FriendlyShopContentsState.SELECTING_QUANTITY:
                 {
+                    Item selectedItem = _shopListBox.GetScrollBoxContent() as Item;
+                    int quantity = _countingBox.GetCurrentCount();
+
+                    int totalPrice = selectedItem.ItemPrice * quantity;
+
                     if (value is Define.InputSelectBoxEvent)
                     {
                         Define.InputSelectBoxEvent inputEvent = (Define.InputSelectBoxEvent)value;
@@ -517,9 +538,6 @@ public class FriendlyShopContents : ObjectContents
                         }
                         else if (inputEvent == Define.InputSelectBoxEvent.SELECT)
                         {
-                            Item selectedItem = _shopListBox.GetScrollBoxContent() as Item;
-                            int quantity = _countingBox.GetCurrentCount();
-
                             State = FriendlyShopContentsState.ASKING_TO_BUY;
 
                             List<string> scripts = new List<string>()
@@ -528,6 +546,11 @@ public class FriendlyShopContents : ObjectContents
                             };
                             _scriptBox.BeginScriptTyping(scripts, true);
                         }
+                    }
+                    else
+                    {
+                        _countingText.text = $"¡¿{quantity}";
+                        _totalPrice.text = $"${totalPrice.ToString()}";
                     }
                 }
                 break;

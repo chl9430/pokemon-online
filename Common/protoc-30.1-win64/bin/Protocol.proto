@@ -214,6 +214,7 @@ message C_GetItemCount
 message S_GetItemCount
 {
     int32 itemCount = 1;
+    int32 money = 2;
 }
 
 message C_BuyItem
@@ -226,6 +227,7 @@ message C_BuyItem
 message S_BuyItem
 {
     bool isBuy = 1;
+    int32 money = 2;
 }
 
 message C_SellItem

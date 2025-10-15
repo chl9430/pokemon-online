@@ -335,7 +335,7 @@ public class PokemonListScene : BaseScene
                     Managers.Network.SavePacket(returnGamePacket);
 
                     // ¾À º¯°æ
-                    // Managers.Scene.LoadScene(Define.Scene.Game);
+                    Managers.Scene.LoadScene(Define.Scene.Game);
                 }
                 break;
             case PokemonListSceneState.MOVING_TO_SUMMARY_SCENE:

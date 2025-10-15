@@ -35,8 +35,6 @@ public class BagScene : BaseScene
     [SerializeField] CategorySlider _categorySlider;
     [SerializeField] SlideAndScrollBox _scrollBox;
     [SerializeField] List<Image> _sliderIndicatorImgs;
-    [SerializeField] Image _scrollUpArrow;
-    [SerializeField] Image _scrollDownArrow;
     [SerializeField] GridLayoutSelectBox _gridSelectBox;
     [SerializeField] Image _itemImg;
     [SerializeField] TextMeshProUGUI _itemDescription;
@@ -60,6 +58,9 @@ public class BagScene : BaseScene
             if (_sceneState == BagSceneState.SCROLL_BOX_READY)
             {
                 _scrollBox.State = SlideAndScrollBoxState.SELECTING;
+
+                _gridSelectBox.UIState = GridLayoutSelectBoxState.NONE;
+                _gridSelectBox.gameObject.SetActive(false);
 
                 _scriptBox.gameObject.SetActive(false);
                 _scriptBox.HideSelectBox();
@@ -216,18 +217,6 @@ public class BagScene : BaseScene
                 }
             }
 
-            // 스크롤 상,하 화살표 표시
-            if (_bag[0].Count > _scrollBox.ScrollBoxMaxView)
-            {
-                _scrollUpArrow.gameObject.SetActive(false);
-                _scrollDownArrow.gameObject.SetActive(true);
-            }
-            else
-            {
-                _scrollUpArrow.gameObject.SetActive(false);
-                _scrollDownArrow.gameObject.SetActive(false);
-            }
-
             _sceneState = BagSceneState.NONE;
         }
         else if (_packet is S_SellItem)
@@ -343,43 +332,12 @@ public class BagScene : BaseScene
                             _itemDescription.text = "";
                         }
 
-                        // 스크롤 상, 하 화살표 표시
-                        if (_bag[(ItemCategory)value].Count > _scrollBox.ScrollBoxMaxView)
-                        {
-                            _scrollUpArrow.gameObject.SetActive(false);
-                            _scrollDownArrow.gameObject.SetActive(true);
-                        }
-                        else
-                        {
-                            _scrollUpArrow.gameObject.SetActive(false);
-                            _scrollDownArrow.gameObject.SetActive(false);
-                        }
+                        _scrollBox.ShowUpAndDownArrows();
 
                         State = BagSceneState.SCROLL_BOX_READY;
                     }
                     else if (value is Item)
                     {
-                        List<DynamicButton> btns = _scrollBox.ChangeBtnGridDataToList();
-                        int scrollcnt = _scrollBox.ScrollCnt;
-                        int maxview = _scrollBox.ScrollBoxMaxView;
-
-                        // 아이템 리스트 칸 상, 하 화살표 설정
-                        if (scrollcnt == 0)
-                        {
-                            _scrollUpArrow.gameObject.SetActive(false);
-                            _scrollDownArrow.gameObject.SetActive(true);
-                        }
-                        else if (scrollcnt == btns.Count - maxview)
-                        {
-                            _scrollUpArrow.gameObject.SetActive(true);
-                            _scrollDownArrow.gameObject.SetActive(false);
-                        }
-                        else
-                        {
-                            _scrollUpArrow.gameObject.SetActive(true);
-                            _scrollDownArrow.gameObject.SetActive(true);
-                        }
-
                         // 선택된 아이템 이미지, 설명 표시
                         Texture2D image = ((Item)value).ItemImg;
 
@@ -432,7 +390,6 @@ public class BagScene : BaseScene
                         }
                         else if (inputEvent == Define.InputSelectBoxEvent.SELECT)
                         {
-                            Debug.Log(_playerInfo.ObjectInfo.PosInfo.State);
                             Item selectedItem = _scrollBox.GetScrollBoxContent() as Item;
 
                             if (selectedItem.ItemCategory == ItemCategory.PokeBall)
