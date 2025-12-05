@@ -205,6 +205,17 @@ namespace Server
             return resultIndex;
         }
 
+        public bool CanUseMove()
+        {
+            foreach (PokemonMove move in _pokemonMoves)
+            {
+                if (move.CurPP > 0)
+                    return true;
+            }
+
+            return false;
+        }
+
         public bool UseMove(int moveOrder)
         {
             PokemonMove move = moveOrder != -1 ? _pokemonMoves[moveOrder] : _noPPMove;
@@ -218,11 +229,6 @@ namespace Server
                 return false;
             else
                 return true;
-        }
-
-        public int FindMoveIndex(PokemonMove move)
-        {
-            return _pokemonMoves.IndexOf(move);
         }
 
         public void GetDamaged(int damage)

@@ -29,8 +29,6 @@ public class IntroScene : BaseScene
     int _selectedGenderBtnIdx;
     PlayableDirector _playableDirector;
     IntroSceneState _sceneState = IntroSceneState.NONE;
-
-    [SerializeField] ScriptBoxUI scriptBox;
     [SerializeField] InputBox _inputBox;
     [SerializeField] Button _inputEnterBtn;
     [SerializeField] SelectArea _genderSelectArea;
@@ -57,7 +55,7 @@ public class IntroScene : BaseScene
         }
         // _genderSelectArea.FillButtonGrid(1, _genderSelectBtns.Count, _genderSelectBtns);
 
-        _enterEffect.PlayEffect("FadeIn");
+        ContentManager.Instance.PlayScreenEffecter("BlackFadeIn");
     }
 
     public override void DoNextAction(object value = null)
@@ -78,7 +76,7 @@ public class IntroScene : BaseScene
                         "What is your name?",
                     };
 
-                    scriptBox.BeginScriptTyping(scripts);
+                    ContentManager.Instance.ScriptBox.BeginScriptTyping(scripts);
                 }
                 break;
             case IntroSceneState.INTRO_TALKING:
@@ -131,7 +129,7 @@ public class IntroScene : BaseScene
                         "Are you man or woman?",
                     };
 
-                    scriptBox.BeginScriptTyping(scripts);
+                    ContentManager.Instance.ScriptBox.BeginScriptTyping(scripts);
                 }
                 break;
             case IntroSceneState.ASKING_GENDER:
@@ -187,7 +185,7 @@ public class IntroScene : BaseScene
                         "See you soon! I hope you will have a paid-off travel!"
                     };
 
-                    scriptBox.BeginScriptTyping(scripts);
+                    ContentManager.Instance.ScriptBox.BeginScriptTyping(scripts);
 
                     _sceneState = IntroSceneState.LAST_TALKING;
                     ActiveUIBySceneState(_sceneState);
@@ -201,7 +199,7 @@ public class IntroScene : BaseScene
 
                     Managers.Network.SavePacket(createPacket);
 
-                    _enterEffect.PlayEffect("FadeOut");
+                    ContentManager.Instance.PlayScreenEffecter("BlackFadeOut");
 
                     _sceneState = IntroSceneState.MOVING_TO_GAME_SCENE;
                     ActiveUIBySceneState(_sceneState);
@@ -220,7 +218,7 @@ public class IntroScene : BaseScene
     {
         if (state == IntroSceneState.INTRO_TALKING)
         {
-            scriptBox.gameObject.SetActive(true);
+            ContentManager.Instance.ScriptBox.gameObject.SetActive(true);
         }
 
         if (state == IntroSceneState.SHOWING_NAME_UI)

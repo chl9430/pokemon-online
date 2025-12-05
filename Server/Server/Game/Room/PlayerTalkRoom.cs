@@ -13,6 +13,7 @@ namespace Server
         Player _talkReceiver;
 
         PokemonExchangeRoom _exchangeRoom;
+        PokemonBattleRoom _battleRoom;
 
         public PlayerTalkRoom(Player talkSender, Player talkReceiver)
         {
@@ -48,6 +49,29 @@ namespace Server
             else
             {
                 _exchangeRoom.Push(_exchangeRoom.EnterRoom, myPlayer);
+            }
+        }
+
+        public void CreatePokemonBattleRoom(Player myPlayer)
+        {
+            lock (_lock)
+            {
+                if (_battleRoom == null)
+                {
+                    _battleRoom = RoomManager.Instance.AddBattleRoom(2);
+                    _battleRoom.TickRoom(50);
+                }
+            }
+
+            myPlayer.PokemonBattleRoom = _battleRoom;
+
+            if (myPlayer == _talkSender)
+            {
+                _battleRoom.Push(_battleRoom.EnterRoom, myPlayer);
+            }
+            else
+            {
+                _battleRoom.Push(_battleRoom.EnterRoom, myPlayer);
             }
         }
     }

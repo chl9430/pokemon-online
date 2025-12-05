@@ -18,7 +18,6 @@ public enum PokemonCenterContentState
 
 public class PokemonCenterContent : ObjectContents
 {
-    [SerializeField] ScriptBoxUI _scriptBox;
     [SerializeField] RecoveryMachine _recoveryMachine;
 
     PokemonCenterContentState _state = PokemonCenterContentState.NONE;
@@ -29,33 +28,28 @@ public class PokemonCenterContent : ObjectContents
         {
             _state = value;
 
-            if (_scene == null)
-            {
-                _scene = Managers.Scene.CurrentScene;
-            }
-
             if (_state == PokemonCenterContentState.GREETING_SCRIPTING)
             {
-                _scriptBox.gameObject.SetActive(true);
+                ContentManager.Instance.ScriptBox.gameObject.SetActive(true);
             }
             else if (_state == PokemonCenterContentState.SELECTING_ACTION)
             {
-                _scriptBox.gameObject.SetActive(true);
+                ContentManager.Instance.ScriptBox.gameObject.SetActive(true);
             }
             else if (_state == PokemonCenterContentState.GOOD_BYE_SCRIPTING)
             {
-                _scriptBox.gameObject.SetActive(true);
-                _scriptBox.HideSelectBox();
+                ContentManager.Instance.ScriptBox.gameObject.SetActive(true);
+                ContentManager.Instance.ScriptBox.HideSelectBox();
             }
             else if (_state == PokemonCenterContentState.TAKING_POKEMON_SCRIPTING)
             {
-                _scriptBox.gameObject.SetActive(true);
-                _scriptBox.HideSelectBox();
+                ContentManager.Instance.ScriptBox.gameObject.SetActive(true);
+                ContentManager.Instance.ScriptBox.HideSelectBox();
             }
             else if (_state == PokemonCenterContentState.NONE)
             {
-                _scriptBox.gameObject.SetActive(false);
-                _scriptBox.HideSelectBox();
+                ContentManager.Instance.ScriptBox.gameObject.SetActive(false);
+                ContentManager.Instance.ScriptBox.HideSelectBox();
             }
         }
     }
@@ -67,12 +61,8 @@ public class PokemonCenterContent : ObjectContents
 
         if (_packet is S_GetNpcTalk)
         {
-            if (_scene == null)
-            {
-                _scene = Managers.Scene.CurrentScene;
-            }
-
-            _scene.MyPlayer.State = CreatureState.Shopping;
+            Managers.Object.MyPlayerController.State = CreatureState.Shopping;
+            Managers.Object.MyPlayerController.IsLoading = false;
             State = PokemonCenterContentState.GREETING_SCRIPTING;
 
             List<string> scripts = new List<string>()
@@ -81,7 +71,7 @@ public class PokemonCenterContent : ObjectContents
                 "We restore your tired Pokemon to full health.",
                 "Would you like to rest your Pokemon?",
             };
-            _scriptBox.BeginScriptTyping(scripts);
+            ContentManager.Instance.ScriptBox.BeginScriptTyping(scripts);
 
             _recoveryMachine = FindFirstObjectByType<RecoveryMachine>();
         }
@@ -107,7 +97,7 @@ public class PokemonCenterContent : ObjectContents
                         "Yes",
                         "No"
                     };
-                    _scriptBox.CreateSelectBox(btns, btns.Count, 1, 400, 100);
+                    ContentManager.Instance.ScriptBox.CreateSelectBox(btns, 1, 400, 100);
                 }
                 break;
             case PokemonCenterContentState.SELECTING_ACTION:
@@ -118,7 +108,7 @@ public class PokemonCenterContent : ObjectContents
 
                         if (inputEvent == Define.InputSelectBoxEvent.SELECT)
                         {
-                            GridLayoutSelectBox selectBox = _scriptBox.ScriptSelectBox;
+                            GridLayoutSelectBox selectBox = ContentManager.Instance.ScriptBox.ScriptSelectBox;
 
                             if (selectBox.GetSelectedBtnData() as string == "Yes")
                             {
@@ -128,7 +118,7 @@ public class PokemonCenterContent : ObjectContents
                                 {
                                     "Okay, I will take your Pokemon for a few seconds.",
                                 };
-                                _scriptBox.BeginScriptTyping(scripts);
+                                ContentManager.Instance.ScriptBox.BeginScriptTyping(scripts);
                             }
                             else if (selectBox.GetSelectedBtnData() as string == "No")
                             {
@@ -136,7 +126,7 @@ public class PokemonCenterContent : ObjectContents
                                 {
                                     "We hope to see you again!"
                                 };
-                                _scriptBox.BeginScriptTyping(scrtips);
+                                ContentManager.Instance.ScriptBox.BeginScriptTyping(scrtips);
                                 State = PokemonCenterContentState.GOOD_BYE_SCRIPTING;
                             }
                         }
@@ -146,7 +136,7 @@ public class PokemonCenterContent : ObjectContents
                             {
                                 "We hope to see you again!"
                             };
-                            _scriptBox.BeginScriptTyping(scrtips);
+                            ContentManager.Instance.ScriptBox.BeginScriptTyping(scrtips);
                             State = PokemonCenterContentState.GOOD_BYE_SCRIPTING;
                         }
                     }
@@ -159,22 +149,18 @@ public class PokemonCenterContent : ObjectContents
                         _isLoading = true;
 
                         C_FinishNpcTalk finishTalk = new C_FinishNpcTalk();
-                        finishTalk.PlayerId = _scene.MyPlayer.Id;
+                        finishTalk.PlayerId = Managers.Object.MyPlayerController.Id;
 
                         Managers.Network.Send(finishTalk);
                     }
 
-                    State = PokemonCenterContentState.NONE;
-
-                    ((GameScene)_scene).FinishContents();
-
-                    _scene.MyPlayer.State = CreatureState.Idle;
+                    FinishContent();
                 }
                 break;
             case PokemonCenterContentState.TAKING_POKEMON_SCRIPTING:
                 {
                     Animator anim = GetComponent<Animator>();
-                    anim.Play("Nurse_Left");
+                    anim.Play("IDLE_LEFT");
 
                     State = PokemonCenterContentState.NURSE_TURNING_LEFT;
                 }
@@ -186,7 +172,7 @@ public class PokemonCenterContent : ObjectContents
                         _isLoading = true;
 
                         C_RestorePokemon restorePacket = new C_RestorePokemon();
-                        restorePacket.PlayerId = _scene.MyPlayer.Id;
+                        restorePacket.PlayerId = Managers.Object.MyPlayerController.Id;
 
                         Managers.Network.Send(restorePacket);
                     }
@@ -201,14 +187,14 @@ public class PokemonCenterContent : ObjectContents
                         _recoveryMachine.DestroyMachineBall();
 
                         Animator anim = GetComponent<Animator>();
-                        anim.Play("Nurse_Default");
+                        anim.Play("IDLE_DOWN");
 
                         List<string> scripts = new List<string>()
                         {
                             "Thank you for waiting.",
                             "We have restored your Pokemon to full health."
                         };
-                        _scriptBox.BeginScriptTyping(scripts);
+                        ContentManager.Instance.ScriptBox.BeginScriptTyping(scripts);
                     }
                 }
                 break;
@@ -228,9 +214,18 @@ public class PokemonCenterContent : ObjectContents
                     {
                         "We hope to see you again!"
                     };
-                    _scriptBox.BeginScriptTyping(scrtips);
+                    ContentManager.Instance.ScriptBox.BeginScriptTyping(scrtips);
                 }
                 break;
         }
+    }
+
+    public override void FinishContent()
+    {
+        State = PokemonCenterContentState.NONE;
+
+        Managers.Scene.CurrentScene.FinishContents();
+
+        Managers.Object.MyPlayerController.State = CreatureState.Idle;
     }
 }

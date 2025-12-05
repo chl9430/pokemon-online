@@ -1,13 +1,19 @@
 using Google.Protobuf;
+using Google.Protobuf.Protocol;
 using UnityEngine;
 
 public class ObjectContents : MonoBehaviour
 {
     protected bool _isLoading;
-    protected BaseScene _scene;
+    protected bool _isActionStop = false;
     protected IMessage _packet;
 
     public IMessage Packet { set { _packet = value; } }
+
+    public void SetIsActionStop(bool isActionStop)
+    {
+        _isActionStop = isActionStop;
+    }
 
     public virtual void UpdateData(IMessage packet)
     {
@@ -15,6 +21,16 @@ public class ObjectContents : MonoBehaviour
     }
 
     public virtual void SetNextAction(object value = null)
+    {
+
+    }
+
+    public virtual void FinishContent()
+    {
+
+    }
+
+    public virtual void InactiveContent()
     {
 
     }

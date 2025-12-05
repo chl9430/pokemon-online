@@ -1,5 +1,7 @@
 using Google.Protobuf;
 using Google.Protobuf.Protocol;
+using NUnit.Framework;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
@@ -7,22 +9,111 @@ public class MyPlayerController : PlayerController
 {
     bool _isLoading = false;
     float moveTimerLimit = 0.15f;
-    BaseScene _scene;
+    int _money;
+    List<Pokemon> _myPokemons = new List<Pokemon>();
+    Dictionary<ItemCategory, List<Item>> _items = new Dictionary<ItemCategory, List<Item>>();
+    CreatureController _npc;
     IMessage _packet;
 
-    public bool IsLoading {  set  { _isLoading = value; } }
+    public bool IsLoading { set { _isLoading = value; } }
+    public int Money { get { return _money; } }
+    public List<Pokemon> MyPokemons { set { _myPokemons = value; } get { return _myPokemons; } }
+    public Dictionary<ItemCategory, List<Item>> Items { set { _items = value; } get { return _items; } }
+    public CreatureController NPC { get  { return _npc; } set { _npc = value; } }
 
     public IMessage Packet { set  { _packet = value; } }
 
-    void Awake()
+    public void SetMyPlayerInfo(PlayerInfo playerInfo)
     {
+        name = $"{playerInfo.PlayerName}_{playerInfo.ObjectInfo.ObjectId}";
+
+        _name = playerInfo.PlayerName;
+        _gender = playerInfo.PlayerGender;
+
+        _money = playerInfo.Money;
+
+        if (playerInfo.NpcInfo != null)
+        {
+            CreatureController npc = Managers.Object.FindById(playerInfo.NpcInfo.ObjectInfo.ObjectId).GetComponent<CreatureController>();
+            _npc = npc;
+        }
+
+        // 포켓몬 채우기
+        foreach (PokemonSummary pokemonSum in playerInfo.PokemonSums)
+            _myPokemons.Add(new Pokemon(pokemonSum));
+
+        // 아이템 채우기
+        foreach (var pair in playerInfo.Inventory)
+        {
+            ItemCategory itemCategory = (ItemCategory)pair.Key;
+            _items[itemCategory] = new List<Item>();
+
+            List<ItemSummary> categoryItems = new List<ItemSummary>(pair.Value.CategoryItemSums);
+
+            foreach (ItemSummary itemSum in categoryItems)
+            {
+                _items[itemCategory].Add(new Item(itemSum));
+            }
+        }
+    }
+
+    public void AddPokemon(Pokemon pokemon)
+    {
+        _myPokemons.Add(pokemon);
+    }
+
+    public void SwitchPokemon(int from, int to)
+    {
+        Pokemon pokemon = _myPokemons[from];
+        _myPokemons[from] = _myPokemons[to];
+        _myPokemons[to] = pokemon;
+    }
+
+    public void ChangeMoney(int mmoney)
+    {
+        _money = mmoney;
+    }
+
+    public void AddItem(IMessage packet, Item newItem)
+    {
+        S_BuyItem buyPacket = packet as S_BuyItem;
+        bool createNewIdx = buyPacket.CreateNewIdx;
+        int newItemCnt = buyPacket.NewItemCnt;
+        int foundItemIdx = buyPacket.FoundItemIdx;
+        int foundItemCnt = buyPacket.FoundItemCnt;
+
+        ItemCategory itemCategory = newItem.ItemCategory;
+
+        List<Item> categoryItems = _items[itemCategory];
+
+        if (foundItemIdx != -1)
+        {
+            if (createNewIdx)
+            {
+                categoryItems[foundItemIdx].ItemCnt = foundItemCnt;
+                //ContentManager.Instance.BagContent.UpdateItemInIndex(foundItemIdx);
+
+                newItem.ItemCnt = newItemCnt;
+                categoryItems.Add(newItem);
+                //ContentManager.Instance.BagContent.AddNewItem(newItem);
+            }
+            else
+            {
+                categoryItems[foundItemIdx].ItemCnt = foundItemCnt;
+                //ContentManager.Instance.BagContent.UpdateItemInIndex(foundItemIdx);
+            }
+        }
+        else
+        {
+            newItem.ItemCnt = newItemCnt;
+            categoryItems.Add(newItem);
+            //ContentManager.Instance.BagContent.AddNewItem(newItem);
+        }
     }
 
     protected override void Start()
     {
         base.Start();
-
-        _scene = Managers.Scene.CurrentScene;
     }
 
     protected override void Init()
@@ -45,14 +136,11 @@ public class MyPlayerController : PlayerController
             case CreatureState.Idle:
                 ChangeDir();
                 ChangeToWalk();
-                ToggleMenu(true);
+                ToggleMenu();
                 BeginTalk();
                 break;
             case CreatureState.Walk:
                 MoveToNextPos();
-                break;
-            case CreatureState.WatchMenu:
-                ToggleMenu(false);
                 break;
             case CreatureState.Fight:
                 break;
@@ -60,7 +148,10 @@ public class MyPlayerController : PlayerController
                 break;
         }
 
-        CheckUpdatedFlag();
+        if (State != CreatureState.NoneState)
+        {
+            CheckUpdatedFlag();
+        }
     }
 
     void ChangeDir()
@@ -78,7 +169,7 @@ public class MyPlayerController : PlayerController
                     {
                         State = CreatureState.NoneState;
 
-                        ((GameScene)_scene).SaveEnterScenePacket();
+                        ((GameScene)Managers.Scene.CurrentScene).SaveEnterScenePacket();
                     }
                     else
                     {
@@ -104,7 +195,7 @@ public class MyPlayerController : PlayerController
                     {
                         State = CreatureState.NoneState;
 
-                        ((GameScene)_scene).SaveEnterScenePacket();
+                        ((GameScene)Managers.Scene.CurrentScene).SaveEnterScenePacket();
                     }
                 }
             }
@@ -122,7 +213,7 @@ public class MyPlayerController : PlayerController
                     {
                         State = CreatureState.NoneState;
 
-                        ((GameScene)_scene).SaveEnterScenePacket();
+                        ((GameScene)Managers.Scene.CurrentScene).SaveEnterScenePacket();
                     }
                 }
                 else
@@ -144,7 +235,7 @@ public class MyPlayerController : PlayerController
                     {
                         State = CreatureState.NoneState;
 
-                        ((GameScene)_scene).SaveEnterScenePacket();
+                        ((GameScene)Managers.Scene.CurrentScene).SaveEnterScenePacket();
                     }
                 }
             }
@@ -162,7 +253,7 @@ public class MyPlayerController : PlayerController
                     {
                         State = CreatureState.NoneState;
 
-                        ((GameScene)_scene).SaveEnterScenePacket();
+                        ((GameScene)Managers.Scene.CurrentScene).SaveEnterScenePacket();
                     }
                 }
                 else
@@ -184,7 +275,7 @@ public class MyPlayerController : PlayerController
                     {
                         State = CreatureState.NoneState;
 
-                        ((GameScene)_scene).SaveEnterScenePacket();
+                        ((GameScene)Managers.Scene.CurrentScene).SaveEnterScenePacket();
                     }
                 }
             }
@@ -202,7 +293,7 @@ public class MyPlayerController : PlayerController
                     {
                         State = CreatureState.NoneState;
 
-                        ((GameScene)_scene).SaveEnterScenePacket();
+                        ((GameScene)Managers.Scene.CurrentScene).SaveEnterScenePacket();
                     }
                 }
                 else
@@ -224,7 +315,7 @@ public class MyPlayerController : PlayerController
                     {
                         State = CreatureState.NoneState;
 
-                        ((GameScene)_scene).SaveEnterScenePacket();
+                        ((GameScene)Managers.Scene.CurrentScene).SaveEnterScenePacket();
                     }
                 }
             }
@@ -290,22 +381,13 @@ public class MyPlayerController : PlayerController
         }
     }
 
-    void ToggleMenu(bool toggle)
+    void ToggleMenu()
     {
         if (Input.GetKeyDown(KeyCode.Space))
         {
-            if (toggle)
-            {
-                State = CreatureState.WatchMenu;
+            State = CreatureState.WatchMenu;
 
-                _scene.DoNextAction(State);
-            }
-            else
-            {
-                State = CreatureState.Idle;
-
-                _scene.DoNextAction(State);
-            }
+            Managers.Scene.CurrentScene.DoNextAction(State);
         }
     }
 
@@ -313,15 +395,40 @@ public class MyPlayerController : PlayerController
     {
         if (Input.GetKeyDown(KeyCode.D))
         {
-            if (!_isLoading)
+            Vector3Int destPos = CellPos;
+
+            switch (Dir)
             {
-                _isLoading = true;
+                case MoveDir.Up:
+                    destPos += Vector3Int.up;
+                    break;
+                case MoveDir.Down:
+                    destPos += Vector3Int.down;
+                    break;
+                case MoveDir.Left:
+                    destPos += Vector3Int.left;
+                    break;
+                case MoveDir.Right:
+                    destPos += Vector3Int.right;
+                    break;
+            }
 
-                C_RequestDataById c_RequestDataPacket = new C_RequestDataById();
-                c_RequestDataPacket.PlayerId = Id;
-                c_RequestDataPacket.RequestType = RequestType.CheckObjectInMap;
+            GameObject obj = Managers.Object.FindCreature(destPos);
 
-                Managers.Network.Send(c_RequestDataPacket);
+            if (obj != null)
+            {
+                Managers.Scene.CurrentScene.ContentStack.Push(obj.GetComponent<ObjectContents>());
+
+                if (!_isLoading)
+                {
+                    _isLoading = true;
+
+                    C_RequestDataById c_RequestDataPacket = new C_RequestDataById();
+                    c_RequestDataPacket.PlayerId = Id;
+                    c_RequestDataPacket.RequestType = RequestType.CheckObjectInMap;
+
+                    Managers.Network.Send(c_RequestDataPacket);
+                }
             }
         }
     }
@@ -351,7 +458,7 @@ public class MyPlayerController : PlayerController
             moveTimer = 0f;
             transform.position = destPos;
 
-            if (((GameScene)_scene).DidMeetWildPokemon() == false)
+            if (((GameScene)Managers.Scene.CurrentScene).DidMeetWildPokemon() == false)
             {
                 if (Input.GetKey(KeyCode.UpArrow))
                 {
@@ -366,7 +473,7 @@ public class MyPlayerController : PlayerController
                             {
                                 State = CreatureState.NoneState;
 
-                                ((GameScene)_scene).SaveEnterScenePacket();
+                                ((GameScene)Managers.Scene.CurrentScene).SaveEnterScenePacket();
                             }
                             else
                                 SetToNextPos();
@@ -390,7 +497,7 @@ public class MyPlayerController : PlayerController
                             {
                                 State = CreatureState.NoneState;
 
-                                ((GameScene)_scene).SaveEnterScenePacket();
+                                ((GameScene)Managers.Scene.CurrentScene).SaveEnterScenePacket();
                             }
                             else
                                 SetToNextPos();
@@ -415,7 +522,7 @@ public class MyPlayerController : PlayerController
                             {
                                 State = CreatureState.NoneState;
 
-                                ((GameScene)_scene).SaveEnterScenePacket();
+                                ((GameScene)Managers.Scene.CurrentScene).SaveEnterScenePacket();
                             }
                             else
                                 SetToNextPos();
@@ -439,7 +546,7 @@ public class MyPlayerController : PlayerController
                             {
                                 State = CreatureState.NoneState;
 
-                                ((GameScene)_scene).SaveEnterScenePacket();
+                                ((GameScene)Managers.Scene.CurrentScene).SaveEnterScenePacket();
                             }
                             else
                                 SetToNextPos();
@@ -464,7 +571,7 @@ public class MyPlayerController : PlayerController
                             {
                                 State = CreatureState.NoneState;
 
-                                ((GameScene)_scene).SaveEnterScenePacket();
+                                ((GameScene)Managers.Scene.CurrentScene).SaveEnterScenePacket();
                             }
                             else
                                 SetToNextPos();
@@ -488,7 +595,7 @@ public class MyPlayerController : PlayerController
                             {
                                 State = CreatureState.NoneState;
 
-                                ((GameScene)_scene).SaveEnterScenePacket();
+                                ((GameScene)Managers.Scene.CurrentScene).SaveEnterScenePacket();
                             }
                             else
                                 SetToNextPos();
@@ -513,7 +620,7 @@ public class MyPlayerController : PlayerController
                             {
                                 State = CreatureState.NoneState;
 
-                                ((GameScene)_scene).SaveEnterScenePacket();
+                                ((GameScene)Managers.Scene.CurrentScene).SaveEnterScenePacket();
                             }
                             else
                                 SetToNextPos();
@@ -537,7 +644,7 @@ public class MyPlayerController : PlayerController
                             {
                                 State = CreatureState.NoneState;
 
-                                ((GameScene)_scene).SaveEnterScenePacket();
+                                ((GameScene)Managers.Scene.CurrentScene).SaveEnterScenePacket();
                             }
                             else
                                 SetToNextPos();

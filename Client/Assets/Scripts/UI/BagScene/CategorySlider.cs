@@ -17,9 +17,8 @@ public class CategorySlider : MonoBehaviour
     int _dir;
     int _moveFinishCnt;
 
-    protected SliderState _sliderState = SliderState.NONE;
-    protected int _curIdx;
-    protected BaseScene _scene;
+    SliderState _sliderState = SliderState.NONE;
+    int _curIdx;
 
     [SerializeField] SliderContent _sliderContent;
     [SerializeField] List<SliderContent> _sliderContents;
@@ -41,10 +40,7 @@ public class CategorySlider : MonoBehaviour
 
             if (_sliderState == SliderState.WAITING_INPUT)
             {
-                if (_scene == null)
-                    _scene = Managers.Scene.CurrentScene;
-
-                _scene.DoNextAction(_sliderContents[_curIdx].ContentData);
+                Managers.Scene.CurrentScene.DoNextAction(_sliderContents[_curIdx].ContentData);
             }
         } 
     }
@@ -60,11 +56,6 @@ public class CategorySlider : MonoBehaviour
                 content.Slider = this;
             }
         }
-    }
-
-    void Start()
-    {
-        _scene = Managers.Scene.CurrentScene;
     }
 
     protected virtual void Update()
@@ -145,6 +136,14 @@ public class CategorySlider : MonoBehaviour
                 category.MoveContent(5f, _dir);
             }
         }
+        else if (Input.GetKeyDown(KeyCode.D))
+        {
+            Managers.Scene.CurrentScene.DoNextAction(Define.InputSelectBoxEvent.SELECT);
+        }
+        else if (Input.GetKeyDown(KeyCode.S))
+        {
+            Managers.Scene.CurrentScene.DoNextAction(Define.InputSelectBoxEvent.BACK);
+        }
     }
 
     public void CountContentMoving()
@@ -174,10 +173,17 @@ public class CategorySlider : MonoBehaviour
         }
     }
 
-    public void UpdateSliderContents(List<SliderContent> sliderContents)
+    public void ResetSliderContents()
     {
         _curIdx = 0;
-        _sliderContents = sliderContents;
+
+        for (int i = 0; i < _sliderContents.Count; i++)
+        {
+            RectTransform rt = _sliderContents[i].GetComponent<RectTransform>();
+
+            rt.anchorMin = new Vector2(i, 0);
+            rt.anchorMax = new Vector2(i + 1, 1);
+        }
     }
 
     public void CreateSlideContents(List<object> contents)

@@ -11,7 +11,6 @@ public enum EvolutionControllerState
 
 public class EvolutionController : MonoBehaviour
 {
-    BaseScene _scene;
     Sprite _prevPokemonImage;
     Sprite _evolvePokemonImage;
     Image _pokemonImage;
@@ -19,13 +18,6 @@ public class EvolutionController : MonoBehaviour
     EvolutionControllerState _controllerState;
 
     public EvolutionControllerState ControllerState {  set  { _controllerState = value; } }
-
-    void Start()
-    {
-        _scene = Managers.Scene.CurrentScene;
-        _pokemonImage = GetComponent<Image>();
-        _anim = GetComponent<Animator>();
-    }
 
     void Update()
     {
@@ -43,17 +35,15 @@ public class EvolutionController : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.S))
         {
-            _scene.DoNextAction(InputSelectBoxEvent.BACK);
+            Managers.Scene.CurrentScene.DoNextAction(InputSelectBoxEvent.BACK);
         }
-    }
-
-    public void PlayEvolutionAnim(string animName)
-    {
-        _anim.Play(animName);
     }
 
     public void SetPrevPokemonImage(string prevPokemonName)
     {
+        if (_pokemonImage == null)
+            _pokemonImage = Util.FindChild<Image>(gameObject);
+
         Texture2D texture = Managers.Resource.Load<Texture2D>($"Textures/Pokemon/{prevPokemonName}");
         _prevPokemonImage = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), Vector2.one * 0.5f);
 
@@ -79,8 +69,26 @@ public class EvolutionController : MonoBehaviour
         _pokemonImage.SetNativeSize();
     }
 
+    public void PokemonEvolution()
+    {
+        if (_anim == null)
+            _anim = GetComponent<Animator>();
+
+        _anim.Play("PokemonEvolution_Evolving");
+    }
+
+    public void EvolutionFadeOut()
+    {
+        _anim.Play("PokemonEvolution_WhiteFadeOut");
+    }
+
+    public void EvolutionFadeIn()
+    {
+        _anim.Play("PokemonEvolution_WhiteFadeIn");
+    }
+
     public void BroadcastToScene()
     {
-        _scene.DoNextAction();
+        Managers.Scene.CurrentScene.DoNextAction();
     }
 }

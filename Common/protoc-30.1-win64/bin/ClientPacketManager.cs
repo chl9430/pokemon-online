@@ -32,9 +32,6 @@ class PacketManager
         _onRecv.Add((ushort)MsgId.SLeaveRoom, MakePacket<S_LeaveRoom>);
         _handler.Add((ushort)MsgId.SLeaveRoom, PacketHandler.S_LeaveRoomHandler);
 
-        _onRecv.Add((ushort)MsgId.SEnterPokemonListScene, MakePacket<S_EnterPokemonListScene>);
-        _handler.Add((ushort)MsgId.SEnterPokemonListScene, PacketHandler.S_EnterPokemonListSceneHandler);
-
         _onRecv.Add((ushort)MsgId.SEnterPokemonBattleScene, MakePacket<S_EnterPokemonBattleScene>);
         _handler.Add((ushort)MsgId.SEnterPokemonBattleScene, PacketHandler.S_EnterPokemonBattleSceneHandler);
 
@@ -46,6 +43,9 @@ class PacketManager
 
         _onRecv.Add((ushort)MsgId.SGetNpcTalk, MakePacket<S_GetNpcTalk>);
         _handler.Add((ushort)MsgId.SGetNpcTalk, PacketHandler.S_GetNpcTalkHandler);
+
+        _onRecv.Add((ushort)MsgId.SGetTrainerTalk, MakePacket<S_GetTrainerTalk>);
+        _handler.Add((ushort)MsgId.SGetTrainerTalk, PacketHandler.S_GetTrainerTalkHandler);
 
         _onRecv.Add((ushort)MsgId.SShopItemList, MakePacket<S_ShopItemList>);
         _handler.Add((ushort)MsgId.SShopItemList, PacketHandler.S_ShopItemListHandler);
@@ -61,6 +61,24 @@ class PacketManager
 
         _onRecv.Add((ushort)MsgId.SRestorePokemon, MakePacket<S_RestorePokemon>);
         _handler.Add((ushort)MsgId.SRestorePokemon, PacketHandler.S_RestorePokemonHandler);
+
+        _onRecv.Add((ushort)MsgId.SUseItemInListScene, MakePacket<S_UseItemInListScene>);
+        _handler.Add((ushort)MsgId.SUseItemInListScene, PacketHandler.S_UseItemInListSceneHandler);
+
+        _onRecv.Add((ushort)MsgId.SEnterTrainerBattle, MakePacket<S_EnterTrainerBattle>);
+        _handler.Add((ushort)MsgId.SEnterTrainerBattle, PacketHandler.S_EnterTrainerBattleHandler);
+
+        _onRecv.Add((ushort)MsgId.SCheckAvailableMove, MakePacket<S_CheckAvailableMove>);
+        _handler.Add((ushort)MsgId.SCheckAvailableMove, PacketHandler.S_CheckAvailableMoveHandler);
+
+        _onRecv.Add((ushort)MsgId.SSendAction, MakePacket<S_SendAction>);
+        _handler.Add((ushort)MsgId.SSendAction, PacketHandler.S_SendActionHandler);
+
+        _onRecv.Add((ushort)MsgId.SCheckAvailablePokemon, MakePacket<S_CheckAvailablePokemon>);
+        _handler.Add((ushort)MsgId.SCheckAvailablePokemon, PacketHandler.S_CheckAvailablePokemonHandler);
+
+        _onRecv.Add((ushort)MsgId.SSurrenderTrainerBattle, MakePacket<S_SurrenderTrainerBattle>);
+        _handler.Add((ushort)MsgId.SSurrenderTrainerBattle, PacketHandler.S_SurrenderTrainerBattleHandler);
 
         _onRecv.Add((ushort)MsgId.SEnterPokemonExchangeScene, MakePacket<S_EnterPokemonExchangeScene>);
         _handler.Add((ushort)MsgId.SEnterPokemonExchangeScene, PacketHandler.S_EnterPokemonExchangeSceneHandler);
@@ -95,12 +113,6 @@ class PacketManager
         _onRecv.Add((ushort)MsgId.SAccessPokemonSummary, MakePacket<S_AccessPokemonSummary>);
         _handler.Add((ushort)MsgId.SAccessPokemonSummary, PacketHandler.S_AccessPokemonSummaryHandler);
 
-        _onRecv.Add((ushort)MsgId.SEnterPlayerBagScene, MakePacket<S_EnterPlayerBagScene>);
-        _handler.Add((ushort)MsgId.SEnterPlayerBagScene, PacketHandler.S_EnterPlayerBagSceneHandler);
-
-        _onRecv.Add((ushort)MsgId.SItemSceneToBattleScene, MakePacket<S_ItemSceneToBattleScene>);
-        _handler.Add((ushort)MsgId.SItemSceneToBattleScene, PacketHandler.S_ItemSceneToBattleSceneHandler);
-
         _onRecv.Add((ushort)MsgId.SProcessTurn, MakePacket<S_ProcessTurn>);
         _handler.Add((ushort)MsgId.SProcessTurn, PacketHandler.S_ProcessTurnHandler);
 
@@ -113,41 +125,32 @@ class PacketManager
         _onRecv.Add((ushort)MsgId.SCheckAndApplyRemainedExp, MakePacket<S_CheckAndApplyRemainedExp>);
         _handler.Add((ushort)MsgId.SCheckAndApplyRemainedExp, PacketHandler.S_CheckAndApplyRemainedExpHandler);
 
+        _onRecv.Add((ushort)MsgId.SForgetAndLearnNewMove, MakePacket<S_ForgetAndLearnNewMove>);
+        _handler.Add((ushort)MsgId.SForgetAndLearnNewMove, PacketHandler.S_ForgetAndLearnNewMoveHandler);
+
         _onRecv.Add((ushort)MsgId.SCheckAvailableBattlePokemon, MakePacket<S_CheckAvailableBattlePokemon>);
         _handler.Add((ushort)MsgId.SCheckAvailableBattlePokemon, PacketHandler.S_CheckAvailableBattlePokemonHandler);
 
-        _onRecv.Add((ushort)MsgId.SIsSuccessPokeBallCatch, MakePacket<S_IsSuccessPokeBallCatch>);
-        _handler.Add((ushort)MsgId.SIsSuccessPokeBallCatch, PacketHandler.S_IsSuccessPokeBallCatchHandler);
+        _onRecv.Add((ushort)MsgId.SSendOpponentNextPokemon, MakePacket<S_SendOpponentNextPokemon>);
+        _handler.Add((ushort)MsgId.SSendOpponentNextPokemon, PacketHandler.S_SendOpponentNextPokemonHandler);
 
         _onRecv.Add((ushort)MsgId.SEscapeFromWildPokemon, MakePacket<S_EscapeFromWildPokemon>);
         _handler.Add((ushort)MsgId.SEscapeFromWildPokemon, PacketHandler.S_EscapeFromWildPokemonHandler);
 
-        _onRecv.Add((ushort)MsgId.SCheckExpPokemon, MakePacket<S_CheckExpPokemon>);
-        _handler.Add((ushort)MsgId.SCheckExpPokemon, PacketHandler.S_CheckExpPokemonHandler);
-
         _onRecv.Add((ushort)MsgId.SCheckPokemonEvolution, MakePacket<S_CheckPokemonEvolution>);
         _handler.Add((ushort)MsgId.SCheckPokemonEvolution, PacketHandler.S_CheckPokemonEvolutionHandler);
 
-        _onRecv.Add((ushort)MsgId.SReturnPokemonBattleScene, MakePacket<S_ReturnPokemonBattleScene>);
-        _handler.Add((ushort)MsgId.SReturnPokemonBattleScene, PacketHandler.S_ReturnPokemonBattleSceneHandler);
+        _onRecv.Add((ushort)MsgId.SGetRewardInfo, MakePacket<S_GetRewardInfo>);
+        _handler.Add((ushort)MsgId.SGetRewardInfo, PacketHandler.S_GetRewardInfoHandler);
+
+        _onRecv.Add((ushort)MsgId.SReturnGame, MakePacket<S_ReturnGame>);
+        _handler.Add((ushort)MsgId.SReturnGame, PacketHandler.S_ReturnGameHandler);
 
         _onRecv.Add((ushort)MsgId.SSendTalkRequest, MakePacket<S_SendTalkRequest>);
         _handler.Add((ushort)MsgId.SSendTalkRequest, PacketHandler.S_SendTalkRequestHandler);
 
-        _onRecv.Add((ushort)MsgId.SEnterPokemonEvolutionScene, MakePacket<S_EnterPokemonEvolutionScene>);
-        _handler.Add((ushort)MsgId.SEnterPokemonEvolutionScene, PacketHandler.S_EnterPokemonEvolutionSceneHandler);
-
         _onRecv.Add((ushort)MsgId.SPokemonEvolution, MakePacket<S_PokemonEvolution>);
         _handler.Add((ushort)MsgId.SPokemonEvolution, PacketHandler.S_PokemonEvolutionHandler);
-
-        _onRecv.Add((ushort)MsgId.SEnterMoveSelectionScene, MakePacket<S_EnterMoveSelectionScene>);
-        _handler.Add((ushort)MsgId.SEnterMoveSelectionScene, PacketHandler.S_EnterMoveSelectionSceneHandler);
-
-        _onRecv.Add((ushort)MsgId.SMoveSceneToBattleScene, MakePacket<S_MoveSceneToBattleScene>);
-        _handler.Add((ushort)MsgId.SMoveSceneToBattleScene, PacketHandler.S_MoveSceneToBattleSceneHandler);
-
-        _onRecv.Add((ushort)MsgId.SMoveSceneToEvolveScene, MakePacket<S_MoveSceneToEvolveScene>);
-        _handler.Add((ushort)MsgId.SMoveSceneToEvolveScene, PacketHandler.S_MoveSceneToEvolveSceneHandler);
     }
 
     public void OnRecvPacket(PacketSession session, ArraySegment<byte> buffer)

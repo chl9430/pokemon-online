@@ -18,6 +18,8 @@ public class Pokemon
     Texture2D _pokemonIconImg;
     Texture2D _pokemonGenderImg;
     Texture2D _pokemonStatusImg;
+    Texture2D _type1Img;
+    Texture2D _type2Img;
 
     public List<PokemonMove> PokemonMoves
     {
@@ -32,7 +34,6 @@ public class Pokemon
         }
     }
 
-    public PokemonMove SelectedMove { set { _selectedMove = value; } get { return _selectedMove; } }
     public PokemonMove NoPPMove { get {  return _noPPMove; } }
     public PokemonInfo PokemonInfo { get { return _pokemonInfo; } set { _pokemonInfo = value; } }
     public PokemonStat PokemonStat { get { return _pokemonStat; } set { _pokemonStat = value; } }
@@ -43,6 +44,8 @@ public class Pokemon
     public Texture2D PokemonIconImage { get { return _pokemonIconImg; } }
     public Texture2D PokemonGenderImage {  get { return _pokemonGenderImg; } }
     public Texture2D PokemonStatusImage { get  { return _pokemonStatusImg; } }
+    public Texture2D PokemonType1Image { get { return _type1Img; } }
+    public Texture2D PokemonType2Image { get { return _type2Img; } }
 
     public Pokemon(PokemonSummary pokemonSum)
     {
@@ -64,13 +67,33 @@ public class Pokemon
         _pokemonIconImg = Managers.Resource.Load<Texture2D>($"Textures/Pokemon/{_pokemonInfo.PokemonName}_Icon");
         _pokemonGenderImg = Managers.Resource.Load<Texture2D>($"Textures/Pokemon/PokemonGender_{_pokemonInfo.Gender}");
         _pokemonStatusImg = Managers.Resource.Load<Texture2D>($"Textures/UI/{_pokemonInfo.PokemonStatus}_Icon");
+        _type1Img = Managers.Resource.Load<Texture2D>($"Textures/UI/{_pokemonInfo.Type1}_Icon");
+        _type2Img = Managers.Resource.Load<Texture2D>($"Textures/UI/{_pokemonInfo.Type2}_Icon");
     }
 
-    public void SetSelectedMove(int moveOrder)
+    public void UpdatePokemonSummary(PokemonSummary pokemonSum)
     {
-        if (moveOrder != -1)
-            _selectedMove = _pokemonMoves[moveOrder];
-        else
-            _selectedMove = _noPPMove;
+        if (_pokemonInfo.PokemonName != pokemonSum.PokemonInfo.PokemonName)
+        {
+            _pokemonImg = Managers.Resource.Load<Texture2D>($"Textures/Pokemon/{pokemonSum.PokemonInfo.PokemonName}");
+            _pokemonBackImg = Managers.Resource.Load<Texture2D>($"Textures/Pokemon/{pokemonSum.PokemonInfo.PokemonName}_Back");
+            _pokemonIconImg = Managers.Resource.Load<Texture2D>($"Textures/Pokemon/{pokemonSum.PokemonInfo.PokemonName}_Icon");
+            _type1Img = Managers.Resource.Load<Texture2D>($"Textures/UI/{pokemonSum.PokemonInfo.Type1}_Icon");
+            _type2Img = Managers.Resource.Load<Texture2D>($"Textures/UI/{pokemonSum.PokemonInfo.Type2}_Icon");
+        }
+
+        _pokemonInfo = pokemonSum.PokemonInfo;
+        _pokemonStat = pokemonSum.PokemonStat;
+        _pokemonExpInfo = pokemonSum.PokemonExpInfo;
+
+        if (pokemonSum.PokemonInfo.PokemonStatus == PokemonStatusCondition.Fainting)
+            _pokemonStatusImg = Managers.Resource.Load<Texture2D>($"Textures/UI/{pokemonSum.PokemonInfo.PokemonStatus}_Icon");
+
+        for (int i = 0; i < _pokemonMoves.Count; i++)
+        {
+            _pokemonMoves[i].UpdatePokemonMoveSummary(pokemonSum.PokemonMoves[i]);
+        }
+
+        _noPPMove.UpdatePokemonMoveSummary(pokemonSum.NoPPMove);
     }
 }

@@ -10,13 +10,12 @@ enum MsgId {
   C_ENTER_ROOM = 100;
   S_ENTER_ROOM = 110;
   S_LEAVE_ROOM = 3;
-  C_ENTER_POKEMON_LIST_SCENE = 40;
-  S_ENTER_POKEMON_LIST_SCENE = 41;
   C_ENTER_POKEMON_BATTLE_SCENE = 42;
   S_ENTER_POKEMON_BATTLE_SCENE = 43;
   S_MEET_WILD_POKEMON = 150;
   S_GET_DOOR_DEST_DIR = 160;
   S_GET_NPC_TALK = 170;
+  S_GET_TRAINER_TALK = 171;
   C_SHOP_ITEM_LIST = 180;
   S_SHOP_ITEM_LIST = 190;
   C_GET_ITEM_COUNT = 700;
@@ -28,6 +27,23 @@ enum MsgId {
   C_RESTORE_POKEMON = 760;
   S_RESTORE_POKEMON = 770;
   C_FINISH_NPC_TALK = 780;
+
+  // 포켓몬 리스트 씬
+  C_USE_ITEM_IN_LIST_SCENE = 820;
+  S_USE_ITEM_IN_LIST_SCENE = 830;
+
+  // 트레이너 배틀 씬
+  C_ENTER_TRAINER_BATTLE = 80;
+  S_ENTER_TRAINER_BATTLE = 81;
+  C_CHECK_AVAILABLE_MOVE = 82;
+  S_CHECK_AVAILABLE_MOVE = 83;
+  C_SEND_ACTION = 84;
+  S_SEND_ACTION = 85;
+  C_REQUEST_NEXT_BATTLE_ACTION = 86;
+  C_CHECK_AVAILABLE_POKEMON = 88;
+  S_CHECK_AVAILABLE_POKEMON = 89;
+  C_SURRENDER_TRAINER_BATTLE = 92;
+  S_SURRENDER_TRAINER_BATTLE = 93;
 
   // 포켓몬 교환 씬
   C_ENTER_POKEMON_EXCHANGE_SCENE = 400;
@@ -52,12 +68,6 @@ enum MsgId {
   C_ACCESS_POKEMON_SUMMARY = 13;
   S_ACCESS_POKEMON_SUMMARY = 14;
   
-  // 가방 씬
-  C_ENTER_PLAYER_BAG_SCENE = 200;
-  S_ENTER_PLAYER_BAG_SCENE = 210;
-  C_ITEM_SCENE_TO_BATTLE_SCENE = 220;
-  S_ITEM_SCENE_TO_BATTLE_SCENE = 230;
-  
   // 배틀 씬
   C_REQUEST_DATA_BY_ID = 60;
   C_PROCESS_TURN = 310;
@@ -65,62 +75,24 @@ enum MsgId {
   S_SWITCH_BATTLE_POKEMON = 31;
   S_GET_ENEMY_POKEMON_EXP = 61;
   S_CHECK_AND_APPLY_REMAINED_EXP = 62;
+  C_FORGET_AND_LEARN_NEW_MOVE = 620;
+  S_FORGET_AND_LEARN_NEW_MOVE = 630;
   S_CHECK_AVAILABLE_BATTLE_POKEMON = 350;
-  C_IS_SUCCESS_POKE_BALL_CATCH = 380;
-  S_IS_SUCCESS_POKE_BALL_CATCH = 390;
+  S_SEND_OPPONENT_NEXT_POKEMON = 391;
   S_ESCAPE_FROM_WILD_POKEMON = 63;
-  S_CHECK_EXP_POKEMON = 340;
   S_CHECK_POKEMON_EVOLUTION = 330;
-  C_RETURN_POKEMON_BATTLE_SCENE = 72;
-  S_RETURN_POKEMON_BATTLE_SCENE = 73;
+  C_GET_REWARD_INFO = 341;
+  S_GET_REWARD_INFO = 342;
   
   C_RETURN_GAME = 4;
+  S_RETURN_GAME = 44;
 
   C_PLAYER_TALK = 70;
   S_SEND_TALK_REQUEST = 71;
 
   // 포켓몬 진화 씬
-  C_ENTER_POKEMON_EVOLUTION_SCENE = 500;
-  S_ENTER_POKEMON_EVOLUTION_SCENE = 510;
   C_POKEMON_EVOLUTION = 520;
   S_POKEMON_EVOLUTION = 530;
-
-  // 기술 선택 씬
-  C_ENTER_MOVE_SELECTION_SCENE = 600;
-  S_ENTER_MOVE_SELECTION_SCENE = 610;
-  C_MOVE_SCENE_TO_BATTLE_SCENE = 620;
-  S_MOVE_SCENE_TO_BATTLE_SCENE = 630;
-  C_MOVE_SCENE_TO_EVOLVE_SCENE = 640;
-  S_MOVE_SCENE_TO_EVOLVE_SCENE = 650;
-}
-
-enum CreatureState {
-    NoneState = 0;
-    Idle = 1;
-    ChangeDir = 2;
-    Walk = 3;
-    Run = 4;
-    WatchMenu = 5;
-    Fight = 6;
-    Talk = 7;
-    Exchanging = 8;
-    PokemonEvolving = 9;
-    Shopping = 10;
-}
-
-enum MoveDir {
-  Up = 0;
-  Down = 1;
-  Left = 2;
-  Right = 3;
-}
-
-enum GameObjectType {
-  NONE = 0;
-  PLAYER = 1;
-  POKEMON = 2;
-  PROJECTILE = 3;
-  NPC = 4;
 }
 
 enum RoomType {
@@ -157,8 +129,12 @@ message C_ReturnGame {
     int32 playerId = 1;
 }
 
+message S_ReturnGame {
+    repeated ObjectInfo otherPlayers = 1;
+}
+
 message S_Spawn {
-    repeated PlayerInfo players = 1;
+    repeated OtherPlayerInfo otherPlayers = 1;
 }
 
 message S_Despawn {
@@ -181,17 +157,25 @@ message C_CreatePlayer {
 
 message S_SendTalk
 {
-    PlayerInfo otherPlayerInfo = 1;
+    OtherPlayerInfo otherPlayerInfo = 1;
 }
 
 message S_ReceiveTalk
 {
-    PlayerInfo playerInfo = 1;
+    OtherPlayerInfo otherPlayerInfo = 1;
 }
 
 message S_GetNpcTalk
 {
     int32 npcId = 1;
+    repeated string scripts = 2;
+}
+
+message S_GetTrainerTalk
+{
+    int32 npcId = 1;
+    repeated string scripts = 2;
+    bool canBattle = 3;
 }
 
 message C_ShopItemList
@@ -228,6 +212,10 @@ message S_BuyItem
 {
     bool isBuy = 1;
     int32 money = 2;
+    int32 foundItemIdx = 3;
+    int32 foundItemCnt = 4;
+    bool createNewIdx = 5;
+    int32 newItemCnt = 6;
 }
 
 message C_SellItem
@@ -265,17 +253,6 @@ message C_SwitchPokemon {
     int32 pokemonToIdx = 3;
 }
 
-message C_EnterPokemonListScene
-{
-    int32 playerId = 1;
-}
-
-message S_EnterPokemonListScene
-{
-    PlayerInfo playerInfo = 1;
-    repeated PokemonSummary pokemonSums = 2;
-}
-
 message S_MeetWildPokemon
 {
     int32 roomId = 1;
@@ -301,6 +278,297 @@ message S_AccessPokemonSummary
 
 
 
+// 포켓몬 리스트 씬
+message C_UseItemInListScene
+{
+    int32 playerId = 1;
+    int32 targetPokemonOrder = 2;
+    ItemCategory usedItemCategory = 3;
+    int32 usedItemOrder = 4;
+}
+
+message S_UseItemInListScene
+{
+    ItemSummary itemSum = 1;
+    PokemonSummary targetPokemonSum = 2;
+    ItemUseResult itemUseResult = 3;
+}
+
+message ItemUseResult
+{
+    oneof specialInfo
+    {
+        HPRecoveryItemUseResult hpRecoveryItemUseResult = 8;
+        PokeBallUseResult pokeBallUseResult = 9;
+    }
+}
+
+message HPRecoveryItemUseResult
+{
+    int32 realRecoveryAmt = 1;
+}
+
+message PokeBallUseResult
+{
+    bool didCatch = 1;
+}
+
+message ItemSummary
+{
+    ItemCategory itemCategory = 1;
+    string itemName = 2;
+    string itemDescription = 3;
+    int32 itemCnt = 4;
+    int32 itemPrice = 5;
+    repeated CreatureState useState = 6;
+    string afterUseScript = 7;
+}
+
+
+
+
+// 배틀 씬
+message C_EnterPokemonBattleScene
+{
+    int32 playerId = 1;
+    int32 locationNum = 2;
+    int32 bushNum = 3;
+}
+
+message S_EnterPokemonBattleScene
+{
+    int32 myFirstBattlePokemonOrder = 1;
+    PokemonSummary enemyPokemonSum = 2;
+    NPCInfo npcInfo = 3;
+}
+
+message C_RequestDataById
+{
+    int32 playerId = 1;
+    RequestType requestType = 2;
+}
+
+enum RequestType
+{
+    CHECK_OBJECT_IN_MAP = 0;
+    GET_ENEMY_POKEMON_EXP = 2;
+    CHECK_AND_APPLY_REMAINED_EXP = 3;
+    ESCAPE_FROM_WILD_POKEMON = 4;
+    CHECK_AVAILABLE_BATTLE_POKEMON = 5;
+    CHECK_POKEMON_EVOLUTION = 6;
+    SEND_OPPONENT_NEXT_POKEMON = 7;
+}
+
+message C_ProcessTurn
+{
+    int32 playerId = 1;
+    int32 moveOrder = 2;
+}
+
+message S_ProcessTurn
+{
+    bool isMyPokemon = 9;
+    int32 usedMoveOrder = 1;
+    PokemonMoveSummary usedMoveSum = 2;
+    PokemonSummary attackPokemonSum = 3;
+    PokemonSummary defensePokemonSum = 4;
+    bool _isHit = 5;
+    float typeEffectiveness = 6;
+    bool isCriticalHit = 7;
+    bool isTurnFinish = 8;
+}
+
+message S_GetEnemyPokemonExp
+{
+    string expPokemonName = 1;
+    int32 exp = 2;
+}
+
+message S_CheckAndApplyRemainedExp
+{
+    int32 finalExp = 1;
+    PokemonSummary expPokemonSum = 2;
+    LevelUpStatusDiff statDiff = 3;
+    PokemonMoveSummary newMoveSum = 4;
+    int32 expPokemonOrder = 5;
+    bool isExpFinish = 6;
+}
+
+message C_ForgetAndLearnNewMove
+{
+    int32 playerId = 1;
+    int32 forgetMoveOrder = 2;
+}
+
+message S_ForgetAndLearnNewMove
+{
+    string prevMoveName = 1;
+    string newMoveName = 2;
+}
+
+message S_EscapeFromWildPokemon
+{
+    bool canEscape = 1;
+}
+
+message S_CheckAvailableBattlePokemon
+{
+    bool canFight = 1;
+}
+
+message S_SendOpponentNextPokemon
+{
+    PokemonSummary opponentPokemonSum = 1;
+}
+
+message S_CheckPokemonEvolution
+{
+    string evolutionPokemonName = 1;
+    int32 evolvePokemonIdx = 2;
+}
+
+message C_GetRewardInfo
+{
+    int32 playerId = 1;
+}
+
+message S_GetRewardInfo
+{
+    int32 money = 1;
+    repeated string afterBattleScripts = 2;
+}
+
+message S_SwitchBattlePokemon
+{
+    PokemonSummary prevPokemonSum = 1;
+}
+
+
+
+
+// 플레이어 배틀 씬
+message C_EnterTrainerBattle
+{
+    int32 playerId = 1;
+}
+
+message S_EnterTrainerBattle
+{
+    PlayerInfo myPlayerInfo = 1;
+    repeated OtherPlayerInfo otherPlayerInfos = 2;
+    repeated PokemonSummary otherPokemonSums = 3;
+    int32 firstBattlePokemonOrder = 4;
+}
+
+message C_CheckAvailableMove
+{
+    int32 playerId = 1;
+}
+
+message S_CheckAvailableMove
+{
+    bool canUseMove = 2;
+}
+
+message C_SendAction
+{
+    int32 playerId = 1;
+    oneof specialInfo
+    {
+        UseNoPPMove useNoPPMove = 2;
+        UseMove useMove = 3;
+        // ReadyForResponse readyForResponse = 4;
+        SwitchBattlePokemon switchBattlePokemon = 5;
+        FinishBattle finishBattle = 6;
+    }
+}
+
+message UseNoPPMove
+{
+}
+
+message UseMove
+{
+    int32 selectedMoveOrder = 1;
+}
+
+message ReadyForResponse
+{
+}
+
+message SwitchBattlePokemon
+{
+    int32 fromIdx = 1;
+    int32 toIdx = 2;
+}
+
+message FinishBattle
+{
+}
+
+message S_SendAction
+{
+    int32 turnPlayerId = 1;
+    bool isTurnFinish = 2;
+    oneof specialInfo
+    {
+        UseMoveResult useMoveResult = 3;
+        SwitchBattlePokemonResult switchPokemonResult = 4;
+        FinishBattleResult finishBattleResult = 5;
+    }
+}
+
+message UseMoveResult
+{
+    int32 usedMoveOrder = 1;
+    PokemonMoveSummary usedMoveSum = 2;
+    PokemonSummary attackPokemonSum = 3;
+    PokemonSummary defensePokemonSum = 4;
+    bool _isHit = 5;
+    float typeEffectiveness = 6;
+    bool isCriticalHit = 7;
+}
+
+message SwitchBattlePokemonResult
+{
+    PokemonSummary prevPokemonSum = 1;
+    PokemonSummary newPokemonSum = 2;
+}
+
+message FinishBattleResult
+{
+    int32 winPlayerId = 1;
+    int32 losePlayerId = 2;
+}
+
+message C_RequestNextBattleAction
+{
+    int32 playerId = 1;
+}
+
+message C_CheckAvailablePokemon
+{
+    int32 playerId = 1;
+}
+
+message S_CheckAvailablePokemon
+{
+    bool canFight = 1;
+}
+
+message C_SurrenderTrainerBattle
+{
+    int32 playerId = 1;
+}
+
+message S_SurrenderTrainerBattle
+{
+    int32 surrenderPlayerId = 1;
+}
+
+
+
+
 // 포켓몬 교환 씬
 message C_EnterPokemonExchangeScene
 {
@@ -310,7 +578,7 @@ message C_EnterPokemonExchangeScene
 message S_EnterPokemonExchangeScene
 {
     PlayerInfo playerInfo = 1;
-    PlayerInfo otherPlayerInfo = 2;
+    OtherPlayerInfo otherPlayerInfo = 2;
     repeated PokemonSummary myPokemonSums = 3;
     repeated PokemonSummary otherPokemonSums = 4;
     ExchangeCursorPos myCursorPos = 5;
@@ -390,32 +658,6 @@ enum TalkRequestType
 
 
 // 가방 씬
-message C_EnterPlayerBagScene
-{
-    int32 playerId = 1;
-}
-
-message S_EnterPlayerBagScene
-{
-    PlayerInfo playerInfo = 1;
-    map<int32, CategoryInventory> inventory = 2;
-}
-
-message C_ItemSceneToBattleScene
-{
-    int32 playerId = 1;
-    ItemCategory itemCategory = 2;
-    int32 itemOrder = 3;
-}
-
-message S_ItemSceneToBattleScene
-{
-    PlayerInfo playerInfo = 1;
-    PokemonSummary enemyPokemonSum = 2;
-    PokemonSummary playerPokemonSum = 3;
-    ItemSummary usedItem = 4;
-}
-
 message CategoryInventory
 {
     repeated ItemSummary categoryItemSums = 1;
@@ -424,139 +666,7 @@ message CategoryInventory
 
 
 
-// 배틀 씬
-message C_EnterPokemonBattleScene
-{
-    int32 playerId = 1;
-    int32 locationNum = 2;
-    int32 bushNum = 3;
-}
-
-message S_EnterPokemonBattleScene
-{
-    PlayerInfo playerInfo = 1;
-    PokemonSummary enemyPokemonSum = 2;
-    repeated PokemonSummary playerPokemonSums = 3;
-}
-
-message C_RequestDataById
-{
-    int32 playerId = 1;
-    RequestType requestType = 2;
-}
-
-enum RequestType
-{
-    CHECK_OBJECT_IN_MAP = 0;
-    GET_ENEMY_POKEMON_EXP = 2;
-    CHECK_AND_APPLY_REMAINED_EXP = 3;
-    ESCAPE_FROM_WILD_POKEMON = 4;
-    CHECK_EXP_POKEMON = 5;
-    CHECK_AVAILABLE_BATTLE_POKEMON = 6;
-    CHECK_POKEMON_EVOLUTION = 7;
-}
-
-message C_ProcessTurn
-{
-    int32 playerId = 1;
-    int32 moveOrder = 2;
-}
-
-message S_ProcessTurn
-{
-    bool canUseMove = 1;
-    bool isMyPokemon  = 2;
-    int32 usedMoveOrder = 3;
-    PokemonMoveSummary usedMoveSum = 4;
-    PokemonSummary defensePokemonSum = 5;
-    bool _isHit = 6;
-    float typeEffectiveness = 7;
-    bool isCriticalHit = 8;
-    bool isTurnFinish = 9;
-}
-
-message S_GetEnemyPokemonExp
-{
-    PokemonSummary gotExpPokemonSum = 1;
-    int32 exp = 2;
-}
-
-message S_CheckAndApplyRemainedExp
-{
-    int32 finalExp = 1;
-    PokemonSummary expPokemonSum = 2;
-    LevelUpStatusDiff statDiff = 3;
-    PokemonMoveSummary newMoveSum = 4;
-    bool isMainPokemon = 5;
-}
-
-message S_EscapeFromWildPokemon
-{
-    bool canEscape = 1;
-}
-
-message S_CheckExpPokemon
-{
-    bool isThereMoreExpPokemon = 1;
-}
-
-message S_CheckAvailableBattlePokemon
-{
-    bool canFight = 1;
-}
-
-message C_IsSuccessPokeBallCatch
-{
-    int32 playerId = 1;
-}
-
-message S_IsSuccessPokeBallCatch
-{
-    bool isCatch = 1;
-    string _catchPokemonName = 2;
-}
-
-message S_CheckPokemonEvolution
-{
-    bool goToEvolutionScene = 1;
-}
-
-message S_SwitchBattlePokemon
-{
-    PlayerInfo playerInfo = 1;
-    PokemonSummary enemyPokemonSum = 2;
-    repeated PokemonSummary myPokemonSums = 3;
-    PokemonSummary prevPokemonSum = 4;
-}
-
-message C_ReturnPokemonBattleScene
-{
-    int32 playerId = 1;
-}
-
-message S_ReturnPokemonBattleScene
-{
-    PlayerInfo playerInfo = 1;
-    PokemonSummary enemyPokemonSum = 2;
-    repeated PokemonSummary myPokemonSums = 3;
-}
-
-
-
-
 // 포켓몬 진화 씬
-message C_EnterPokemonEvolutionScene
-{
-    int32 playerId = 1;
-}
-
-message S_EnterPokemonEvolutionScene
-{
-    PlayerInfo playerInfo = 1;
-    PokemonSummary pokemonSum = 2;
-    string evolvePokemonName = 3;
-}
-
 message C_PokemonEvolution
 {
     int32 playerId = 1;
@@ -571,55 +681,53 @@ message S_PokemonEvolution
 
 
 
-// 포켓몬 기술 선택 씬
-message C_EnterMoveSelectionScene
-{
-    int32 playerId = 1;
-}
-
-message S_EnterMoveSelectionScene
-{
-    PlayerInfo playerInfo = 1;
-    PokemonSummary pokemonSum = 2;
-    PokemonMoveSummary learnableMoveSum = 3;
-}
-
-message C_MoveSceneToBattleScene
-{
-    int32 playerId = 1;
-    int32 prevMoveIdx = 2;
-}
-
-message S_MoveSceneToBattleScene
-{
-    PlayerInfo playerInfo = 1;
-    PokemonSummary myPokemonSum = 2;
-    PokemonSummary enemyPokemonSum = 3;
-    string movePokemonName = 4;
-    string prevMoveName = 5;
-    string newMoveName = 6;
-}
-
-message C_MoveSceneToEvolveScene
-{
-    int32 playerId = 1;
-    int32 prevMoveIdx = 2;
-}
-
-message S_MoveSceneToEvolveScene
-{
-    PlayerInfo playerInfo = 1;
-    PokemonSummary pokemonSum = 2;
-    string prevMoveName = 3;
-    string newMoveName = 4;
-}
-
-
-
 
 message ObjectInfo {
   int32 objectId = 1;
-  PositionInfo posInfo = 2;
+  GameObjectType objectType = 2;
+  PositionInfo posInfo = 3;
+}
+
+enum CreatureState {
+    NoneState = 0;
+    Idle = 1;
+    ChangeDir = 2;
+    Walk = 3;
+    Run = 4;
+    WatchMenu = 5;
+    Fight = 6;
+    Talk = 7;
+    Exchanging = 8;
+    PokemonEvolving = 9;
+    Shopping = 10;
+}
+
+enum MoveDir {
+  Up = 0;
+  Down = 1;
+  Left = 2;
+  Right = 3;
+}
+
+enum GameObjectType {
+  NONE = 0;
+  PLAYER = 1;
+  POKEMON = 2;
+  PROJECTILE = 3;
+  NPC = 4;
+}
+
+enum NPCType
+{
+    NoneType = 0;
+    SchoolBoy = 1;
+}
+
+message OtherPlayerInfo
+{
+    ObjectInfo objectInfo = 1;
+    string playerName = 2;
+    PlayerGender playerGender = 3;
 }
 
 message PlayerInfo {
@@ -628,11 +736,14 @@ message PlayerInfo {
     PlayerGender playerGender = 3;
     int32 money = 4;
     NPCInfo npcInfo = 5;
+    map<int32, CategoryInventory> inventory = 6;
+    repeated PokemonSummary pokemonSums = 7;
 }
 
 message NPCInfo {
     ObjectInfo objectInfo = 1;
-    string npcName = 2;
+    NPCType npcType = 2;
+    string npcName = 3;
 }
 
 message PositionInfo {
@@ -708,15 +819,6 @@ message PokemonMoveSummary
     string moveDescription = 9;
 }
 
-message ItemSummary
-{
-    ItemCategory itemCategory = 1;
-    string itemName = 2;
-    string itemDescription = 3;
-    int32 itemCnt = 4;
-    int32 itemPrice = 5;
-}
-
 message LevelUpStatusDiff
 {
     int32 MaxHP = 1;
@@ -773,6 +875,11 @@ enum PokemonStatusCondition
 {
     STATUS_NONE = 0;
     FAINTING = 1;
+    BURNED = 2;
+    FROZEN = 3;
+    PARALYZED = 4;
+    POISONED = 5;
+    SLEPT = 6;
 }
 
 enum MoveCategory

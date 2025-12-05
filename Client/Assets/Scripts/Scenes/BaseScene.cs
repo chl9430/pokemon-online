@@ -7,16 +7,18 @@ using UnityEngine.EventSystems;
 
 public abstract class BaseScene : MonoBehaviour
 {
-    protected ScreenEffecter _enterEffect;
+    protected bool _loadingPacket = false;
+    protected bool _ignoreContent = false;
+    protected Stack<ObjectContents> _contentStack = new Stack<ObjectContents>();
+    //protected MyPlayerController _playerController;
+    protected IMessage _packet;
 
-    [SerializeField] Transform _screenEffecterZone;
-    public ScreenEffecter ScreenEffecter { set { _enterEffect = value; } get { return _enterEffect; } }
-    public Transform ScreenEffecterZone { get { return _screenEffecterZone; } }
+    [SerializeField] protected Canvas _sceneCanvas;
+
+    public Stack<ObjectContents> ContentStack { get { return _contentStack; } }
     public Define.Scene SceneType { get; protected set; } = Define.Scene.Unknown;
+    //public MyPlayerController PlayerController {  get { return _playerController; } }
 
-    protected MyPlayerController _myPlayer;
-
-    public MyPlayerController MyPlayer { get { return _myPlayer; } }
 
 	void Awake()
 	{
@@ -26,10 +28,9 @@ public abstract class BaseScene : MonoBehaviour
     protected virtual void Init()
     {
         Object obj = GameObject.FindFirstObjectByType(typeof(EventSystem));
+
         if (obj == null)
             Managers.Resource.Instantiate("UI/EventSystem").name = "@EventSystem";
-
-        _enterEffect = Managers.Resource.Instantiate("UI/Fading", _screenEffecterZone).GetComponent<ScreenEffecter>();
     }
 
     protected virtual void Start()
@@ -41,13 +42,62 @@ public abstract class BaseScene : MonoBehaviour
     {
     }
 
+    public virtual void DoNextStaticAction(object value = null)
+    {
+
+    }
+
     // 씬 진입 후 서버로부터 패킷을 받아 렌더링 정보를 업데이트하는 함수
     public virtual void UpdateData(IMessage packet)
     {
     }
 
+    public void PopUntilSpecificChild<TTarget>()
+        where TTarget : ObjectContents
+    {
+        while (_contentStack.Count > 0)
+        {
+            ObjectContents item = _contentStack.Peek();
+
+            if (item is TTarget)
+            {
+                item.SetNextAction();
+                return;
+            }
+            else
+            {
+                item.FinishContent();
+            }
+        }
+        //while (_contentStack.Count > 0)
+        //{
+        //    _contentStack.Pop();
+
+        //    ObjectContents item = _contentStack.Peek();
+        //    item.SetNextAction();
+
+        //    if (item is TTarget targetItem)
+        //    {
+        //        return;
+        //    }
+        //}
+    }
+
+    public virtual void PopAllContents()
+    {
+        while (_contentStack.Count > 0)
+        {
+            ObjectContents content = _contentStack.Peek();
+            content.FinishContent();
+        }
+    }
+
     public virtual void FinishContents()
     {
+        _contentStack.Pop();
+
+        if (_contentStack.Count > 0)
+            _contentStack.Peek().SetNextAction();
     }
 
     public abstract void Clear();

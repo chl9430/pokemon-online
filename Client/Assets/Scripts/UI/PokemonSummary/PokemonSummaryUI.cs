@@ -31,32 +31,32 @@ public class PokemonSummaryUI : MonoBehaviour
     [SerializeField] TextMeshProUGUI totalEXP;
     [SerializeField] TextMeshProUGUI expToNextLevel;
 
-    public void FillPokemonBasicInfo(PokemonSummary pokemonSum)
+    public void FillPokemonBasicInfo(Pokemon pokemon)
     {
-        FillText(dictNum, $"No. {pokemonSum.PokemonInfo.DictionaryNum}");
-        FillText(nickName, $"{pokemonSum.PokemonInfo.NickName}");
-        FillText(pokemonName, $"/ {pokemonSum.PokemonInfo.PokemonName}");
-        FillText(level, $"Lv. {pokemonSum.PokemonInfo.Level}");
+        FillText(dictNum, $"No. {pokemon.PokemonInfo.DictionaryNum}");
+        FillText(nickName, $"{pokemon.PokemonInfo.NickName}");
+        FillText(pokemonName, $"/ {pokemon.PokemonInfo.PokemonName}");
+        FillText(level, $"Lv. {pokemon.PokemonInfo.Level}");
 
-        FillImage(pokemonSum);
+        FillImage(pokemon);
     }
 
-    public void FillPokemonSummary(PokemonSummary summary)
+    public void FillPokemonSummary(Pokemon pokemon)
     {
-        FillText(owner, $"{summary.PokemonInfo.OwnerName} (ID : {summary.PokemonInfo.OwnerId})");
-        FillText(nature, $"{summary.PokemonInfo.Nature} nature,");
-        FillText(metLevel, $"met at Lv. {summary.PokemonInfo.MetLevel}, MOON FIELD.");
+        FillText(owner, $"{pokemon.PokemonInfo.OwnerName} (ID : {pokemon.PokemonInfo.OwnerId})");
+        FillText(nature, $"{pokemon.PokemonInfo.Nature} nature,");
+        FillText(metLevel, $"met at Lv. {pokemon.PokemonInfo.MetLevel}, MOON FIELD.");
 
-        FillTypeImage(summary);
+        FillTypeImage(pokemon);
 
-        FillText(hpAndMaxHP, $"{summary.PokemonStat.Hp} / {summary.PokemonStat.MaxHp}");
-        FillText(attack, $"{summary.PokemonStat.Attack}");
-        FillText(defense, $"{summary.PokemonStat.Defense}");
-        FillText(speicalAttack, $"{summary.PokemonStat.SpecialAttack}");
-        FillText(speicalDefense, $"{summary.PokemonStat.SpecialDefense}");
-        FillText(speed, $"{summary.PokemonStat.Speed}");
-        FillText(totalEXP, $"{summary.PokemonExpInfo.TotalExp}");
-        FillText(expToNextLevel, $"{summary.PokemonExpInfo.RemainExpToNextLevel}");
+        FillText(hpAndMaxHP, $"{pokemon.PokemonStat.Hp} / {pokemon.PokemonStat.MaxHp}");
+        FillText(attack, $"{pokemon.PokemonStat.Attack}");
+        FillText(defense, $"{pokemon.PokemonStat.Defense}");
+        FillText(speicalAttack, $"{pokemon.PokemonStat.SpecialAttack}");
+        FillText(speicalDefense, $"{pokemon.PokemonStat.SpecialDefense}");
+        FillText(speed, $"{pokemon.PokemonStat.Speed}");
+        FillText(totalEXP, $"{pokemon.PokemonExpInfo.TotalExp}");
+        FillText(expToNextLevel, $"{pokemon.PokemonExpInfo.RemainExpToNextLevel}");
     }
 
     void FillText(TextMeshProUGUI tmp, string text)
@@ -64,11 +64,11 @@ public class PokemonSummaryUI : MonoBehaviour
         tmp.text = text;
     }
 
-    void FillTypeImage(PokemonSummary summary)
+    void FillTypeImage(Pokemon pokemon)
     {
-        if (summary.PokemonInfo.Type2 == PokemonType.TypeNone)
+        if (pokemon.PokemonInfo.Type2 == PokemonType.TypeNone)
         {
-            Texture2D typeImg = Managers.Resource.Load<Texture2D>($"Textures/UI/{summary.PokemonInfo.Type1}_Icon");
+            Texture2D typeImg = pokemon.PokemonType1Image;
             _type.sprite = Sprite.Create(typeImg, new Rect(0, 0, typeImg.width, typeImg.height), Vector2.one * 0.5f);
             _type.SetNativeSize();
 
@@ -77,11 +77,11 @@ public class PokemonSummaryUI : MonoBehaviour
         }
         else
         {
-            Texture2D typeImg = Managers.Resource.Load<Texture2D>($"Textures/UI/{summary.PokemonInfo.Type1}_Icon");
+            Texture2D typeImg = pokemon.PokemonType1Image;
             _type1.sprite = Sprite.Create(typeImg, new Rect(0, 0, typeImg.width, typeImg.height), Vector2.one * 0.5f);
             _type1.SetNativeSize();
 
-            typeImg = Managers.Resource.Load<Texture2D>($"Textures/UI/{summary.PokemonInfo.Type2}_Icon");
+            typeImg = pokemon.PokemonType2Image;
             _type2.sprite = Sprite.Create(typeImg, new Rect(0, 0, typeImg.width, typeImg.height), Vector2.one * 0.5f);
             _type2.SetNativeSize();
 
@@ -89,13 +89,13 @@ public class PokemonSummaryUI : MonoBehaviour
         }
     }
 
-    void FillImage(PokemonSummary summary)
+    void FillImage(Pokemon pokemon)
     {
-        Texture2D image = Managers.Resource.Load<Texture2D>($"Textures/Pokemon/{summary.PokemonInfo.PokemonName}");
+        Texture2D image = pokemon.PokemonImage;
         _pokemonImg.sprite = Sprite.Create(image, new Rect(0, 0, image.width, image.height), Vector2.one * 0.5f);
         _pokemonImg.SetNativeSize();
 
-        image = Managers.Resource.Load<Texture2D>($"Textures/Pokemon/PokemonGender_{summary.PokemonInfo.Gender}");
+        image = pokemon.PokemonGenderImage;
         gender.sprite = Sprite.Create(image, new Rect(0, 0, image.width, image.height), Vector2.one * 0.5f);
         gender.SetNativeSize();
     }

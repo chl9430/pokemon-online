@@ -53,5 +53,7 @@ public class RecoveryMachine : MonoBehaviour
         {
             Destroy(ball);
         }
+
+        _monsterBallInsts.Clear();
     }
 }

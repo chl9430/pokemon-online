@@ -20,12 +20,12 @@ public enum FriendlyShopContentsState
     SELECTING_TO_BUY = 8,
     SUCCESS_BUY_SCRIPTING = 9,
     FAILED_BUY_SCRIPTING = 10,
-    MOVING_SCENE = 11,
+    Inactiving = 11,
+    AskingActionAgain = 12,
 }
 
 public class FriendlyShopContents : ObjectContents
 {
-    [SerializeField] ScriptBoxUI _scriptBox;
     [SerializeField] SlideAndScrollBox _shopListBox;
     [SerializeField] Image _itemImg;
     [SerializeField] TextMeshProUGUI _itemDescription;
@@ -49,14 +49,9 @@ public class FriendlyShopContents : ObjectContents
         {
             _state = value;
 
-            if (_scene == null)
-            {
-                _scene = Managers.Scene.CurrentScene;
-            }
-
             if (_state == FriendlyShopContentsState.GREETING_SCRIPTING)
             {
-                _scriptBox.gameObject.SetActive(true);
+                ContentManager.Instance.ScriptBox.gameObject.SetActive(true);
 
                 _shopListBox.State = SlideAndScrollBoxState.NONE;
                 _shopUIZone.gameObject.SetActive(false);
@@ -68,12 +63,12 @@ public class FriendlyShopContents : ObjectContents
             }
             else if (_state == FriendlyShopContentsState.SELECTING_ACTION)
             {
-                _scriptBox.gameObject.SetActive(true);
+                ContentManager.Instance.ScriptBox.gameObject.SetActive(true);
             }
             else if (_state == FriendlyShopContentsState.GOOD_BYE_SCRIPTING)
             {
-                _scriptBox.gameObject.SetActive(true);
-                _scriptBox.HideSelectBox();
+                ContentManager.Instance.ScriptBox.gameObject.SetActive(true);
+                ContentManager.Instance.ScriptBox.HideSelectBox();
 
                 _shopListBox.State = SlideAndScrollBoxState.NONE;
                 _shopUIZone.gameObject.SetActive(false);
@@ -85,8 +80,8 @@ public class FriendlyShopContents : ObjectContents
             }
             else if (_state == FriendlyShopContentsState.SELECTING_ITEM_TO_BUY)
             {
-                _scriptBox.gameObject.SetActive(false);
-                _scriptBox.HideSelectBox();
+                ContentManager.Instance.ScriptBox.gameObject.SetActive(false);
+                ContentManager.Instance.ScriptBox.HideSelectBox();
 
                 _shopListBox.State = SlideAndScrollBoxState.SELECTING;
                 _shopUIZone.gameObject.SetActive(true);
@@ -100,7 +95,7 @@ public class FriendlyShopContents : ObjectContents
             }
             else if (_state == FriendlyShopContentsState.ASKING_QUANTITY)
             {
-                _scriptBox.gameObject.SetActive(true);
+                ContentManager.Instance.ScriptBox.gameObject.SetActive(true);
 
                 _shopListBox.State = SlideAndScrollBoxState.NONE;
                 _shopUIZone.gameObject.SetActive(true);
@@ -112,8 +107,8 @@ public class FriendlyShopContents : ObjectContents
             }
             else if (_state == FriendlyShopContentsState.SELECTING_QUANTITY)
             {
-                _scriptBox.gameObject.SetActive(true);
-                _scriptBox.HideSelectBox();
+                ContentManager.Instance.ScriptBox.gameObject.SetActive(true);
+                ContentManager.Instance.ScriptBox.HideSelectBox();
 
                 _shopListBox.State = SlideAndScrollBoxState.NONE;
                 _shopUIZone.gameObject.SetActive(true);
@@ -127,7 +122,7 @@ public class FriendlyShopContents : ObjectContents
             }
             else if (_state == FriendlyShopContentsState.ASKING_TO_BUY)
             {
-                _scriptBox.gameObject.SetActive(true);
+                ContentManager.Instance.ScriptBox.gameObject.SetActive(true);
 
                 _shopListBox.State = SlideAndScrollBoxState.NONE;
                 _shopUIZone.gameObject.SetActive(true);
@@ -139,7 +134,7 @@ public class FriendlyShopContents : ObjectContents
             }
             else if (_state == FriendlyShopContentsState.SELECTING_TO_BUY)
             {
-                _scriptBox.gameObject.SetActive(true);
+                ContentManager.Instance.ScriptBox.gameObject.SetActive(true);
 
                 _shopListBox.State = SlideAndScrollBoxState.NONE;
                 _shopUIZone.gameObject.SetActive(true);
@@ -151,8 +146,8 @@ public class FriendlyShopContents : ObjectContents
             }
             else if (_state == FriendlyShopContentsState.SUCCESS_BUY_SCRIPTING)
             {
-                _scriptBox.gameObject.SetActive(true);
-                _scriptBox.HideSelectBox();
+                ContentManager.Instance.ScriptBox.gameObject.SetActive(true);
+                ContentManager.Instance.ScriptBox.HideSelectBox();
 
                 _shopListBox.State = SlideAndScrollBoxState.NONE;
                 _shopUIZone.gameObject.SetActive(true);
@@ -164,8 +159,8 @@ public class FriendlyShopContents : ObjectContents
             }
             else if (_state == FriendlyShopContentsState.FAILED_BUY_SCRIPTING)
             {
-                _scriptBox.gameObject.SetActive(true);
-                _scriptBox.HideSelectBox();
+                ContentManager.Instance.ScriptBox.gameObject.SetActive(true);
+                ContentManager.Instance.ScriptBox.HideSelectBox();
 
                 _shopListBox.State = SlideAndScrollBoxState.NONE;
                 _shopUIZone.gameObject.SetActive(true);
@@ -175,10 +170,10 @@ public class FriendlyShopContents : ObjectContents
                 _countingBox.State = CountingBoxState.NONE;
                 _countingBox.gameObject.SetActive(false);
             }
-            else if (_state == FriendlyShopContentsState.MOVING_SCENE)
+            else if (_state == FriendlyShopContentsState.Inactiving)
             {
-                _scriptBox.gameObject.SetActive(true);
-                _scriptBox.ScriptSelectBox.UIState = GridLayoutSelectBoxState.NONE;
+                ContentManager.Instance.ScriptBox.gameObject.SetActive(false);
+                ContentManager.Instance.ScriptBox.ScriptSelectBox.UIState = GridLayoutSelectBoxState.NONE;
 
                 _shopListBox.State = SlideAndScrollBoxState.NONE;
                 _shopUIZone.gameObject.SetActive(false);
@@ -190,8 +185,8 @@ public class FriendlyShopContents : ObjectContents
             }
             else if (_state == FriendlyShopContentsState.NONE)
             {
-                _scriptBox.gameObject.SetActive(false);
-                _scriptBox.HideSelectBox();
+                ContentManager.Instance.ScriptBox.gameObject.SetActive(false);
+                ContentManager.Instance.ScriptBox.HideSelectBox();
 
                 _shopListBox.State = SlideAndScrollBoxState.NONE;
                 _shopUIZone.gameObject.SetActive(false);
@@ -211,12 +206,8 @@ public class FriendlyShopContents : ObjectContents
 
         if (_packet is S_GetNpcTalk)
         {
-            if (_scene == null)
-            {
-                _scene = Managers.Scene.CurrentScene;
-            }
-
-            _scene.MyPlayer.State = CreatureState.Shopping;
+            Managers.Object.MyPlayerController.State = CreatureState.Shopping;
+            Managers.Object.MyPlayerController.IsLoading = false;
             State = FriendlyShopContentsState.GREETING_SCRIPTING;
 
             List<string> scripts = new List<string>()
@@ -224,23 +215,24 @@ public class FriendlyShopContents : ObjectContents
                 "Welcome!",
                 "How may I serve you?",
             };
-            _scriptBox.BeginScriptTyping(scripts);
+            ContentManager.Instance.ScriptBox.BeginScriptTyping(scripts);
         }
         else if (_packet is S_ShopItemList)
         {
             IList<ItemSummary> shopItemSums = ((S_ShopItemList)packet).ShopItemSums;
 
             if (_shopItems == null)
+            {
                 _shopItems = new List<Item>();
 
-            foreach (ItemSummary itemSum in shopItemSums)
-                _shopItems.Add(new Item(itemSum));
+                foreach (ItemSummary itemSum in shopItemSums)
+                    _shopItems.Add(new Item(itemSum));
 
-            List<object> datas = new List<object>();
-            foreach (Item item in _shopItems)
-                datas.Add(item);
-            _shopListBox.CreateScrollAreaButtons(datas, datas.Count, 1);
-
+                List<object> datas = new List<object>();
+                foreach (Item item in _shopItems)
+                    datas.Add(item);
+                _shopListBox.CreateScrollAreaButtons(datas, datas.Count, 1);
+            }
 
             // 아이템 랜더링
             List<DynamicButton> btns = _shopListBox.ChangeBtnGridDataToList();
@@ -275,7 +267,7 @@ public class FriendlyShopContents : ObjectContents
             {
                 $"{selectedItem.ItemName}? Certainly. How many would you like?"
             };
-            _scriptBox.BeginScriptTyping(scripts, true);
+            ContentManager.Instance.ScriptBox.BeginScriptTyping(scripts, true);
 
             State = FriendlyShopContentsState.ASKING_QUANTITY;
         }
@@ -286,6 +278,7 @@ public class FriendlyShopContents : ObjectContents
 
             if (isBuy)
             {
+                Managers.Object.MyPlayerController.ChangeMoney(money);
                 _moneyText.text = "$ " + money.ToString();
 
                 State = FriendlyShopContentsState.SUCCESS_BUY_SCRIPTING;
@@ -294,7 +287,9 @@ public class FriendlyShopContents : ObjectContents
                 {
                     $"Here you go!\nThank you very much."
                 };
-                _scriptBox.BeginScriptTyping(scripts);
+                ContentManager.Instance.ScriptBox.BeginScriptTyping(scripts);
+
+                Managers.Object.MyPlayerController.AddItem(_packet, _shopListBox.GetScrollBoxContent() as Item);
             }
             else
             {
@@ -304,28 +299,8 @@ public class FriendlyShopContents : ObjectContents
                 {
                     $"You don't have enough money..."
                 };
-                _scriptBox.BeginScriptTyping(scripts);
+                ContentManager.Instance.ScriptBox.BeginScriptTyping(scripts);
             }
-        }
-        else if (_packet is S_EnterRoom)
-        {
-            if (_scene == null)
-            {
-                _scene = Managers.Scene.CurrentScene;
-            }
-
-            _scene.MyPlayer.State = CreatureState.Shopping;
-
-            State = FriendlyShopContentsState.SELECTING_ACTION;
-
-            List<string> btns = new List<string>()
-            {
-                "Buy",
-                "Sell",
-                "Quit"
-            };
-            _scriptBox.CreateSelectBox(btns, btns.Count, 1, 400, 100);
-            _scriptBox.SetScriptWihtoutTyping("How may I serve you?");
         }
     }
 
@@ -343,7 +318,7 @@ public class FriendlyShopContents : ObjectContents
                         "Sell",
                         "Quit"
                     };
-                    _scriptBox.CreateSelectBox(btns, btns.Count, 1, 400, 100);
+                    ContentManager.Instance.ScriptBox.CreateSelectBox(btns, 1, 400, 100);
                 }
                 break;
             case FriendlyShopContentsState.SELECTING_ACTION:
@@ -354,7 +329,7 @@ public class FriendlyShopContents : ObjectContents
 
                         if (inputEvent == Define.InputSelectBoxEvent.SELECT)
                         {
-                            GridLayoutSelectBox selectBox = _scriptBox.ScriptSelectBox;
+                            GridLayoutSelectBox selectBox = ContentManager.Instance.ScriptBox.ScriptSelectBox;
 
                             if (selectBox.GetSelectedBtnData() as string == "Buy")
                             {
@@ -363,24 +338,16 @@ public class FriendlyShopContents : ObjectContents
                                     _isLoading = true;
 
                                     C_ShopItemList itemListPacket = new C_ShopItemList();
-                                    itemListPacket.PlayerId = _scene.MyPlayer.Id;
+                                    itemListPacket.PlayerId = Managers.Object.MyPlayerController.Id;
 
                                     Managers.Network.Send(itemListPacket);
                                 }
                             }
                             else if (selectBox.GetSelectedBtnData() as string == "Sell")
                             {
-                                if (!_isLoading)
-                                {
-                                    C_EnterPlayerBagScene enterBagScene = new C_EnterPlayerBagScene();
-                                    enterBagScene.PlayerId = _scene.MyPlayer.Id;
+                                State = FriendlyShopContentsState.Inactiving;
 
-                                    Managers.Network.SavePacket(enterBagScene);
-
-                                    _scene.ScreenEffecter.PlayEffect("FadeOut");
-
-                                    State = FriendlyShopContentsState.MOVING_SCENE;
-                                }
+                                ContentManager.Instance.OpenBag();
                             }
                             else if (selectBox.GetSelectedBtnData() as string == "Quit")
                             {
@@ -390,7 +357,7 @@ public class FriendlyShopContents : ObjectContents
                                 {
                                     "Please come again!"
                                 };
-                                _scriptBox.BeginScriptTyping(scripts);
+                                ContentManager.Instance.ScriptBox.BeginScriptTyping(scripts);
                             }
                         }
                         else if (inputEvent == Define.InputSelectBoxEvent.BACK)
@@ -401,7 +368,7 @@ public class FriendlyShopContents : ObjectContents
                             {
                                 "Please come again!"
                             };
-                            _scriptBox.BeginScriptTyping(scripts);
+                            ContentManager.Instance.ScriptBox.BeginScriptTyping(scripts);
                         }
                     }
                 }
@@ -413,16 +380,12 @@ public class FriendlyShopContents : ObjectContents
                         _isLoading = true;
 
                         C_FinishNpcTalk finishTalk = new C_FinishNpcTalk();
-                        finishTalk.PlayerId = _scene.MyPlayer.Id;
+                        finishTalk.PlayerId = Managers.Object.MyPlayerController.Id;
 
                         Managers.Network.Send(finishTalk);
                     }
 
-                    State = FriendlyShopContentsState.NONE;
-
-                    ((GameScene)_scene).FinishContents();
-
-                    _scene.MyPlayer.State = CreatureState.Idle;
+                    FinishContent();
                 }
                 break;
             case FriendlyShopContentsState.SELECTING_ITEM_TO_BUY:
@@ -439,7 +402,7 @@ public class FriendlyShopContents : ObjectContents
                             {
                                 "Please come again!"
                             };
-                            _scriptBox.BeginScriptTyping(scripts);
+                            ContentManager.Instance.ScriptBox.BeginScriptTyping(scripts);
                         }
                         else if (inputEvent == Define.InputSelectBoxEvent.SELECT)
                         {
@@ -450,7 +413,7 @@ public class FriendlyShopContents : ObjectContents
                                 _isLoading = true;
 
                                 C_GetItemCount getItemCount = new C_GetItemCount();
-                                getItemCount.PlayerId = _scene.MyPlayer.Id;
+                                getItemCount.PlayerId = Managers.Object.MyPlayerController.Id;
                                 getItemCount.ItemCategory = selectedItem.ItemCategory;
                                 getItemCount.ItemName = selectedItem.ItemName;
 
@@ -461,7 +424,7 @@ public class FriendlyShopContents : ObjectContents
                             {
                                 $"{selectedItem.ItemName}? Certainly. How many would you like?"
                             };
-                            _scriptBox.BeginScriptTyping(scripts, true);
+                            ContentManager.Instance.ScriptBox.BeginScriptTyping(scripts, true);
 
                             State = FriendlyShopContentsState.ASKING_QUANTITY;
                         }
@@ -544,7 +507,7 @@ public class FriendlyShopContents : ObjectContents
                             {
                                 $"{selectedItem.ItemName}? And you wanted {quantity}?\nThat will be {selectedItem.ItemPrice * quantity}$."
                             };
-                            _scriptBox.BeginScriptTyping(scripts, true);
+                            ContentManager.Instance.ScriptBox.BeginScriptTyping(scripts, true);
                         }
                     }
                     else
@@ -563,7 +526,7 @@ public class FriendlyShopContents : ObjectContents
                         "Yes",
                         "No"
                     };
-                    _scriptBox.CreateSelectBox(btns, btns.Count, 1, 400, 100);
+                    ContentManager.Instance.ScriptBox.CreateSelectBox(btns, 1, 400, 100);
                 }
                 break;
             case FriendlyShopContentsState.SELECTING_TO_BUY:
@@ -578,14 +541,14 @@ public class FriendlyShopContents : ObjectContents
                         }
                         else if (inputEvent == Define.InputSelectBoxEvent.SELECT)
                         {
-                            GridLayoutSelectBox selectBox = _scriptBox.ScriptSelectBox;
+                            GridLayoutSelectBox selectBox = ContentManager.Instance.ScriptBox.ScriptSelectBox;
 
                             if (selectBox.GetSelectedBtnData() as string == "Yes")
                             {
                                 if (!_isLoading)
                                 {
                                     C_BuyItem buyItemPacket = new C_BuyItem();
-                                    buyItemPacket.PlayerId = _scene.MyPlayer.Id;
+                                    buyItemPacket.PlayerId = Managers.Object.MyPlayerController.Id;
                                     buyItemPacket.ItemIdx = _shopListBox.GetSelectedIdx();
                                     buyItemPacket.ItemQuantity = _countingBox.GetCurrentCount();
 
@@ -595,7 +558,7 @@ public class FriendlyShopContents : ObjectContents
                             else if (selectBox.GetSelectedBtnData() as string == "No")
                             {
                                 string script = $"How many would you like?";
-                                _scriptBox.SetScriptWihtoutTyping(script);
+                                ContentManager.Instance.ScriptBox.SetScriptWihtoutTyping(script);
 
                                 State = FriendlyShopContentsState.SELECTING_QUANTITY;
                             }
@@ -611,17 +574,44 @@ public class FriendlyShopContents : ObjectContents
             case FriendlyShopContentsState.FAILED_BUY_SCRIPTING:
                 {
                     string script = $"How many would you like?";
-                    _scriptBox.SetScriptWihtoutTyping(script);
+                    ContentManager.Instance.ScriptBox.SetScriptWihtoutTyping(script);
 
                     State = FriendlyShopContentsState.SELECTING_QUANTITY;
                 }
                 break;
-            case FriendlyShopContentsState.MOVING_SCENE:
+            case FriendlyShopContentsState.Inactiving:
                 {
-                    if (Managers.Network.Packet is C_EnterPlayerBagScene)
-                        Managers.Scene.LoadScene(Define.Scene.Bag);
+                    List<string> scripts = new List<string>()
+                    {
+                        "Do you need anything else?"
+                    };
+                    ContentManager.Instance.BeginScriptTyping(scripts);
+
+                    State = FriendlyShopContentsState.AskingActionAgain;
+                }
+                break;
+            case FriendlyShopContentsState.AskingActionAgain:
+                {
+                    State = FriendlyShopContentsState.SELECTING_ACTION;
+
+                    List<string> btns = new List<string>()
+                    {
+                        "Buy",
+                        "Sell",
+                        "Quit"
+                    };
+                    ContentManager.Instance.ScriptBox.CreateSelectBox(btns, 1, 400, 100);
                 }
                 break;
         }
+    }
+
+    public override void FinishContent()
+    {
+        State = FriendlyShopContentsState.NONE;
+
+        Managers.Scene.CurrentScene.FinishContents();
+
+        Managers.Object.MyPlayerController.State = CreatureState.Idle;
     }
 }

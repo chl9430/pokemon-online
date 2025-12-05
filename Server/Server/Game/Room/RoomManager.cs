@@ -16,8 +16,10 @@ namespace Server
 
         Dictionary<RoomType, Dictionary<int, GameRoom>> _rooms = new Dictionary<RoomType, Dictionary<int, GameRoom>>();
         Dictionary<int, PokemonExchangeRoom> _exchangeRooms = new Dictionary<int, PokemonExchangeRoom>();
+        Dictionary<int, PokemonBattleRoom> _battleRooms = new Dictionary<int, PokemonBattleRoom>();
 
         int _exchangeRoomId = 1;
+        int _battleRoomId = 1;
 
         public GameRoom Add(int mapId, RoomType roomType)
         {
@@ -59,6 +61,20 @@ namespace Server
             }
 
             return exchangeRoom;
+        }
+
+        public PokemonBattleRoom AddBattleRoom(int maxPlayerCnt)
+        {
+            PokemonBattleRoom battleRoom = new PokemonBattleRoom(maxPlayerCnt);
+
+            lock (_lock)
+            {
+                battleRoom.RoomId = _battleRoomId;
+                _battleRooms.Add(_battleRoomId, battleRoom);
+                _battleRoomId++;
+            }
+
+            return battleRoom;
         }
 
         public bool Remove(RoomType roomType, int roomId)

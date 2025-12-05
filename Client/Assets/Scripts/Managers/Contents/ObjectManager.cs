@@ -5,9 +5,11 @@ using UnityEngine;
 public class ObjectManager
 {
     PlayerInfo _playerInfo;
+    MyPlayerController _myPlayerController;
     Dictionary<int, GameObject> _objects = new Dictionary<int, GameObject>();
 
     public PlayerInfo PlayerInfo { get {  return _playerInfo; } set { _playerInfo = value; } }
+    public MyPlayerController MyPlayerController { get { return _myPlayerController; } set { _myPlayerController = value; } }
 
     public static GameObjectType GetObjectTypeById(int id)
     {
@@ -17,18 +19,23 @@ public class ObjectManager
 
     public void Add(GameObject go, ObjectInfo info)
     {
-        GameObjectType objectType = GetObjectTypeById(info.ObjectId);
+        // GameObjectType objectType = GetObjectTypeById(info.ObjectId);
 
-        if (objectType == GameObjectType.Player)
+        BaseController bc = go.GetComponent<BaseController>();
+
+        if (info.ObjectType == GameObjectType.Player)
         {
-            BaseController bc = go.GetComponent<PlayerController>();
+            if (bc is MyPlayerController)
+            {
+                _myPlayerController = (MyPlayerController)bc;
+            }
+
             bc.PosInfo = info.PosInfo;
             bc.SyncPos();
             bc.Id = info.ObjectId;
         }
-        else if (objectType == GameObjectType.Npc)
+        else if (info.ObjectType == GameObjectType.Npc)
         {
-            BaseController bc = go.GetComponent<BaseController>();
             bc.PosInfo = info.PosInfo;
             bc.SyncPos();
             bc.Id = info.ObjectId;

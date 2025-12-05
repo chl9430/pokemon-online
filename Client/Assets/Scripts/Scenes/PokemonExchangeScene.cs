@@ -25,7 +25,7 @@ public enum PokemonExchangeSceneState
 public class PokemonExchangeScene : BaseScene
 {
     PlayerInfo _myPlayerInfo;
-    PlayerInfo _otherPlayerInfo;
+    OtherPlayerInfo _otherPlayerInfo;
     object _data;
     PokemonExchangeSceneState _state = PokemonExchangeSceneState.NONE;
 
@@ -40,7 +40,7 @@ public class PokemonExchangeScene : BaseScene
                 _pokemonSelectArea.State = CancelSelectAreaState.SELECTING;
                 _actionSelectBox.gameObject.SetActive(false);
                 _actionSelectBox.UIState = GridLayoutSelectBoxState.NONE;
-                _scriptBox.gameObject.SetActive(false);
+                ContentManager.Instance.ScriptBox.gameObject.SetActive(false);
             }
             else if (_state == PokemonExchangeSceneState.SELECTING_ACTION)
             {
@@ -50,14 +50,14 @@ public class PokemonExchangeScene : BaseScene
             }
             else if (_state == PokemonExchangeSceneState.MOVING_TO_SUMMARY_SCENE)
             {
-                _enterEffect.PlayEffect("FadeOut");
+                ContentManager.Instance.PlayScreenEffecter("BlackFadeOut");
                 _pokemonSelectArea.State = CancelSelectAreaState.NONE;
                 _actionSelectBox.UIState = GridLayoutSelectBoxState.NONE;
-                _scriptBox.ScriptSelectBox.UIState = GridLayoutSelectBoxState.NONE;
+                ContentManager.Instance.ScriptBox.ScriptSelectBox.UIState = GridLayoutSelectBoxState.NONE;
             }
             else if (_state == PokemonExchangeSceneState.FINISH_EXCHANGE_SCRIPTING)
             {
-                _scriptBox.HideSelectBox();
+                ContentManager.Instance.ScriptBox.HideSelectBox();
             }
             else if (_state == PokemonExchangeSceneState.EXIT_EXCHANGE_SCRIPTING)
             {
@@ -76,7 +76,6 @@ public class PokemonExchangeScene : BaseScene
     [SerializeField] TextMeshProUGUI _otherPlayerName;
     [SerializeField] DynamicButton _cancelButton;
     [SerializeField] GridLayoutSelectBox _actionSelectBox;
-    [SerializeField] ScriptBoxUI _scriptBox;
 
     protected override void Init()
     {
@@ -105,7 +104,7 @@ public class PokemonExchangeScene : BaseScene
         {
             S_EnterPokemonExchangeScene enterExchangeScenePacket = packet as S_EnterPokemonExchangeScene;
             PlayerInfo playerInfo = enterExchangeScenePacket.PlayerInfo;
-            PlayerInfo otherPlayerInfo = enterExchangeScenePacket.OtherPlayerInfo;
+            OtherPlayerInfo otherPlayerInfo = enterExchangeScenePacket.OtherPlayerInfo;
             IList myPokemonSums = enterExchangeScenePacket.MyPokemonSums;
             IList otherPokemonSums = enterExchangeScenePacket.OtherPokemonSums;
             ExchangeCursorPos myCursorPos = enterExchangeScenePacket.MyCursorPos;
@@ -116,7 +115,7 @@ public class PokemonExchangeScene : BaseScene
             _myPlayerInfo = playerInfo;
             _otherPlayerInfo = otherPlayerInfo;
 
-            _enterEffect.PlayEffect("FadeIn");
+            ContentManager.Instance.PlayScreenEffecter("BlackFadeIn");
 
             // 나와 상대방 이름 렌더링
             _playerName.text = playerInfo.PlayerName;
@@ -180,7 +179,7 @@ public class PokemonExchangeScene : BaseScene
             List<string> scripts = new List<string>() {
                 $"Do you want to exchange with {otherPokemonSum.PokemonInfo.NickName}?"
             };
-            _scriptBox.BeginScriptTyping(scripts, true);
+            ContentManager.Instance.ScriptBox.BeginScriptTyping(scripts, true);
             _data = otherPokemonSum;
         }
         else if (packet is S_FinalAnswerToExchange)
@@ -203,7 +202,7 @@ public class PokemonExchangeScene : BaseScene
                 {
                     $"The other party canceled the exchange.",
                 };
-                _scriptBox.BeginScriptTyping(script, true);
+                ContentManager.Instance.ScriptBox.BeginScriptTyping(script, true);
             }
             else
             {
@@ -221,7 +220,7 @@ public class PokemonExchangeScene : BaseScene
                     $"Got {otherPokemonSum.PokemonInfo.NickName} from {_otherPlayerInfo.PlayerName}!",
                     $"Treat {otherPokemonSum.PokemonInfo.NickName} dearly!",
                 };
-                _scriptBox.BeginScriptTyping(script, true);
+                ContentManager.Instance.ScriptBox.BeginScriptTyping(script, true);
             }
         }
         else if (packet is S_ExitPokemonExchangeScene)
@@ -234,7 +233,7 @@ public class PokemonExchangeScene : BaseScene
             {
                 $"{exitPlayerInfo.PlayerName} has ended the exchange."
             };
-            _scriptBox.BeginScriptTyping(scripts, true);
+            ContentManager.Instance.ScriptBox.BeginScriptTyping(scripts, true);
         }
     }
 
@@ -258,7 +257,7 @@ public class PokemonExchangeScene : BaseScene
                             List<string> scripts = new List<string>() {
                                 $"Do you want to exchange with {otherPokemonSum.PokemonInfo.NickName}?"
                             };
-                            _scriptBox.BeginScriptTyping(scripts, true);
+                            ContentManager.Instance.ScriptBox.BeginScriptTyping(scripts, true);
                             _data = otherPokemonSum;
                         }
                         else
@@ -288,7 +287,7 @@ public class PokemonExchangeScene : BaseScene
                                 {
                                     "Return to the previous screen."
                                 };
-                                _scriptBox.BeginScriptTyping(scripts, true);
+                                ContentManager.Instance.ScriptBox.BeginScriptTyping(scripts, true);
                             }
                             else
                             {
@@ -326,7 +325,7 @@ public class PokemonExchangeScene : BaseScene
                                 List<string> scripts = new List<string>() {
                                     "Please wait for the opponent's answer."
                                 };
-                                _scriptBox.BeginScriptTyping(scripts, true);
+                                ContentManager.Instance.ScriptBox.BeginScriptTyping(scripts, true);
                             }
                             else if (_actionSelectBox.GetSelectedBtnData() as string == "Summary")
                             {
@@ -364,7 +363,7 @@ public class PokemonExchangeScene : BaseScene
                         "No",
                     };
                     _state = PokemonExchangeSceneState.SELECTING_EXCHANGE_ACTION;
-                    _scriptBox.CreateSelectBox(btnNames, btnNames.Count, 1, 400, 100);
+                    ContentManager.Instance.ScriptBox.CreateSelectBox(btnNames, 1, 400, 100);
                 }
                 break;
             case PokemonExchangeSceneState.SELECTING_EXCHANGE_ACTION:
@@ -375,7 +374,7 @@ public class PokemonExchangeScene : BaseScene
 
                         if (inputEvent == Define.InputSelectBoxEvent.SELECT)
                         {
-                            GridLayoutSelectBox selectBox = _scriptBox.ScriptSelectBox;
+                            GridLayoutSelectBox selectBox = ContentManager.Instance.ScriptBox.ScriptSelectBox;
                             if (selectBox.GetSelectedBtnData() as string == "Yes")
                             {
                                 C_FinalAnswerToExchange answerPacket = new C_FinalAnswerToExchange();
@@ -387,10 +386,10 @@ public class PokemonExchangeScene : BaseScene
                                 List<string> scripts = new List<string>() {
                                     "Please wait for the opponent's answer."
                                 };
-                                _scriptBox.BeginScriptTyping(scripts, true);
+                                ContentManager.Instance.ScriptBox.BeginScriptTyping(scripts, true);
 
                                 _state = PokemonExchangeSceneState.WAITING_FINAL_ANSWER;
-                                _scriptBox.HideSelectBox();
+                                ContentManager.Instance.ScriptBox.HideSelectBox();
                             }
                             else if (selectBox.GetSelectedBtnData() as string == "Summary")
                             {
@@ -414,7 +413,7 @@ public class PokemonExchangeScene : BaseScene
                                 List<string> scripts = new List<string>() {
                                     "The exchange has been canceled."
                                 };
-                                _scriptBox.BeginScriptTyping(scripts, true);
+                                ContentManager.Instance.ScriptBox.BeginScriptTyping(scripts, true);
                             }
                         }
                     }
@@ -438,7 +437,7 @@ public class PokemonExchangeScene : BaseScene
                 break;
             case PokemonExchangeSceneState.EXIT_EXCHANGE_SCRIPTING:
                 {
-                    _enterEffect.PlayEffect("FadeOut");
+                    ContentManager.Instance.PlayScreenEffecter("BlackFadeOut");
 
                     _state = PokemonExchangeSceneState.MOVING_TO_GAME_SCENE;
                 }

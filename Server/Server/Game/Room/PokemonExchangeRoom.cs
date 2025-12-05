@@ -68,7 +68,7 @@ namespace Server
                     if (otherInfo.player.Id == info.player.Id)
                         continue;
 
-                    s_EnterScenePacket.OtherPlayerInfo = otherInfo.player.MakePlayerInfo();
+                    s_EnterScenePacket.OtherPlayerInfo = otherInfo.player.MakeOtherPlayerInfo();
 
                     foreach (Pokemon pokemon in otherInfo.player.Pokemons)
                     {
@@ -101,7 +101,7 @@ namespace Server
             {
                 if (player.Id != info.player.Id)
                 {
-                    s_EnterScenePacket.OtherPlayerInfo = info.player.MakePlayerInfo();
+                    s_EnterScenePacket.OtherPlayerInfo = info.player.MakeOtherPlayerInfo();
 
                     foreach (Pokemon pokemon in info.player.Pokemons)
                         s_EnterScenePacket.OtherPokemonSums.Add(pokemon.MakePokemonSummary());

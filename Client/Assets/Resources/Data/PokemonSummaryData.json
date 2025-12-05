@@ -30,31 +30,23 @@
                 },
                 {
                     "learnLevel": "1",
-                    "moveName": "Thundershock"
-                },
-                {
-                    "learnLevel": "5",
-                    "moveName": "Thunderbolt"
-                },
-                {
-                    "learnLevel": "10",
                     "moveName": "Quick Attack"
                 },
                 {
-                    "learnLevel": "13",
-                    "moveName": "Thundershock"
-                },
-                {
-                    "learnLevel": "18",
-                    "moveName": "Thunderbolt"
-                },
-                {
-                    "learnLevel": "21",
+                    "learnLevel": "1",
                     "moveName": "Quick Attack"
                 },
                 {
-                    "learnLevel": "26",
+                    "learnLevel": "3",
                     "moveName": "Thundershock"
+                },
+                {
+                    "learnLevel": "6",
+                    "moveName": "Thundershock"
+                },
+                {
+                    "learnLevel": "8",
+                    "moveName": "Thunderbolt"
                 }
             ]
         },
@@ -88,15 +80,27 @@
                 },
                 {
                     "learnLevel": "1",
-                    "moveName": "Vine Whip"
+                    "moveName": "Tackle"
                 },
                 {
                     "learnLevel": "1",
+                    "moveName": "Tackle"
+                },
+                {
+                    "learnLevel": "3",
+                    "moveName": "Vine Whip"
+                },
+                {
+                    "learnLevel": "6",
+                    "moveName": "Vine Whip"
+                },
+                {
+                    "learnLevel": "8",
                     "moveName": "Razor Leaf"
                 },
                 {
-                    "learnLevel": "1",
-                    "moveName": "Vine Whip"
+                    "learnLevel": "16",
+                    "moveName": "Razor Leaf"
                 }
             ],
             "evolutionChain": {
@@ -222,31 +226,27 @@
                 },
                 {
                     "learnLevel": "1",
-                    "moveName": "Ember"
-                },
-                {
-                    "learnLevel": "1",
-                    "moveName": "Fire Fang"
+                    "moveName": "Scratch"
                 },
                 {
                     "learnLevel": "1",
                     "moveName": "Scratch"
+                },
+                {
+                    "learnLevel": "3",
+                    "moveName": "Ember"
                 },
                 {
                     "learnLevel": "6",
                     "moveName": "Ember"
                 },
                 {
-                    "learnLevel": "15",
+                    "learnLevel": "8",
                     "moveName": "Fire Fang"
                 },
                 {
-                    "learnLevel": "25",
-                    "moveName": "Scratch"
-                },
-                {
-                    "learnLevel": "28",
-                    "moveName": "Ember"
+                    "learnLevel": "16",
+                    "moveName": "Fire Fang"
                 }
             ],
             "evolutionChain": {
@@ -367,11 +367,19 @@
                     "moveName": "Tackle"
                 },
                 {
-                    "learnLevel": "16",
+                    "learnLevel": "1",
+                    "moveName": "Tackle"
+                },
+                {
+                    "learnLevel": "3",
                     "moveName": "Water Gun"
                 },
                 {
-                    "learnLevel": "22",
+                    "learnLevel": "6",
+                    "moveName": "Water Gun"
+                },
+                {
+                    "learnLevel": "8",
                     "moveName": "Bubble"
                 }
             ],
@@ -427,14 +435,6 @@
                 {
                     "learnLevel": "16",
                     "moveName": "Water Gun"
-                },
-                {
-                    "learnLevel": "9",
-                    "moveName": "Tackle"
-                },
-                {
-                    "learnLevel": "22",
-                    "moveName": "Bubble"
                 }
             ],
             "evolutionChain": {

@@ -124,6 +124,21 @@ public struct FriendlyShopItemDictData
     public ShopItemInfo[] shopItemInfos;
 }
 
+public struct NPCPokemonInfo
+{
+    public string pokemonName;
+    public int pokemonLevel;
+}
+
+public struct BattleNPCDictData
+{
+    public int npcId;
+    public NPCPokemonInfo[] battlePokemons;
+    public string[] beforeBattleScripts;
+    public string[] afterBattleScripts;
+    public int rewardMoney;
+}
+
 namespace Server
 {
     #region PokemonSummary
@@ -264,6 +279,45 @@ namespace Server
             foreach (FriendlyShopItemDictData data in shopItems)
             {
                 dict.Add(data.shopRoomId, data.shopItemInfos);
+            }
+            return dict;
+        }
+    }
+    #endregion
+
+    #region BattleNPC
+    [Serializable]
+    public class BattleNPC : ILoader<int, BattleNPCDictData>
+    {
+        public List<BattleNPCDictData> battleNPCs = new List<BattleNPCDictData>();
+
+        public Dictionary<int, BattleNPCDictData> MakeDict()
+        {
+            Dictionary<int, BattleNPCDictData> dict = new Dictionary<int, BattleNPCDictData>();
+            foreach (BattleNPCDictData data in battleNPCs)
+            {
+                dict.Add(data.npcId, data);
+            }
+            return dict;
+        }
+    }
+    #endregion
+
+    #region ItemBaseLoader
+    [Serializable]
+    public class ItemBaseLoader : ILoader<ItemCategory, List<ItemBase>>
+    {
+        public List<ItemBase> itemBases = new List<ItemBase>();
+
+        public Dictionary<ItemCategory, List<ItemBase>> MakeDict()
+        {
+            Dictionary<ItemCategory, List<ItemBase>> dict = new Dictionary<ItemCategory, List<ItemBase>>();
+            foreach (var itemBase in itemBases)
+            {
+                if (dict.ContainsKey(itemBase._itemCategory) == false)
+                    dict.Add(itemBase._itemCategory, new List<ItemBase>());
+                
+                dict[itemBase._itemCategory].Add(itemBase);
             }
             return dict;
         }

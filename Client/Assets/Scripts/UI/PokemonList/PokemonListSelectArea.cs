@@ -14,16 +14,11 @@ public enum PokemonSelectAreaState
 
 public class PokemonListSelectArea : MonoBehaviour
 {
-    int _row;
-    int _col;
-    int _x = 0;
-    int _y = 0;
-    int _selectedX = 0;
-    int _selectedY = 0;
+    int _curIdx;
+    int _switchIdx;
     int _moveFinishCnt = 0;
     PokemonSelectAreaState _state;
-    BaseScene _scene;
-    DynamicButton[,] _btnGrid;
+    List<DynamicButton> _btnGrid = new List<DynamicButton>();
 
     [SerializeField] List<Transform> _cardZones;
     [SerializeField] DynamicButton _mainPokemonCard;
@@ -37,13 +32,8 @@ public class PokemonListSelectArea : MonoBehaviour
             _state = value;
 
             if (_state == PokemonSelectAreaState.SELECTING_POKEMON || _state == PokemonSelectAreaState.SELECTING_TO_SWITCH_POKEMON)
-                _scene.DoNextAction(_x * _col + _y);
+                Managers.Scene.CurrentScene.DoNextAction(_curIdx);
         }
-    }
-
-    void Start()
-    {
-        _scene = Managers.Scene.CurrentScene;
     }
 
     void Update()
@@ -61,198 +51,114 @@ public class PokemonListSelectArea : MonoBehaviour
 
     protected void ChooseAction()
     {
-        if (Input.GetKeyDown(KeyCode.LeftArrow))
+        if (Input.GetKeyDown(KeyCode.DownArrow))
         {
-            if (_y == 0)
+            if (_curIdx == _btnGrid.Count - 1)
                 return;
 
-            _btnGrid[_x, _y].SetSelectedOrNotSelected(false);
+            _btnGrid[_curIdx].SetSelectedOrNotSelected(false);
 
-            _y--;
+            _curIdx++;
 
-            _btnGrid[_x, _y].SetSelectedOrNotSelected(true);
+            _btnGrid[_curIdx].SetSelectedOrNotSelected(true);
 
             if (_state == PokemonSelectAreaState.SELECTING_TO_SWITCH_POKEMON)
             {
-                _btnGrid[_selectedX, _selectedY].SetSelectedOrNotSelected(true);
+                _btnGrid[_switchIdx].SetSelectedOrNotSelected(true);
             }
 
-            _scene.DoNextAction(_x * _col + _y);
-        }
-        else if (Input.GetKeyDown(KeyCode.RightArrow))
-        {
-            if (_y == _col - 1)
-                return;
-
-            _btnGrid[_x, _y].SetSelectedOrNotSelected(false);
-
-            _y++;
-
-            _btnGrid[_x, _y].SetSelectedOrNotSelected(true);
-
-            if (_state == PokemonSelectAreaState.SELECTING_TO_SWITCH_POKEMON)
-            {
-                _btnGrid[_selectedX, _selectedY].SetSelectedOrNotSelected(true);
-            }
-
-            _scene.DoNextAction(_x * _col + _y);
-        }
-        else if (Input.GetKeyDown(KeyCode.DownArrow))
-        {
-            if (_x == _row - 1)
-                return;
-
-            _btnGrid[_x, _y].SetSelectedOrNotSelected(false);
-
-            _x++;
-
-            _btnGrid[_x, _y].SetSelectedOrNotSelected(true);
-
-            if (_state == PokemonSelectAreaState.SELECTING_TO_SWITCH_POKEMON)
-            {
-                _btnGrid[_selectedX, _selectedY].SetSelectedOrNotSelected(true);
-            }
-
-            _scene.DoNextAction(_x * _col + _y);
+            Managers.Scene.CurrentScene.DoNextAction(_curIdx);
         }
         else if (Input.GetKeyDown(KeyCode.UpArrow))
         {
-            if (_x == 0)
+            if (_curIdx == 0)
                 return;
 
-            _btnGrid[_x, _y].SetSelectedOrNotSelected(false);
+            _btnGrid[_curIdx].SetSelectedOrNotSelected(false);
 
-            _x--;
+            _curIdx--;
 
-            _btnGrid[_x, _y].SetSelectedOrNotSelected(true);
+            _btnGrid[_curIdx].SetSelectedOrNotSelected(true);
 
             if (_state == PokemonSelectAreaState.SELECTING_TO_SWITCH_POKEMON)
             {
-                _btnGrid[_selectedX, _selectedY].SetSelectedOrNotSelected(true);
+                _btnGrid[_switchIdx].SetSelectedOrNotSelected(true);
             }
 
-            _scene.DoNextAction(_x * _col + _y);
+            Managers.Scene.CurrentScene.DoNextAction(_curIdx);
         }
         else if (Input.GetKeyDown(KeyCode.D))
         {
             if (_state != PokemonSelectAreaState.SELECTING_TO_SWITCH_POKEMON)
             {
-                _selectedX = _x;
-                _selectedY = _y;
+                _switchIdx = _curIdx;
             }
             else if (_state == PokemonSelectAreaState.SELECTING_TO_SWITCH_POKEMON)
             {
-                if (_x == _selectedX && _y == _selectedY)
+                if (_curIdx == _switchIdx)
                     return;
             }
 
-            _scene.DoNextAction(Define.InputSelectBoxEvent.SELECT);
+            Managers.Scene.CurrentScene.DoNextAction(Define.InputSelectBoxEvent.SELECT);
         }
         else if (Input.GetKeyDown(KeyCode.S))
         {
             if (_state == PokemonSelectAreaState.SELECTING_TO_SWITCH_POKEMON)
             {
-                ResetSelectedPokemon();
+                ResetSelectedPokemon(false);
             }
 
-            _scene.DoNextAction(Define.InputSelectBoxEvent.BACK);
+            Managers.Scene.CurrentScene.DoNextAction(Define.InputSelectBoxEvent.BACK);
         }
     }
 
-    public void CreateButton(List<object> btnDatas, int col = 1)
+    public void CreateButton(List<Pokemon> myPokemons)
     {
-        if (_scene == null)
-            _scene = Managers.Scene.CurrentScene;
-
-        _row = (btnDatas.Count - 1) / col + 2;
-        _col = col;
-
-        DynamicButton[,] btnGrid = new DynamicButton[_row, _col];
-        _btnGrid = btnGrid;
-
-        _x = 0;
-        _y = 0;
-
-        int lastY = 0;
-
-        for (int i = 0; i < _btnGrid.GetLength(0); i++)
+        // 기존에 있던 버튼들 삭제
+        for (int i = 0; i < _btnGrid.Count; i++)
         {
-            for (int j = 0; j < _btnGrid.GetLength(1); j++)
+            if (i < _btnGrid.Count - 1)
+                Destroy(_btnGrid[i].gameObject);
+        }
+
+        _btnGrid.Clear();
+
+        for (int i = 0; i < myPokemons.Count; i++)
+        {
+            if (i == 0)
             {
-                if (_row > _col)
-                {
-                    if (i * _col + j < btnDatas.Count)
-                    {
-                        DynamicButton btn;
-
-                        if (i == 0 && j == 0)
-                            btn = GameObject.Instantiate(_mainPokemonCard, _cardZones[i * _col + j]);
-                        else
-                            btn = GameObject.Instantiate(_subPokemonCard, _cardZones[i * _col + j]);
-
-                        _btnGrid[i, j] = btn;
-
-                        btn.BtnData = btnDatas[i * _col + j];
-
-                        lastY = j;
-                    }
-                }
-                else
-                {
-                    if (i * _row + j < btnDatas.Count)
-                    {
-                        DynamicButton btn;
-
-                        if (i == 0 && j == 0)
-                            btn = GameObject.Instantiate(_mainPokemonCard, _cardZones[i * _row + j]);
-                        else
-                            btn = GameObject.Instantiate(_subPokemonCard, _cardZones[i * _row + j]);
-
-                        _btnGrid[i, j] = btn;
-
-                        btn.BtnData = btnDatas[i * _row + j];
-
-                        lastY = j;
-                    }
-                }
+                _btnGrid.Add(Instantiate(_mainPokemonCard, _cardZones[i]));
+                _btnGrid[i].GetComponent<PokemonCard>().FillPokemonCard(myPokemons[i]);
+                _btnGrid[i].BtnData = myPokemons[i];
+            }
+            else
+            {
+                _btnGrid.Add(Instantiate(_subPokemonCard, _cardZones[i]));
+                _btnGrid[i].GetComponent<PokemonCard>().FillPokemonCard(myPokemons[i]);
+                _btnGrid[i].BtnData = myPokemons[i];
             }
         }
 
-        _btnGrid[_btnGrid.GetLength(0) - 1, lastY] = _cancelBtn;
-        _btnGrid[_btnGrid.GetLength(0) - 1, lastY].SetButtonName("Cancel");
+        _cancelBtn.SetButtonName("Cancel");
+        _cancelBtn.SetSelectedOrNotSelected(false);
+        _btnGrid.Add(_cancelBtn);
 
-        _btnGrid[_x, _y].SetSelectedOrNotSelected(true);
+        _btnGrid[0].SetSelectedOrNotSelected(true);
     }
 
-    public List<DynamicButton> ChangeBtnGridDataToList()
+    public DynamicButton GetSelectedBtn()
     {
-        List<DynamicButton> btns = new List<DynamicButton>();
-
-        for (int i = 0; i < _btnGrid.GetLength(0) - 1; i++)
-        {
-            for (int j = 0; j < _btnGrid.GetLength(1); j++)
-            {
-                if (_btnGrid[i, j] != null)
-                    btns.Add(_btnGrid[i, j]);
-            }
-        }
-
-        return btns;
+        return _btnGrid[_curIdx];
     }
 
     public object GetSelectedBtnData()
     {
-        return _btnGrid[_x, _y].BtnData;
-    }
-
-    public object GetSelectedSwitchBtnData()
-    {
-        return _btnGrid[_selectedX, _selectedY].BtnData;
+        return _btnGrid[_curIdx].BtnData;
     }
 
     public int GetSelectedIndex()
     {
-        return _x * _col + _y;
+        return _curIdx;
     }
 
     public void CountContentMoving()
@@ -263,14 +169,22 @@ public class PokemonListSelectArea : MonoBehaviour
         {
             _moveFinishCnt = 0;
 
-            _scene.DoNextAction();
+            Managers.Scene.CurrentScene.DoNextAction();
         }
     }
 
-    public void ResetSelectedPokemon()
+    public void ResetSelectedPokemon(bool resetCursor)
     {
-        _btnGrid[_selectedX, _selectedY].SetSelectedOrNotSelected(false);
-        _btnGrid[_x, _y].SetSelectedOrNotSelected(true);
+        _btnGrid[_switchIdx].SetSelectedOrNotSelected(false);
+
+        _btnGrid[_curIdx].SetSelectedOrNotSelected(false);
+
+        if (resetCursor)
+        {
+            _curIdx = 0;
+        }
+
+        _btnGrid[_curIdx].SetSelectedOrNotSelected(true);
     }
 
     public void MoveAndSwitchPokemonCard()
@@ -278,21 +192,44 @@ public class PokemonListSelectArea : MonoBehaviour
         int fromCardDir = 0;
         int toCardDir = 0;
 
-        if (_selectedX == 0 && _selectedY == 0)
+        if (_switchIdx == 0)
             fromCardDir = -1;
         else
             fromCardDir = 1;
 
-        if (_x == 0 && _y == 0)
+        if (_curIdx == 0)
             toCardDir = -1;
         else
             toCardDir = 1;
 
-        PokemonSummary temp = _btnGrid[_selectedX, _selectedY].BtnData as PokemonSummary;
-        _btnGrid[_selectedX, _selectedY].BtnData = _btnGrid[_x, _y].BtnData as PokemonSummary;
-        _btnGrid[_x, _y].BtnData = temp;
+        Pokemon temp = _btnGrid[_switchIdx].BtnData as Pokemon;
+        _btnGrid[_switchIdx].BtnData = _btnGrid[_curIdx].BtnData as Pokemon;
+        _btnGrid[_curIdx].BtnData = temp;
 
-        _btnGrid[_selectedX, _selectedY].GetComponent<PokemonCard>().SetDirection(fromCardDir, 2);
-        _btnGrid[_x, _y].GetComponent<PokemonCard>().SetDirection(toCardDir, 2);
+        _btnGrid[_switchIdx].GetComponent<PokemonCard>().SetDirection(fromCardDir, 2);
+        _btnGrid[_curIdx].GetComponent<PokemonCard>().SetDirection(toCardDir, 2);
+
+        // 실제 리스트도 변경
+        Managers.Object.MyPlayerController.SwitchPokemon(_curIdx, _switchIdx);
+    }
+
+    public bool IsFirstPokemonFainting()
+    {
+        Pokemon firstPokemon = _btnGrid[0].BtnData as Pokemon;
+
+        if (firstPokemon.PokemonInfo.PokemonStatus == PokemonStatusCondition.Fainting)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    public void AddNewPokemonBtn(Pokemon pokemon)
+    {
+        _btnGrid.Insert(_btnGrid.Count - 2, Instantiate(_subPokemonCard, _cardZones[_btnGrid.Count - 1]));
+        _btnGrid[_btnGrid.Count - 2].BtnData = pokemon;
     }
 }

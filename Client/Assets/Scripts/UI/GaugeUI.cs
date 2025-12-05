@@ -15,16 +15,9 @@ public class GaugeUI : MonoBehaviour
     float _curChangeRateTime;
     float _changeRateTime = 0.25f;
     HPBarUIState _uiState = HPBarUIState.NONE;
-    BaseScene _scene;
 
     [SerializeField] RectTransform _gauge;
     [SerializeField] TextMeshProUGUI _gaugeText;
-
-    void Start()
-    {
-        if (_scene == null)
-            _scene = Managers.Scene.CurrentScene;
-    }
 
     void Update()
     {
@@ -62,7 +55,7 @@ public class GaugeUI : MonoBehaviour
                         if (_curRate == _destRate)
                         {
                             _uiState = HPBarUIState.NONE;
-                            _scene.DoNextAction();
+                            Managers.Scene.CurrentScene.DoNextAction();
                         }
                     }
                 }

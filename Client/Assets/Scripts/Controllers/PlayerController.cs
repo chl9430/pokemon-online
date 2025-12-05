@@ -16,10 +16,19 @@ public class PlayerController : CreatureController
         {
             _name = value;
         }
+
+        get
+        {
+            return _name;
+        }
     }
 
     public PlayerGender PlayerGender
     {
+        get
+        {
+            return _gender;
+        }
         set
         {
             _gender = value;
@@ -30,6 +39,14 @@ public class PlayerController : CreatureController
     {
         get { return moveTimer; }
         set { moveTimer = value; }
+    }
+
+    public void SetPlayerInfo(OtherPlayerInfo playerInfo)
+    {
+        name = $"{playerInfo.PlayerName}_{playerInfo.ObjectInfo.ObjectId}";
+
+        _name = playerInfo.PlayerName;
+        _gender = playerInfo.PlayerGender;
     }
 
     protected override void Init()

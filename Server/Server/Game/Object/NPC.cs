@@ -5,9 +5,13 @@ namespace Server
 {
     public class NPC : GameObject
     {
+        NPCType _npcType;
+
+        public NPCType NPCType { set { _npcType = value; } }
+
         public NPC() : base()
         {
-            ObjectType = GameObjectType.Npc;
+            Info.ObjectType = GameObjectType.Npc;
         }
 
         public NPCInfo MakeNPCInfo()
@@ -15,6 +19,7 @@ namespace Server
             NPCInfo npcInfo = new NPCInfo();
             npcInfo.ObjectInfo = Info;
             npcInfo.NpcName = Name;
+            npcInfo.NpcType = _npcType;
 
             return npcInfo;
         }

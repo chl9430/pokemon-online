@@ -22,7 +22,6 @@ public class PokemonCard : MonoBehaviour
     PokemonCardState _state = PokemonCardState.NONE;
     RectTransform _rt;
     DynamicButton _dynamicButton;
-    BaseScene _scene;
     PokemonListSelectArea _pokemonSelectingZone;
 
     [SerializeField] Image _pokemonImg;
@@ -36,7 +35,6 @@ public class PokemonCard : MonoBehaviour
     {
         _rt = GetComponent<RectTransform>();
         _dynamicButton = GetComponent<DynamicButton>();
-        _scene = Managers.Scene.CurrentScene;
         _pokemonSelectingZone = GetComponentInParent<PokemonListSelectArea>();
     }
 
@@ -53,14 +51,19 @@ public class PokemonCard : MonoBehaviour
         }
     }
 
-    public void FillPokemonCard(PokemonSummary pokemonSum)
+    public void UpdatePokemonHP(int hp, int maxHp)
     {
-        Texture2D image = Managers.Resource.Load<Texture2D>($"Textures/Pokemon/{pokemonSum.PokemonInfo.PokemonName}_Icon");
+        _pokemonHp.text = $"HP : {hp.ToString()} / {maxHp.ToString()}";
+    }
+
+    public void FillPokemonCard(Pokemon pokemon)
+    {
+        Texture2D image = pokemon.PokemonIconImage;
 
         _pokemonImg.sprite = Sprite.Create(image, new Rect(0, 0, image.width, image.height), Vector2.one * 0.5f);
         _pokemonImg.SetNativeSize();
 
-        image = Managers.Resource.Load<Texture2D>($"Textures/UI/{pokemonSum.PokemonInfo.PokemonStatus}_Icon");
+        image = pokemon.PokemonStatusImage;
 
         if (image == null)
         {
@@ -80,14 +83,14 @@ public class PokemonCard : MonoBehaviour
             _pokemonImg.SetNativeSize();
         }
 
-        image = Managers.Resource.Load<Texture2D>($"Textures/Pokemon/PokemonGender_{pokemonSum.PokemonInfo.Gender}");
+        image = pokemon.PokemonGenderImage;
 
         _pokemonGenderImg.sprite = Sprite.Create(image, new Rect(0, 0, image.width, image.height), Vector2.one * 0.5f);
         _pokemonImg.SetNativeSize();
 
-        _pokemonNickname.text = pokemonSum.PokemonInfo.NickName;
-        _pokemonHp.text = $"HP : {pokemonSum.PokemonStat.Hp.ToString()} / {pokemonSum.PokemonStat.MaxHp.ToString()}";
-        _pokemonLevel.text = $"Lv.{pokemonSum.PokemonInfo.Level}";
+        _pokemonNickname.text = pokemon.PokemonInfo.NickName;
+        _pokemonHp.text = $"HP : {pokemon.PokemonStat.Hp.ToString()} / {pokemon.PokemonStat.MaxHp.ToString()}";
+        _pokemonLevel.text = $"Lv.{pokemon.PokemonInfo.Level}";
     }
 
     public void SetDirection(int dir, float speed)
@@ -120,7 +123,7 @@ public class PokemonCard : MonoBehaviour
             _rt.anchorMin = newMinPos;
             _rt.anchorMax = newMaxPos;
 
-            FillPokemonCard(_dynamicButton.BtnData as PokemonSummary);
+            FillPokemonCard(_dynamicButton.BtnData as Pokemon);
 
             SetDirection(_dir * -1, _speed);
             _state = PokemonCardState.MOVING_BACK;

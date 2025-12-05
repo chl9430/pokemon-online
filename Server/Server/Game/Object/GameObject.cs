@@ -9,7 +9,13 @@ namespace Server
 {
     public class GameObject
     {
-        public GameObjectType ObjectType { get; protected set; } = GameObjectType.None;
+        public GameObjectType ObjectType
+        {
+            get
+            {
+                return Info.ObjectType;
+            }
+        }
 
         public int Id
         {

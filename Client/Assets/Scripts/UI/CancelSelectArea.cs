@@ -14,7 +14,6 @@ public class CancelSelectArea : MonoBehaviour
     int _y;
     int _row;
     int _col;
-    BaseScene _scene;
     DynamicButton[,] _btnGrid;
     CancelSelectAreaState _state = CancelSelectAreaState.NONE;
 
@@ -30,7 +29,7 @@ public class CancelSelectArea : MonoBehaviour
             _state = value;
 
             if (_state == CancelSelectAreaState.SELECTING)
-                _scene.DoNextAction(_x * _col + _y);
+                Managers.Scene.CurrentScene.DoNextAction(_x * _col + _y);
         } 
     }
 
@@ -73,7 +72,7 @@ public class CancelSelectArea : MonoBehaviour
 
             _btnGrid[_x, _y].SetSelectedOrNotSelected(true);
 
-            _scene.DoNextAction(_x * _col + _y);
+            Managers.Scene.CurrentScene.DoNextAction(_x * _col + _y);
         }
         else if (Input.GetKeyDown(KeyCode.RightArrow))
         {
@@ -86,7 +85,7 @@ public class CancelSelectArea : MonoBehaviour
 
             _btnGrid[_x, _y].SetSelectedOrNotSelected(true);
 
-            _scene.DoNextAction(_x * _col + _y);
+            Managers.Scene.CurrentScene.DoNextAction(_x * _col + _y);
         }
         else if (Input.GetKeyDown(KeyCode.DownArrow))
         {
@@ -99,7 +98,7 @@ public class CancelSelectArea : MonoBehaviour
 
             _btnGrid[_x, _y].SetSelectedOrNotSelected(true);
 
-            _scene.DoNextAction(_x * _col + _y);
+            Managers.Scene.CurrentScene.DoNextAction(_x * _col + _y);
         }
         else if (Input.GetKeyDown(KeyCode.UpArrow))
         {
@@ -112,23 +111,20 @@ public class CancelSelectArea : MonoBehaviour
 
             _btnGrid[_x, _y].SetSelectedOrNotSelected(true);
 
-            _scene.DoNextAction(_x * _col + _y);
+            Managers.Scene.CurrentScene.DoNextAction(_x * _col + _y);
         }
         else if (Input.GetKeyDown(KeyCode.D))
         {
-            _scene.DoNextAction(Define.InputSelectBoxEvent.SELECT);
+            Managers.Scene.CurrentScene.DoNextAction(Define.InputSelectBoxEvent.SELECT);
         }
         else if (Input.GetKeyDown(KeyCode.S))
         {
-            _scene.DoNextAction(Define.InputSelectBoxEvent.BACK);
+            Managers.Scene.CurrentScene.DoNextAction(Define.InputSelectBoxEvent.BACK);
         }
     }
 
     public void CreateButton(int col, int btnCount)
     {
-        if (_scene == null)
-            _scene = Managers.Scene.CurrentScene;
-
         _row = (btnCount - 1) / col + 2;
         _col = col;
 
@@ -175,9 +171,6 @@ public class CancelSelectArea : MonoBehaviour
 
     public void CreateButton(int col, List<object> btnDatas)
     {
-        if (_scene == null)
-            _scene = Managers.Scene.CurrentScene;
-
         _row = (btnDatas.Count - 1) / col + 2;
         _col = col;
 

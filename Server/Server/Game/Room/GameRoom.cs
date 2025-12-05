@@ -3,6 +3,7 @@ using Google.Protobuf.Protocol;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Sockets;
 using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
@@ -22,7 +23,11 @@ namespace Server
 
         public int RoomId { get { return _roomId; } }
 
+        public Dictionary<GameObjectType, Dictionary<int, GameObject>> Objs { get { return _objs; } }
+
         public Dictionary<int, GameObject> Players { get { return _objs[GameObjectType.Player]; } }
+
+        public Dictionary<int, GameObject> NPCs { get { return _objs[GameObjectType.Npc]; } }
 
         public Map Map { get; private set; } = new Map();
 
@@ -38,6 +43,7 @@ namespace Server
                 _roomInfo = value[roomId - 1];
             }
 
+            Map.GameRoom = this;
             Map.LoadMap(roomId, roomType);
         }
 
@@ -101,7 +107,7 @@ namespace Server
                     {
                         if (player != p)
                         {
-                            spawnPacket.Players.Add(p.MakePlayerInfo());
+                            spawnPacket.OtherPlayers.Add(p.MakeOtherPlayerInfo());
                         }
                     }
 
@@ -131,7 +137,7 @@ namespace Server
                 {
                     // 타인한테 본인 정보 전송
                     S_Spawn spawnPacket = new S_Spawn();
-                    spawnPacket.Players.Add(player.MakePlayerInfo());
+                    spawnPacket.OtherPlayers.Add(player.MakeOtherPlayerInfo());
 
                     Broadcast(player, spawnPacket);
                 }
@@ -286,6 +292,21 @@ namespace Server
                     }
                 }
             }
+        }
+
+        public void GetAnotherPlayerData(Player myPlayer)
+        {
+            S_ReturnGame returnGame = new S_ReturnGame();
+
+            foreach (Player player in _objs[GameObjectType.Player].Values)
+            {
+                if (player.Id != myPlayer.Id)
+                {
+                    returnGame.OtherPlayers.Add(player.Info);
+                }
+            }
+
+            myPlayer.Session.Send(returnGame);
         }
 
         bool IsActiveInGaemRoom(Player player)

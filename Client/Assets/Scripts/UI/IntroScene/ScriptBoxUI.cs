@@ -18,10 +18,10 @@ public class ScriptBoxUI : MonoBehaviour
     ScriptBoxUIState _uiState = ScriptBoxUIState.NONE;
     int _curScriptIdx;
     string _sentence;
+    bool _isStatic;
     bool _autoSkip;
     float _autoSkipTime;
     List<string> _scripts;
-    BaseScene _scene;
 
     TextMeshProUGUI _tmp;
     Image _nextBtn;
@@ -34,8 +34,6 @@ public class ScriptBoxUI : MonoBehaviour
     void Start()
     {
         LoadComponent();
-
-        _scene = Managers.Scene.CurrentScene;
 
         _nextBtn.gameObject.SetActive(false);
     }
@@ -62,7 +60,7 @@ public class ScriptBoxUI : MonoBehaviour
         }
     }
 
-    public void CreateSelectBox(List<string> btnNames, int row, int col, int btnWidth, int btnHeight)
+    public void CreateSelectBox(List<string> btnNames, int col, int btnWidth, int btnHeight)
     {
         _selectBox.CreateButtons(btnNames, col, btnWidth, btnHeight);
 
@@ -78,12 +76,15 @@ public class ScriptBoxUI : MonoBehaviour
 
     public void SetScriptWihtoutTyping(string script)
     {
+        if (gameObject.activeSelf == false)
+            gameObject.SetActive(true);
+
         LoadComponent();
 
         _tmp.text = script;
     }
 
-    public void BeginScriptTyping(List<string> scripts, bool autoSkip = false, float autoSkipTime = 1f)
+    public void BeginScriptTyping(List<string> scripts, bool autoSkip = false, float autoSkipTime = 1f, bool isStatic = false)
     {
         if (gameObject.activeSelf == false)
             gameObject.SetActive(true);
@@ -93,10 +94,12 @@ public class ScriptBoxUI : MonoBehaviour
         _uiState = ScriptBoxUIState.TEXT_TYPING;
         _scripts = scripts;
         _autoSkipTime = autoSkipTime;
+        _isStatic = isStatic;
         _autoSkip = autoSkip;
         _sentence = _scripts[_curScriptIdx];
         _tmp.text = ""; // 이전 텍스트 초기화
 
+        HideSelectBox();
         StopAllCoroutines();
         StartCoroutine(TypeText());
     }
@@ -163,7 +166,11 @@ public class ScriptBoxUI : MonoBehaviour
                 yield return new WaitForSeconds(_autoSkipTime);
 
             _uiState = ScriptBoxUIState.NONE;
-            _scene.DoNextAction();
+
+            if (_isStatic)
+                Managers.Scene.CurrentScene.DoNextStaticAction();
+            else
+                Managers.Scene.CurrentScene.DoNextAction();
             yield break;
         }
 

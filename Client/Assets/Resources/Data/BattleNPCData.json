@@ -1,0 +1,26 @@
+{
+    "battleNPCs": [
+        {
+            "npcId": "1",
+            "battlePokemons": [
+                {
+                    "pokemonName": "Bulbasaur",
+                    "pokemonLevel": "3"
+                },
+                {
+                    "pokemonName": "Squirtle",
+                    "pokemonLevel": "2"
+                }
+            ],
+            "beforeBattleScripts": [
+                "Hi! Are you new here, too?",
+                "The first step is always important.",
+                "Shall we see what your first start will be like?"
+            ],
+            "afterBattleScripts": [
+                "I need to get my first step right..."
+            ],
+            "rewardMoney": "100"
+        }
+    ]
+} 

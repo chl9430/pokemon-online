@@ -16,18 +16,16 @@ namespace Server
 
         int _counter = 0;
 
-        public Dictionary<int, GameObject> Players { get { return _objs[GameObjectType.Player]; } }
-
         public T Add<T>() where T : GameObject, new()
         {
             T gameObject = new T();
 
             lock (_lock)
             {
-                gameObject.Id = GenerateId(gameObject.ObjectType);
-
                 if (gameObject.ObjectType == GameObjectType.Player)
                 {
+                    gameObject.Id = GenerateId(gameObject.ObjectType);
+
                     if (_objs.ContainsKey(GameObjectType.Player) == false)
                     {
                         _objs.Add(GameObjectType.Player, new Dictionary<int, GameObject>());
@@ -42,7 +40,11 @@ namespace Server
                         _objs.Add(GameObjectType.Npc, new Dictionary<int, GameObject>());
                     }
 
-                    _objs[GameObjectType.Npc].Add(gameObject.Id, gameObject as NPC);
+                    if (gameObject is TrainerNPC)
+                    {
+                        (gameObject as TrainerNPC).SetNPCId(_objs[GameObjectType.Npc].Count + 1);
+                        _objs[GameObjectType.Npc].Add(gameObject.Id, gameObject as NPC);
+                    }
                 }
             }
 
@@ -88,6 +90,18 @@ namespace Server
                     if (_objs[GameObjectType.Player].TryGetValue(objectId, out player))
                         return player as Player;
                 }
+            }
+
+            return null;
+        }
+
+        public NPC FindNPC(int objectId)
+        {
+            lock (_lock)
+            {
+                GameObject npc = null;
+                if (_objs[GameObjectType.Npc].TryGetValue(objectId, out npc))
+                    return npc as NPC;
             }
 
             return null;

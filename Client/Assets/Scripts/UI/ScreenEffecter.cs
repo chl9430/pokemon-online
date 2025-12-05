@@ -3,25 +3,30 @@ using UnityEngine.Playables;
 
 public class ScreenEffecter : MonoBehaviour
 {
-    BaseScene _scene;
+    string _curAnimName;
     Animator _anim;
 
     void Start()
     {
-        _scene = Managers.Scene.CurrentScene;
         _anim = GetComponent<Animator>();
+    }
+
+    public void DestroyEffecter()
+    {
+        Destroy(gameObject);
     }
 
     public void BroadcastToScene()
     {
-        _scene.DoNextAction();
+        Managers.Scene.CurrentScene.DoNextAction();
     }
 
-    public void PlayEffect(string _animName)
+    public void PlayEffect(string animName)
     {
         if (_anim == null)
             _anim = GetComponent<Animator>();
 
-        _anim.Play(_animName);
+        _curAnimName = animName;
+        _anim.Play(animName);
     }
 }

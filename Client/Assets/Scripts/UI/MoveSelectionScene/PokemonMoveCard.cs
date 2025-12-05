@@ -12,13 +12,13 @@ public class PokemonMoveCard : MonoBehaviour
 
     public TextMeshProUGUI MoveNameText { get { return _moveName; } }
 
-    public void FillMoveCard(PokemonMoveSummary moveSum)
+    public void FillMoveCard(PokemonMove move)
     {
-        Texture2D texture = Managers.Resource.Load<Texture2D>($"Textures/UI/{moveSum.MoveType}_Icon");
+        Texture2D texture = move.MoveTypeImage;
         _moveTypeImage.sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), Vector2.one * 0.5f);
         _moveTypeImage.SetNativeSize();
 
-        _moveName.text = moveSum.MoveName;
-        _movePP.text = $"PP {moveSum.CurPP} / {moveSum.MaxPP}";
+        _moveName.text = move.MoveName;
+        _movePP.text = $"PP {move.CurPP} / {move.MaxPP}";
     }
 }

@@ -14,25 +14,17 @@ public enum GameSceneState
     MOVING_PLAYER = 1,
     WATCHING_MENU = 2,
     WILD_POKEMON_APPEARING_EFFECT = 3,
-    MOVING_TO_POKEMON_SCENE = 4,
-    MOVING_TO_BAG_SCENE = 5
 }
 
 public class GameScene : BaseScene
 {
-    int _selectedMenuBtnIdx;
-    IMessage _packet;
     GameSceneState _sceneState = GameSceneState.NONE;
-    ObjectContents _contents;
-
-    [SerializeField] GridLayoutSelectBox _menuSelectBox;
-    [SerializeField] List<DynamicButton> _menuBtns;
-
-    public MyPlayerController MyPlayer { get { return _myPlayer; } }
 
     protected override void Init()
     {
         base.Init();
+
+        Managers.Scene.CurrentScene = this;
 
         Screen.SetResolution(1280, 720, false);
     }
@@ -61,11 +53,11 @@ public class GameScene : BaseScene
     {
         _packet = packet;
 
-        if (_contents == null)
+        if (_contentStack.Count == 0)
         {
             if (packet is S_EnterRoom)
             {
-                _enterEffect.PlayEffect("FadeIn");
+                ContentManager.Instance.PlayScreenEffecter("FadeIn_NonBroading");
 
                 S_EnterRoom s_enterRoomPacket = packet as S_EnterRoom;
                 PlayerInfo playerInfo = s_enterRoomPacket.PlayerInfo;
@@ -75,8 +67,6 @@ public class GameScene : BaseScene
 
                 Managers.Map.LoadMap(roomId, roomType);
 
-                Managers.Object.PlayerInfo = playerInfo;
-
                 // 내 플레이어 생성
                 GameObject myPlayer = null;
 
@@ -85,44 +75,56 @@ public class GameScene : BaseScene
                 else if (playerInfo.PlayerGender == PlayerGender.PlayerFemale)
                     myPlayer = Managers.Resource.Instantiate("Creature/MyPlayerFemale");
 
-                myPlayer.name = $"{playerInfo.PlayerName}_{playerInfo.ObjectInfo.ObjectId}";
-
                 Managers.Object.Add(myPlayer, playerInfo.ObjectInfo);
+                Managers.Object.MyPlayerController.SetMyPlayerInfo(playerInfo);
 
-                foreach (NPCInfo npcInfo in npcInfos)
+                // npc 정보 적용
+                List<CreatureController> npcs = Util.FindChilds<CreatureController>(Managers.Map.GameMap);
+
+                for (int i = 0; i < npcs.Count; i++)
                 {
-                    BaseController npcInst = Managers.Resource.Instantiate($"Creature/{npcInfo.NpcName}").GetComponent<BaseController>();
-                    npcInst.name = $"{npcInfo.NpcName}_{npcInfo.ObjectInfo.ObjectId}";
+                    NPCInfo npcInfo = npcInfos[i] as NPCInfo;
 
-                    Managers.Object.Add(npcInst.gameObject, npcInfo.ObjectInfo);
+                    npcs[i].name = $"{npcInfo.NpcName}_{npcInfo.ObjectInfo.ObjectId}";
 
-                    if (roomType == RoomType.FriendlyShop)
-                    {
-                        Grid curGrid = Managers.Map.CurrentGrid;
-                        npcInst.PosInfo.PosX -= 1;
-                        npcInst.SyncPos();
-                    }
-                    else if (roomType == RoomType.PokemonCenter)
-                    {
-                        Grid curGrid = Managers.Map.CurrentGrid;
-                        npcInst.PosInfo.PosY += 1;
-                        npcInst.SyncPos();
-                    }
-                }
-                _myPlayer = myPlayer.GetComponent<MyPlayerController>();
-                _myPlayer.State = CreatureState.NoneState;
-
-                PlayerController pc = myPlayer.GetComponent<PlayerController>();
-                pc.PlayerName = playerInfo.PlayerName;
-                pc.PlayerGender = playerInfo.PlayerGender;
-
-                // 메뉴 버튼 데이터 채우기
-                for (int i = 0; i < _menuBtns.Count; i++)
-                {
-                    _menuBtns[i].BtnData = Util.FindChild<TextMeshProUGUI>(_menuBtns[i].gameObject, "ContentText", true).text;
+                    Managers.Object.Add(npcs[i].gameObject, npcInfo.ObjectInfo);
                 }
 
-                _menuSelectBox.SetSelectBoxContent(_menuBtns, 4, 1);
+                ContentManager.Instance.SetBag(Managers.Object.MyPlayerController.Items);
+
+                ContentManager.Instance.SetGameMenu();
+
+                // 대화중인 npc가 있는 지 확인
+                if (Managers.Object.MyPlayerController.NPC != null)
+                {
+                    CreatureController npc = Managers.Object.MyPlayerController.NPC;
+
+                    _contentStack.Push(Managers.Object.FindById(npc.Id).GetComponent<ObjectContents>());
+                    _contentStack.Peek().UpdateData(_packet);
+                }
+
+                _sceneState = GameSceneState.MOVING_PLAYER;
+            }
+            else if (packet is S_ReturnGame)
+            {
+                ContentManager.Instance.PlayScreenEffecter("FadeIn_NonBroading");
+
+                Managers.Object.MyPlayerController.State = CreatureState.Idle;
+
+                IList<ObjectInfo> players = ((S_ReturnGame)packet).OtherPlayers;
+
+                foreach (ObjectInfo player in players)
+                {
+                    GameObject obj = Managers.Object.FindById(player.ObjectId);
+
+                    BaseController bc = obj.GetComponent<BaseController>();
+
+                    bc.CellPos = new Vector3Int(player.PosInfo.PosX, player.PosInfo.PosY);
+                    bc.Dir = player.PosInfo.MoveDir;
+                    bc.State = CreatureState.Idle;
+                }
+
+                _sceneState = GameSceneState.MOVING_PLAYER;
             }
             else if (packet is S_MeetWildPokemon)
             {
@@ -130,45 +132,34 @@ public class GameScene : BaseScene
             }
             else if (packet is S_GetDoorDestDir)
             {
-                _myPlayer.Packet = packet;
-            }
-            else if (packet is S_GetNpcTalk)
-            {
-                _myPlayer.IsLoading = false;
-                S_GetNpcTalk npcTalkPacket = packet as S_GetNpcTalk;
-                int npcId = npcTalkPacket.NpcId;
-
-                _contents = Managers.Object.FindById(npcId).GetComponent<ObjectContents>();
-                _contents.UpdateData(packet);
+                Managers.Object.MyPlayerController.Packet = packet;
             }
             else if (packet is S_SendTalk)
             {
-                _myPlayer.IsLoading = false;
                 S_SendTalk sendTalkPacket = packet as S_SendTalk;
-                PlayerInfo otherPlayer = sendTalkPacket.OtherPlayerInfo;
+                OtherPlayerInfo otherPlayer = sendTalkPacket.OtherPlayerInfo;
 
                 if (otherPlayer != null)
                 {
-                    _contents = Managers.Object.FindById(otherPlayer.ObjectInfo.ObjectId).GetComponent<PlayerContents>();
-                    _contents.UpdateData(packet);
+                    _contentStack.Push(Managers.Object.FindById(otherPlayer.ObjectInfo.ObjectId).GetComponent<PlayerContents>());
+                    _contentStack.Peek().UpdateData(packet);
                 }
             }
             else if (packet is S_ReceiveTalk)
             {
-                _myPlayer.IsLoading = false;
                 S_ReceiveTalk receiveTalkPacket = packet as S_ReceiveTalk;
-                PlayerInfo otherPlayer = receiveTalkPacket.PlayerInfo;
+                OtherPlayerInfo otherPlayer = receiveTalkPacket.OtherPlayerInfo;
 
                 if (otherPlayer != null)
                 {
-                    _contents = Managers.Object.FindById(otherPlayer.ObjectInfo.ObjectId).GetComponent<PlayerContents>();
-                    _contents.UpdateData(packet);
+                    _contentStack.Push(Managers.Object.FindById(otherPlayer.ObjectInfo.ObjectId).GetComponent<PlayerContents>());
+                    _contentStack.Peek().UpdateData(packet);
                 }
             }
         }
         else
         {
-            _contents.UpdateData(packet);
+            _contentStack.Peek().UpdateData(packet);
             return;
         }
     }
@@ -176,30 +167,17 @@ public class GameScene : BaseScene
     public override void DoNextAction(object value = null)
     {
         // 게임 메뉴도 콘텐츠 방식으로 수정 필요
-        if (_contents != null)
+        if (_contentStack.Count > 0)
         {
-            _contents.SetNextAction(value);
+            _contentStack.Peek().SetNextAction(value);
             return;
         }
 
-        Debug.Log(value);
         switch (_sceneState)
         {
             case GameSceneState.NONE:
                 {
-                    // 씬 상태 변경
-                    _sceneState = GameSceneState.MOVING_PLAYER;
-                    ActiveUIBySceneState(_sceneState);
-                    _myPlayer.State = CreatureState.Idle;
-
-                    // 대화중인 npc가 있는 지 확인
-                    if (Managers.Object.PlayerInfo.NpcInfo != null)
-                    {
-                        NPCInfo npcInfo = Managers.Object.PlayerInfo.NpcInfo;
-
-                        _contents = Managers.Object.FindById(npcInfo.ObjectInfo.ObjectId).GetComponent<ObjectContents>();
-                        _contents.UpdateData(_packet);
-                    }
+                    
                 }
                 break;
             case GameSceneState.MOVING_PLAYER:
@@ -208,126 +186,33 @@ public class GameScene : BaseScene
 
                     if (state == CreatureState.WatchMenu)
                     {
-                        _sceneState = GameSceneState.WATCHING_MENU;
-                        ActiveUIBySceneState(_sceneState);
+                        ContentManager.Instance.OpenGameMenu();
                     }
                     else if (state == CreatureState.Fight)
                     {
                         _sceneState = GameSceneState.WILD_POKEMON_APPEARING_EFFECT;
-                        ActiveUIBySceneState(_sceneState);
                     }
                 }
                 break;
             case GameSceneState.WATCHING_MENU:
                 {
-                    if (value is CreatureState)
-                    {
-                        CreatureState state = (CreatureState)value;
-
-                        if (state == CreatureState.Idle)
-                        {
-                            _sceneState = GameSceneState.MOVING_PLAYER;
-                            ActiveUIBySceneState(_sceneState);
-                        }
-                    }
-                    else if (value is Define.InputSelectBoxEvent)
-                    {
-                        Define.InputSelectBoxEvent inputEvent = (Define.InputSelectBoxEvent)value;
-
-                        if (inputEvent == Define.InputSelectBoxEvent.BACK)
-                        {
-                            _myPlayer.State = CreatureState.Idle;
-
-                            _sceneState = GameSceneState.MOVING_PLAYER;
-                            ActiveUIBySceneState(_sceneState);
-                        }
-                        else if (inputEvent == Define.InputSelectBoxEvent.SELECT)
-                        {
-                            if (_menuBtns[_selectedMenuBtnIdx].BtnData as string == "Pokemon")
-                            {
-                                _enterEffect.PlayEffect("FadeOut");
-
-                                _sceneState = GameSceneState.MOVING_TO_POKEMON_SCENE;
-                                ActiveUIBySceneState(_sceneState);
-                            }
-                            else if (_menuBtns[_selectedMenuBtnIdx].BtnData as string == "Bag")
-                            {
-                                _enterEffect.PlayEffect("FadeOut");
-
-                                _sceneState = GameSceneState.MOVING_TO_BAG_SCENE;
-                                ActiveUIBySceneState(_sceneState);
-                            }
-                        }
-                    }
-                    else
-                    {
-                        _selectedMenuBtnIdx = (int)value;
-                    }
+                    
                 }
                 break;
             case GameSceneState.WILD_POKEMON_APPEARING_EFFECT:
                 {
                     if (Managers.Network.Packet is C_EnterPokemonBattleScene)
-                        Managers.Scene.LoadScene(Define.Scene.Battle);
+                        Managers.Scene.AsyncLoadScene(Define.Scene.Battle, () => {
+                            ContentManager.Instance.ScriptBox.gameObject.SetActive(false);
+                            Managers.Scene.CurrentScene = GameObject.FindFirstObjectByType<BattleScene>();
+                        }, LoadSceneMode.Additive);
                     else if (Managers.Network.Packet is C_EnterRoom)
                         Managers.Scene.LoadScene(Define.Scene.Game);
-                }
-                break;
-            case GameSceneState.MOVING_TO_POKEMON_SCENE:
-                {
-                    C_EnterPokemonListScene enterPokemonListPacket = new C_EnterPokemonListScene();
-                    enterPokemonListPacket.PlayerId = _myPlayer.Id;
 
-                    Managers.Network.SavePacket(enterPokemonListPacket);
-
-                    // 씬 변경
-                    Managers.Scene.LoadScene(Define.Scene.PokemonList);
-                }
-                break;
-            case GameSceneState.MOVING_TO_BAG_SCENE:
-                {
-                    C_EnterPlayerBagScene enterBagPacket = new C_EnterPlayerBagScene();
-                    enterBagPacket.PlayerId = _myPlayer.Id;
-
-                    Managers.Network.SavePacket(enterBagPacket);
-
-                    // 씬 변경
-                    Managers.Scene.LoadScene(Define.Scene.Bag);
+                    _sceneState = GameSceneState.NONE;
                 }
                 break;
         }
-    }
-
-    void ActiveUIBySceneState(GameSceneState state)
-    {
-        if (state == GameSceneState.WATCHING_MENU)
-        {
-            _menuSelectBox.gameObject.SetActive(true);
-            _menuSelectBox.UIState = GridLayoutSelectBoxState.SELECTING;
-        }
-        else if (state == GameSceneState.MOVING_TO_POKEMON_SCENE)
-        {
-            _menuSelectBox.UIState = GridLayoutSelectBoxState.NONE;
-        }
-        else if (state == GameSceneState.MOVING_TO_BAG_SCENE)
-        {
-            _menuSelectBox.UIState = GridLayoutSelectBoxState.NONE;
-        }
-        else
-        {
-            _menuSelectBox.gameObject.SetActive(false);
-            _menuSelectBox.UIState = GridLayoutSelectBoxState.NONE;
-        }
-    }
-
-    //public void PlayerLock(bool isLock)
-    //{
-    //    _myPlayer.IsLoading = isLock;
-    //}
-
-    public override void FinishContents()
-    {
-        _contents = null;
     }
 
     public bool DidMeetWildPokemon()
@@ -341,16 +226,15 @@ public class GameScene : BaseScene
             _packet = null;
 
             C_EnterPokemonBattleScene enterPokemonBattleScene = new C_EnterPokemonBattleScene();
-            enterPokemonBattleScene.PlayerId = Managers.Object.PlayerInfo.ObjectInfo.ObjectId;
+            enterPokemonBattleScene.PlayerId = Managers.Object.MyPlayerController.Id;
             enterPokemonBattleScene.LocationNum = roomId;
             enterPokemonBattleScene.BushNum = bushNum;
 
             Managers.Network.SavePacket(enterPokemonBattleScene);
 
-            _myPlayer.State = CreatureState.Fight;
+            Managers.Object.MyPlayerController.State = CreatureState.Fight;
 
-            ScreenEffecter = Managers.Resource.Instantiate("UI/GameScene/PokemonAppearEffect", ScreenEffecterZone).GetComponent<ScreenEffecter>();
-            ScreenEffecter.PlayEffect("PokemonAppear");
+            ContentManager.Instance.PlayScreenEffecter("PokemonAppear");
 
             _sceneState = GameSceneState.WILD_POKEMON_APPEARING_EFFECT;
 
@@ -363,7 +247,7 @@ public class GameScene : BaseScene
     public void SaveEnterScenePacket()
     {
         C_EnterRoom enterRoomPacket = new C_EnterRoom();
-        enterRoomPacket.PlayerId = Managers.Object.PlayerInfo.ObjectInfo.ObjectId;
+        enterRoomPacket.PlayerId = Managers.Object.MyPlayerController.Id;
 
         string mapName = Managers.Map.CurrentGrid.transform.parent.name;
         int roomId = int.Parse(mapName.Substring(mapName.Length - 1));
@@ -374,7 +258,7 @@ public class GameScene : BaseScene
 
         Managers.Network.SavePacket(enterRoomPacket);
 
-        _enterEffect.PlayEffect("FadeOut");
+        ContentManager.Instance.PlayScreenEffecter("FadeOut");
 
         _sceneState = GameSceneState.WILD_POKEMON_APPEARING_EFFECT;
     }

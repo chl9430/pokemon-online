@@ -10,14 +10,13 @@ public enum SelectAreaState
 
 public class SelectArea : MonoBehaviour
 {
-    protected int _row;
-    protected int _col;
+    int _row;
+    int _col;
 
-    protected int _x = 0;
-    protected int _y = 0;
+    int _x = 0;
+    int _y = 0;
     SelectAreaState _uiState = SelectAreaState.NONE;
-    protected DynamicButton[,] _btnGrid;
-    protected BaseScene _scene;
+    DynamicButton[,] _btnGrid;
 
     [SerializeField] DynamicButton _btn;
     [SerializeField] Transform _btnPos;
@@ -29,16 +28,11 @@ public class SelectArea : MonoBehaviour
             _uiState = value;
 
             if (_uiState == SelectAreaState.SELECTING)
-                _scene.DoNextAction(_btnGrid[_x, _y].BtnData);
+                Managers.Scene.CurrentScene.DoNextAction(_btnGrid[_x, _y].BtnData);
         }
     }
 
     public DynamicButton[,] BtnGrid { get  { return _btnGrid; } }
-
-    void Start()
-    {
-        _scene = Managers.Scene.CurrentScene;
-    }
 
     void Update()
     {
@@ -63,7 +57,7 @@ public class SelectArea : MonoBehaviour
 
             _btnGrid[_x, _y].SetSelectedOrNotSelected(true);
 
-            _scene.DoNextAction(_x * _col + _y);
+            Managers.Scene.CurrentScene.DoNextAction(_x * _col + _y);
         }
         else if (Input.GetKeyDown(KeyCode.RightArrow))
         {
@@ -76,7 +70,7 @@ public class SelectArea : MonoBehaviour
 
             _btnGrid[_x, _y].SetSelectedOrNotSelected(true);
 
-            _scene.DoNextAction(_x * _col + _y);
+            Managers.Scene.CurrentScene.DoNextAction(_x * _col + _y);
         }
         else if (Input.GetKeyDown(KeyCode.DownArrow))
         {
@@ -89,7 +83,7 @@ public class SelectArea : MonoBehaviour
 
             _btnGrid[_x, _y].SetSelectedOrNotSelected(true);
 
-            _scene.DoNextAction(_x * _col + _y);
+            Managers.Scene.CurrentScene.DoNextAction(_x * _col + _y);
         }
         else if (Input.GetKeyDown(KeyCode.UpArrow))
         {
@@ -102,15 +96,15 @@ public class SelectArea : MonoBehaviour
 
             _btnGrid[_x, _y].SetSelectedOrNotSelected(true);
 
-            _scene.DoNextAction(_x * _col + _y);
+            Managers.Scene.CurrentScene.DoNextAction(_x * _col + _y);
         }
         else if (Input.GetKeyDown(KeyCode.D))
         {
-            _scene.DoNextAction(Define.InputSelectBoxEvent.SELECT);
+            Managers.Scene.CurrentScene.DoNextAction(Define.InputSelectBoxEvent.SELECT);
         }
         else if (Input.GetKeyDown(KeyCode.S))
         {
-            _scene.DoNextAction(Define.InputSelectBoxEvent.BACK);
+            Managers.Scene.CurrentScene.DoNextAction(Define.InputSelectBoxEvent.BACK);
         }
     }
 
@@ -123,16 +117,16 @@ public class SelectArea : MonoBehaviour
             {
                 for (int j = 0; j < _btnGrid.GetLength(1); j++)
                 {
-                    Destroy(_btnGrid[i, j].gameObject);
+                    if (_btnGrid[i, j] != null)
+                        Destroy(_btnGrid[i, j].gameObject);
                 }
             }
+
+            _btnGrid = null;
         }
 
         _row = row;
         _col = col;
-
-        if (_scene == null)
-            _scene = Managers.Scene.CurrentScene;
 
         if (_btnGrid == null)
             _btnGrid = new DynamicButton[_row, _col];
@@ -164,6 +158,9 @@ public class SelectArea : MonoBehaviour
                 }
             }
         }
+
+        _x = 0;
+        _y = 0;
 
         _btnGrid[_x, _y].SetSelectedOrNotSelected(true);
     }

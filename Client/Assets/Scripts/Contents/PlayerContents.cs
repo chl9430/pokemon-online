@@ -3,6 +3,7 @@ using Google.Protobuf.Protocol;
 using NUnit.Framework;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public enum PlayerContentState
 {
@@ -11,6 +12,7 @@ public enum PlayerContentState
     // My Side
     RECEIVER_SAY_HELLO = 1,
     SELECTING_ACTION = 2,
+    RECEIVER_BUSY_SCRIPTING = 3,
     RECEIVER_ACCEPT_TO_BATTLE = 4,
     RECEIVER_ACCEPT_TO_EXCHANGE = 5,
     RECEIVER_REJECT_ANSWER = 6,
@@ -32,14 +34,9 @@ public enum PlayerContentState
 
 public class PlayerContents : ObjectContents
 {
-    ScriptBoxUI _scriptBox;
     PlayerContentState _state = PlayerContentState.NONE;
 
-    void Start()
-    {
-        _scene = Managers.Scene.CurrentScene;
-        _scriptBox = GameObject.FindAnyObjectByType<ScriptBoxUI>(FindObjectsInactive.Include);
-    }
+    [SerializeField] GameObject _screenEffecter;
 
     public override void UpdateData(IMessage packet)
     {
@@ -49,66 +46,56 @@ public class PlayerContents : ObjectContents
         if (packet is S_SendTalk)
         {
             S_SendTalk sendTalkPacket = packet as S_SendTalk;
-            PlayerInfo otherPlayer = sendTalkPacket.OtherPlayerInfo;
+            OtherPlayerInfo otherPlayer = sendTalkPacket.OtherPlayerInfo;
 
-            if (otherPlayer == null)
-                return;
-            else
-                ((GameScene)_scene).MyPlayer.State = CreatureState.Talk;
+            Managers.Object.MyPlayerController.NPC = Managers.Object.FindById(otherPlayer.ObjectInfo.ObjectId).GetComponent<PlayerController>();
+            Managers.Object.MyPlayerController.State = CreatureState.Talk;
+            Managers.Object.MyPlayerController.IsLoading = false;
 
             if (otherPlayer.ObjectInfo.PosInfo.State == CreatureState.Idle)
             {
                 List<string> scripts = new List<string>() {
                     $"Hello! How are you doing?",
                     $"......",
-                    $"Alright! You are {Managers.Object.PlayerInfo.PlayerName}!",
-                    $"Nice to meet you {Managers.Object.PlayerInfo.PlayerName}! I am {otherPlayer.PlayerName}.",
+                    $"Alright! You are {Managers.Object.MyPlayerController.PlayerName}!",
+                    $"Nice to meet you {Managers.Object.MyPlayerController.PlayerName}! I am {otherPlayer.PlayerName}.",
                     $"What do you want to do with me?"
                 };
                 _state = PlayerContentState.RECEIVER_SAY_HELLO;
-                _scriptBox.gameObject.SetActive(true);
-                _scriptBox.BeginScriptTyping(scripts, true);
+                ContentManager.Instance.ScriptBox.gameObject.SetActive(true);
+                ContentManager.Instance.ScriptBox.BeginScriptTyping(scripts, true);
             }
             else if (otherPlayer.ObjectInfo.PosInfo.State == CreatureState.Fight)
             {
                 List<string> scripts = new List<string>() {
-                    $"It seems like {(otherPlayer.PlayerGender == PlayerGender.PlayerMale ? "He" : "She")} is fighting!",
+                    $"It seems like {(otherPlayer.PlayerGender == PlayerGender.PlayerMale ? "He" : "She")} is busy!",
                     $"Let's try again later..."
                 };
-                _scriptBox.gameObject.SetActive(true);
-                _scriptBox.BeginScriptTyping(scripts, true);
-            }
-            else if (otherPlayer.ObjectInfo.PosInfo.State == CreatureState.WatchMenu)
-            {
-                List<string> scripts = new List<string>() {
-                    $"It seems like {(otherPlayer.PlayerGender == PlayerGender.PlayerMale ? "He" : "She")} is in personal business...",
-                    $"Let's try again later..."
-                };
-                _scriptBox.gameObject.SetActive(true);
-                _scriptBox.BeginScriptTyping(scripts, true);
+                _state = PlayerContentState.RECEIVER_BUSY_SCRIPTING;
+                ContentManager.Instance.ScriptBox.gameObject.SetActive(true);
+                ContentManager.Instance.ScriptBox.BeginScriptTyping(scripts, true);
             }
         }
         else if (packet is S_ReceiveTalk)
         {
             S_ReceiveTalk receiveTalkPacket = packet as S_ReceiveTalk;
-            PlayerInfo otherPlayer = receiveTalkPacket.PlayerInfo;
+            OtherPlayerInfo otherPlayer = receiveTalkPacket.OtherPlayerInfo;
 
-            if (otherPlayer == null)
-                return;
-            else
-                ((GameScene)_scene).MyPlayer.State = CreatureState.Talk;
+            Managers.Object.MyPlayerController.NPC = Managers.Object.FindById(otherPlayer.ObjectInfo.ObjectId).GetComponent<PlayerController>();
+            Managers.Object.MyPlayerController.State = CreatureState.Talk;
+            Managers.Object.MyPlayerController.IsLoading = false;
 
             List<string> scripts = new List<string>() {
                 $"Hello! I am {otherPlayer.PlayerName}!",
                 $"......",
-                $"Nice to meet you {Managers.Object.PlayerInfo.PlayerName}!",
+                $"Nice to meet you {Managers.Object.MyPlayerController.PlayerName}!",
                 $"I would like to do something with you. ",
                 $"If you don't mind, Could you...",
             };
+            ContentManager.Instance.ScriptBox.BeginScriptTyping(scripts, true);
+
             _state = PlayerContentState.SENDER_SAY_HELLO;
 
-            _scriptBox.gameObject.SetActive(true);
-            _scriptBox.BeginScriptTyping(scripts, true);
         }
         else if (packet is S_SendTalkRequest)
         {
@@ -121,7 +108,7 @@ public class PlayerContents : ObjectContents
                 {
                     "play a Pokemon battle with me?"
                 };
-                _scriptBox.BeginScriptTyping(scripts, true);
+                ContentManager.Instance.ScriptBox.BeginScriptTyping(scripts, true);
 
                 _state = PlayerContentState.SENDER_ASKING_BATTLE;
             }
@@ -131,7 +118,7 @@ public class PlayerContents : ObjectContents
                 {
                     "exchange Pokemon with me?"
                 };
-                _scriptBox.BeginScriptTyping(scripts, true);
+                ContentManager.Instance.ScriptBox.BeginScriptTyping(scripts, true);
 
                 _state = PlayerContentState.SENDER_ASKING_EXCHANGE;
             }
@@ -141,7 +128,7 @@ public class PlayerContents : ObjectContents
                 {
                     "Alright Let's do it!"
                 };
-                _scriptBox.BeginScriptTyping(scripts, true);
+                ContentManager.Instance.ScriptBox.BeginScriptTyping(scripts);
 
                 _state = PlayerContentState.RECEIVER_ACCEPT_TO_BATTLE;
             }
@@ -151,7 +138,7 @@ public class PlayerContents : ObjectContents
                 {
                     "Alright Let's do it!"
                 };
-                _scriptBox.BeginScriptTyping(scripts, true);
+                ContentManager.Instance.ScriptBox.BeginScriptTyping(scripts, true);
 
                 _state = PlayerContentState.RECEIVER_ACCEPT_TO_EXCHANGE;
             }
@@ -161,7 +148,7 @@ public class PlayerContents : ObjectContents
                 {
                     "I am sorry. I am busy right now. Please ask me again later."
                 };
-                _scriptBox.BeginScriptTyping(scripts, true);
+                ContentManager.Instance.ScriptBox.BeginScriptTyping(scripts, true);
 
                 _state = PlayerContentState.RECEIVER_REJECT_ANSWER;
             }
@@ -171,10 +158,29 @@ public class PlayerContents : ObjectContents
                 {
                     "I am sorry. I got a wrong people...!"
                 };
-                _scriptBox.BeginScriptTyping(scripts, true);
+                ContentManager.Instance.ScriptBox.BeginScriptTyping(scripts, true);
 
                 _state = PlayerContentState.SENDER_CANCEL_ACTION;
             }
+        }
+        else if (_packet is S_ReturnGame)
+        {
+            ContentManager.Instance.PlayScreenEffecter("FadeIn_NonBroading");
+
+            IList<ObjectInfo> players = ((S_ReturnGame)packet).OtherPlayers;
+
+            foreach (ObjectInfo player in players)
+            {
+                GameObject obj = Managers.Object.FindById(player.ObjectId);
+
+                BaseController bc = obj.GetComponent<BaseController>();
+
+                bc.CellPos = new Vector3Int(player.PosInfo.PosX, player.PosInfo.PosY);
+                bc.Dir = player.PosInfo.MoveDir;
+                bc.State = CreatureState.Idle;
+            }
+
+            FinishContent();
         }
     }
 
@@ -191,7 +197,7 @@ public class PlayerContents : ObjectContents
                         "Cancel"
                     };
                     _state = PlayerContentState.SELECTING_ACTION;
-                    _scriptBox.CreateSelectBox(btnNames, 3, 1, 400, 100);
+                    ContentManager.Instance.ScriptBox.CreateSelectBox(btnNames, 1, 400, 100);
                 }
                 break;
             case PlayerContentState.SELECTING_ACTION:
@@ -202,14 +208,14 @@ public class PlayerContents : ObjectContents
 
                         if (inputEvent == Define.InputSelectBoxEvent.SELECT)
                         {
-                            GridLayoutSelectBox selectBox = _scriptBox.ScriptSelectBox;
+                            GridLayoutSelectBox selectBox = ContentManager.Instance.ScriptBox.ScriptSelectBox;
                             if (selectBox.GetSelectedBtnData() as string == "Battle")
                             {
-                                _scriptBox.HideSelectBox();
+                                ContentManager.Instance.ScriptBox.HideSelectBox();
                                 if (!_isLoading)
                                 {
                                     C_PlayerTalk talkPacket = new C_PlayerTalk();
-                                    talkPacket.PlayerId = ((GameScene)_scene).MyPlayer.Id;
+                                    talkPacket.PlayerId = Managers.Object.MyPlayerController.Id;
                                     talkPacket.TalkRequestType = TalkRequestType.RequestBattle;
 
                                     Managers.Network.Send(talkPacket);
@@ -217,11 +223,11 @@ public class PlayerContents : ObjectContents
                             }
                             else if (selectBox.GetSelectedBtnData() as string == "Exchange")
                             {
-                                _scriptBox.HideSelectBox();
+                                ContentManager.Instance.ScriptBox.HideSelectBox();
                                 if (!_isLoading)
                                 {
                                     C_PlayerTalk talkPacket = new C_PlayerTalk();
-                                    talkPacket.PlayerId = ((GameScene)_scene).MyPlayer.Id;
+                                    talkPacket.PlayerId = Managers.Object.MyPlayerController.Id;
                                     talkPacket.TalkRequestType = TalkRequestType.RequestExchange;
 
                                     Managers.Network.Send(talkPacket);
@@ -230,7 +236,7 @@ public class PlayerContents : ObjectContents
                             else if (selectBox.GetSelectedBtnData() as string == "Cancel")
                             {
                                 C_PlayerTalk talkPacket = new C_PlayerTalk();
-                                talkPacket.PlayerId = ((GameScene)_scene).MyPlayer.Id;
+                                talkPacket.PlayerId = Managers.Object.MyPlayerController.Id;
                                 talkPacket.TalkRequestType = TalkRequestType.CancelTalk;
 
                                 Managers.Network.Send(talkPacket);
@@ -240,8 +246,8 @@ public class PlayerContents : ObjectContents
                                 {
                                     "Oh... Alright...!"
                                 };
-                                _scriptBox.HideSelectBox();
-                                _scriptBox.BeginScriptTyping(scripts, true);
+                                ContentManager.Instance.ScriptBox.HideSelectBox();
+                                ContentManager.Instance.ScriptBox.BeginScriptTyping(scripts, true);
                             }
                         }
                     }
@@ -255,7 +261,7 @@ public class PlayerContents : ObjectContents
                         "No",
                     };
                     _state = PlayerContentState.SELECTING_ANSWER_TO_BATTLE;
-                    _scriptBox.CreateSelectBox(btnNames, 2, 1, 400, 100);
+                    ContentManager.Instance.ScriptBox.CreateSelectBox(btnNames, 1, 400, 100);
                 }
                 break;
             case PlayerContentState.SENDER_ASKING_EXCHANGE:
@@ -266,7 +272,7 @@ public class PlayerContents : ObjectContents
                         "No",
                     };
                     _state = PlayerContentState.SELECTING_ANSWER_TO_EXCHANGE;
-                    _scriptBox.CreateSelectBox(btnNames, 2, 1, 400, 100);
+                    ContentManager.Instance.ScriptBox.CreateSelectBox(btnNames, 1, 400, 100);
                 }
                 break;
             case PlayerContentState.SELECTING_ANSWER_TO_BATTLE:
@@ -277,11 +283,11 @@ public class PlayerContents : ObjectContents
 
                         if (inputEvent == Define.InputSelectBoxEvent.SELECT)
                         {
-                            GridLayoutSelectBox selectBox = _scriptBox.ScriptSelectBox;
+                            GridLayoutSelectBox selectBox = ContentManager.Instance.ScriptBox.ScriptSelectBox;
                             if (selectBox.GetSelectedBtnData() as string == "Yes")
                             {
                                 C_PlayerTalk talkPacket = new C_PlayerTalk();
-                                talkPacket.PlayerId = ((GameScene)_scene).MyPlayer.Id;
+                                talkPacket.PlayerId = Managers.Object.MyPlayerController.Id;
                                 talkPacket.TalkRequestType = TalkRequestType.AcceptBattle;
 
                                 Managers.Network.Send(talkPacket);
@@ -292,13 +298,13 @@ public class PlayerContents : ObjectContents
                                 {
                                     "Thank you for accpeting! Let's begin!"
                                 };
-                                _scriptBox.HideSelectBox();
-                                _scriptBox.BeginScriptTyping(scripts, true);
+                                ContentManager.Instance.ScriptBox.HideSelectBox();
+                                ContentManager.Instance.ScriptBox.BeginScriptTyping(scripts);
                             }
                             else if (selectBox.GetSelectedBtnData() as string == "No")
                             {
                                 C_PlayerTalk talkPacket = new C_PlayerTalk();
-                                talkPacket.PlayerId = ((GameScene)_scene).MyPlayer.Id;
+                                talkPacket.PlayerId = Managers.Object.MyPlayerController.Id;
                                 talkPacket.TalkRequestType = TalkRequestType.Reject;
 
                                 Managers.Network.Send(talkPacket);
@@ -308,8 +314,8 @@ public class PlayerContents : ObjectContents
                                 {
                                     "It is okay! See ya!"
                                 };
-                                _scriptBox.HideSelectBox();
-                                _scriptBox.BeginScriptTyping(scripts, true);
+                                ContentManager.Instance.ScriptBox.HideSelectBox();
+                                ContentManager.Instance.ScriptBox.BeginScriptTyping(scripts, true);
                             }
                         }
                     }
@@ -323,11 +329,11 @@ public class PlayerContents : ObjectContents
 
                         if (inputEvent == Define.InputSelectBoxEvent.SELECT)
                         {
-                            GridLayoutSelectBox selectBox = _scriptBox.ScriptSelectBox;
+                            GridLayoutSelectBox selectBox = ContentManager.Instance.ScriptBox.ScriptSelectBox;
                             if (selectBox.GetSelectedBtnData() as string == "Yes")
                             {
                                 C_PlayerTalk talkPacket = new C_PlayerTalk();
-                                talkPacket.PlayerId = ((GameScene)_scene).MyPlayer.Id;
+                                talkPacket.PlayerId = Managers.Object.MyPlayerController.Id;
                                 talkPacket.TalkRequestType = TalkRequestType.AcceptExchange;
 
                                 Managers.Network.Send(talkPacket);
@@ -338,13 +344,13 @@ public class PlayerContents : ObjectContents
                                 {
                                     "Thank you for accpeting! Let's begin!"
                                 };
-                                _scriptBox.HideSelectBox();
-                                _scriptBox.BeginScriptTyping(scripts, true);
+                                ContentManager.Instance.ScriptBox.HideSelectBox();
+                                ContentManager.Instance.ScriptBox.BeginScriptTyping(scripts, true);
                             }
                             else if (selectBox.GetSelectedBtnData() as string == "No")
                             {
                                 C_PlayerTalk talkPacket = new C_PlayerTalk();
-                                talkPacket.PlayerId = ((GameScene)_scene).MyPlayer.Id;
+                                talkPacket.PlayerId = Managers.Object.MyPlayerController.Id;
                                 talkPacket.TalkRequestType = TalkRequestType.Reject;
 
                                 Managers.Network.Send(talkPacket);
@@ -354,19 +360,26 @@ public class PlayerContents : ObjectContents
                                 {
                                     "It is okay! See ya!"
                                 };
-                                _scriptBox.HideSelectBox();
-                                _scriptBox.BeginScriptTyping(scripts, true);
+                                ContentManager.Instance.ScriptBox.HideSelectBox();
+                                ContentManager.Instance.ScriptBox.BeginScriptTyping(scripts, true);
                             }
                         }
                     }
                 }
                 break;
+            case PlayerContentState.RECEIVER_BUSY_SCRIPTING:
+                {
+                    FinishContent();
+                }
+                break;
             case PlayerContentState.RECEIVER_ACCEPT_TO_BATTLE:
                 {
-                    ScreenEffecter effecter = Managers.Resource.Load<ScreenEffecter>("Prefabs/UI/GameScene/PokemonAppearEffect");
-                    _scene.ScreenEffecter = GameObject.Instantiate(effecter, _scene.ScreenEffecterZone);
+                    C_EnterTrainerBattle enterBattle = new C_EnterTrainerBattle();
+                    enterBattle.PlayerId = Managers.Object.MyPlayerController.Id;
 
-                    _scene.ScreenEffecter.PlayEffect("PokemonAppear");
+                    Managers.Network.SavePacket(enterBattle);
+
+                    ContentManager.Instance.PlayScreenEffecter("PokemonAppear");
 
                     _state = PlayerContentState.MOVING_TO_THE_BATTLE_SCENE;
                 }
@@ -378,46 +391,38 @@ public class PlayerContents : ObjectContents
 
                     Managers.Network.SavePacket(enterExchangePacket);
 
-                    _scene.ScreenEffecter.PlayEffect("FadeOut");
+                    ContentManager.Instance.PlayScreenEffecter("FadeOut");
 
                     _state = PlayerContentState.MOVING_TO_THE_EXCHANGE_SCENE;
                 }
                 break;
             case PlayerContentState.RECEIVER_REJECT_ANSWER:
                 {
-                    _state = PlayerContentState.NONE;
-                    _scene.FinishContents();
-                    _scriptBox.gameObject.SetActive(false);
-                    ((GameScene)_scene).MyPlayer.State = CreatureState.Idle;
+                    FinishContent();
                 }
                 break;
             case PlayerContentState.SENDER_REJECTING_ACTION:
                 {
-                    _state = PlayerContentState.NONE;
-                    _scene.FinishContents();
-                    _scriptBox.gameObject.SetActive(false);
-                    ((GameScene)_scene).MyPlayer.State = CreatureState.Idle;
+                    FinishContent();
                 }
                 break;
             case PlayerContentState.RECEIVER_CANCEL_ANSWER:
                 {
-                    _state = PlayerContentState.NONE;
-                    _scene.FinishContents();
-                    _scriptBox.gameObject.SetActive(false);
-                    ((GameScene)_scene).MyPlayer.State = CreatureState.Idle;
+                    FinishContent();
                 }
                 break;
             case PlayerContentState.SENDER_CANCEL_ACTION:
                 {
-                    _state = PlayerContentState.NONE;
-                    _scene.FinishContents();
-                    _scriptBox.gameObject.SetActive(false);
-                    ((GameScene)_scene).MyPlayer.State = CreatureState.Idle;
+                    FinishContent();
                 }
                 break;
             case PlayerContentState.MOVING_TO_THE_BATTLE_SCENE:
                 {
-                    Debug.Log("Battle Begin");
+                    if (Managers.Network.Packet is C_EnterTrainerBattle)
+                        Managers.Scene.AsyncLoadScene(Define.Scene.Battle, () => {
+                            ContentManager.Instance.ScriptBox.gameObject.SetActive(false);
+                            Managers.Scene.CurrentScene = GameObject.FindFirstObjectByType<BattleScene>();
+                        }, LoadSceneMode.Additive);
                 }
                 break;
             case PlayerContentState.MOVING_TO_THE_EXCHANGE_SCENE:
@@ -427,5 +432,17 @@ public class PlayerContents : ObjectContents
                 }
                 break;
         }
+    }
+
+    public override void FinishContent()
+    {
+        _state = PlayerContentState.NONE;
+
+        Managers.Scene.CurrentScene.FinishContents();
+
+        Managers.Object.MyPlayerController.State = CreatureState.Idle;
+        Managers.Object.MyPlayerController.NPC = null;
+
+        ContentManager.Instance.ScriptBox.gameObject.SetActive(false);
     }
 }

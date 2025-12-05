@@ -6,19 +6,17 @@ using UnityEngine.UI;
 public class InputBox : MonoBehaviour
 {
     TMP_InputField _inputField;
-    BaseScene _scene;
 
     void Start()
     {
         _inputField = GetComponent<TMP_InputField>();
         _inputField.onValueChanged.AddListener(ChangedValue);
-        _scene = Managers.Scene.CurrentScene;
         _inputField.interactable = false;
     }
 
     public void ChangedValue(string newText)
     {
-        _scene.DoNextAction(newText);
+        Managers.Scene.CurrentScene.DoNextAction(newText);
     }
 
     public void SetFieldInteractable(bool isInteractable)
@@ -36,6 +34,6 @@ public class InputBox : MonoBehaviour
     public void FinishEntering()
     {
         if (_inputField.text != "")
-            _scene.DoNextAction(Define.InputSelectBoxEvent.SELECT);
+            Managers.Scene.CurrentScene.DoNextAction(Define.InputSelectBoxEvent.SELECT);
     }
 }

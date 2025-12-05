@@ -9,30 +9,30 @@ using UnityEngine.Playables;
 public enum BattleSceneState
 {
     NONE = 0,
-    INTRO = 1,
     WILD_POKEMON_APPEAR_SCRIPTING = 200,
+    OPPONENT_TRAINER_DISAPPEARING = 201,
+    OPPONENT_POKEMON_APPEAR_SCRIPTING = 202,
+    OPPONENT_POKEMON_APPEARING = 203,
+    OPPONENT_POKEMON_CARD_APPEARING = 204,
     TRAINER_DISAPPEARING = 210,
     MY_POKEMON_APPEAR_SCRIPTING = 220,
     SHOWING_POKEMON = 240,
     SHOWING_UI = 5,
-    SELECTING_ACTION = 6,
-    SELECTING_MOVE = 7,
-    CANNOT_USE_MOVE = 8,
     ATTACK_INSTRUCTING = 9,
-    FIRST_ATTACK_ANIMATION = 10,
-    FIRST_ATTACK_FAILED = 11,
-    HIT_POKEMON_BLINK = 12,
+    ATTACK_ANIMATION = 10,
+    ATTACK_MISSED_SCRIPTING = 11,
+    POKEMON_BLINK_ANIMATION = 12,
     CHANGE_POKEMON_HP = 13,
     ASKING_TO_SWITCH_POKEMON = 56,
     EFFECTIVENESS_SCRIPTING = 58,
     POKEMON_DIE = 14,
+    POKEMON_CARD_DISAPPEAR_ANIMATION = 141,
     MY_POKEMON_DIE_SCRIPTING = 15,
     GOT_EXP_SCRIPTING = 16,
     GETTING_EXP = 17,
     LEVEL_UP_SCRIPTING = 18,
-    UPGRADING_STATUS = 19,
-    SHOWING_UPGRADED_STATUS = 20,
-    NEW_MOVE_LEARN_SCRIPTING = 21,
+    SHOWING_LEVEL_UP_STATUS_BOX = 19,
+    AFTER_MOVE_SELECTION_SCRIPTING = 21,
     ASKING_TO_LEARN_NEW_MOVE = 22,
     ANSWERING_TO_LEARN_NEW_MOVE = 23,
     ANSWERING_TO_SWITCH_POKEMON = 66,
@@ -40,8 +40,7 @@ public enum BattleSceneState
     COME_BACK_POKEMON_SCRIPTING = 25,
     COMING_BACK_POKEMON = 26,
     COME_BACK_POKEMON_CARD = 27,
-    AFTER_USE_ITEM_UPDATE = 46,
-    AFTER_SWITCH_POKEMON = 47,
+    AFTER_SWITCH_POKEMON_SCRIPTING = 47,
     AFTER_DIE_SWITCH_POKEMON = 76,
     GO_NEXT_POKEMON_SCRIPTING = 77,
     ITEM_USE_SCRIPTING = 87,
@@ -50,32 +49,47 @@ public enum BattleSceneState
     POKE_BALL_ANIMATION = 90,
     POKEMON_COME_OUT_ANIMATION = 91,
     CATCH_SCRIPTING = 92,
+    TRAINER_DEATED_SCRIPTING = 93,
+    OPPONENT_TRAINER_APPEARING = 94,
+    AFTER_BATTLE_NPC_SCRIPTING = 95,
+    GOT_REWARD_SCRIPTING = 96,
     MOVING_SCENE = 1000,
-    ESCAPE_SCRIPTING = 100
+    ESCAPE_SCRIPTING = 100,
+    OnlineBattleSurrenderScripting = 997,
+    MovingScene = 998,
+    Inactiving = 999
 }
 
 public class BattleScene : BaseScene
 {
-    IMessage _packet;
     BattleSceneState _sceneState = BattleSceneState.NONE;
     TextMeshProUGUI[] _moveInfoTMPs;
     PlayableDirector _playableDirector;
-    PlayerInfo _playerInfo;
+    NPCInfo _npcInfo;
 
-    List<string> _script;
+    List<string> _script = new List<string>();
+    List<Pokemon> _myPokemons = new List<Pokemon>();
     Pokemon _myPokemon;
     Pokemon _enemyPokemon;
     Item _usedItem;
 
-    bool _loadingPacket = false;
+    Pokemon _attackPokemon;
+    Pokemon _defensePokemon;
+    BattleArea _attackPokemonArea;
+    BattleArea _defensePokemonArea;
 
-    [SerializeField] ScriptBoxUI _scriptBox;
-    [SerializeField] GridLayoutSelectBox _actionSelectBox;
-    [SerializeField] GridLayoutSelectBox _moveSelectBox;
+    Pokemon _expPokemon;
+    PokemonMove _newMove;
+
+    [SerializeField] ActionSelectContent _actionSelectContent;
+    [SerializeField] OnlineBattleContent _onlineBattleContent;
+
     [SerializeField] GameObject _moveInfoBox;
     [SerializeField] BattleArea _enemyPokemonArea;
     [SerializeField] BattleArea _myPokemonArea;
     [SerializeField] StatusBox _statusBox;
+
+    public List<Pokemon> Pokemons {  get { return _myPokemons; } }
 
     public BattleSceneState SceneState
     {
@@ -90,48 +104,28 @@ public class BattleScene : BaseScene
             }
 
             // 액션 선택 박스
-            if (_sceneState == BattleSceneState.SELECTING_ACTION)
+            if (_sceneState == BattleSceneState.MOVING_SCENE)
             {
-                _scriptBox.SetScriptWihtoutTyping($"What will {_myPokemon.PokemonInfo.NickName} do?");
-                _actionSelectBox.gameObject.SetActive(true);
-                _actionSelectBox.UIState = GridLayoutSelectBoxState.SELECTING;
+                ContentManager.Instance.PlayScreenEffecter("FadeOut");
+            }
+            else if (_sceneState == BattleSceneState.ESCAPE_SCRIPTING)
+            {
+                ContentManager.Instance.ScriptBox.HideSelectBox();
+            }
+            else if (_sceneState == BattleSceneState.SHOWING_LEVEL_UP_STATUS_BOX)
+            {
+                _statusBox.gameObject.SetActive(true);
+                _statusBox.State = StatusBoxState.SHOWING_RATE;
             }
             else if (_sceneState == BattleSceneState.MOVING_SCENE)
             {
-                _enterEffect.PlayEffect("FadeOut");
-                _actionSelectBox.gameObject.SetActive(true);
-                _actionSelectBox.UIState = GridLayoutSelectBoxState.NONE;
-            }
-            else
-            {
-                _actionSelectBox.gameObject.SetActive(false);
-                _actionSelectBox.UIState = GridLayoutSelectBoxState.NONE;
-            }
-
-            // 기술 선택 박스
-            if (_sceneState == BattleSceneState.SELECTING_MOVE)
-            {
-                _moveSelectBox.gameObject.SetActive(true);
-                _moveSelectBox.UIState = GridLayoutSelectBoxState.SELECTING;
-
-                _moveInfoBox.SetActive(true);
-            }
-            else
-            {
-                _moveSelectBox.gameObject.SetActive(false);
-                _moveSelectBox.UIState = GridLayoutSelectBoxState.NONE;
-
-                _moveInfoBox.SetActive(false);
-            }
-
-            // 레벨 업 스텟 표시 박스
-            if (_sceneState == BattleSceneState.UPGRADING_STATUS || _sceneState == BattleSceneState.SHOWING_UPGRADED_STATUS)
-            {
-                _statusBox.gameObject.SetActive(true);
+                _statusBox.gameObject.SetActive(false);
+                ContentManager.Instance.PlayScreenEffecter("FadeOut");
             }
             else
             {
                 _statusBox.gameObject.SetActive(false);
+                _statusBox.State = StatusBoxState.NONE;
             }
 
             // 예 아니오 버튼
@@ -142,11 +136,11 @@ public class BattleScene : BaseScene
                     "Yes",
                     "No",
                 };
-                _scriptBox.CreateSelectBox(btnNames, btnNames.Count, 1, 400, 100);
+                ContentManager.Instance.ScriptBox.CreateSelectBox(btnNames, 1, 400, 100);
             }
-            else
+            else if (_sceneState == BattleSceneState.NEW_MOVE_NOT_LEARN_SCRIPTING)
             {
-                _scriptBox.HideSelectBox();
+                ContentManager.Instance.ScriptBox.HideSelectBox();
             }
         }
     }
@@ -156,12 +150,12 @@ public class BattleScene : BaseScene
         base.Init();
 
         SceneType = Define.Scene.Battle;
-
-        _script = new List<string>();
     }
 
     protected override void Start()
     {
+        base.Start();
+
         _playableDirector = GetComponent<PlayableDirector>();
         _moveInfoTMPs = _moveInfoBox.GetComponentsInChildren<TextMeshProUGUI>();
 
@@ -170,7 +164,8 @@ public class BattleScene : BaseScene
         {
             C_EnterPokemonBattleScene enterBattlePacket = new C_EnterPokemonBattleScene();
             enterBattlePacket.PlayerId = -1;
-            enterBattlePacket.LocationNum = 1;
+            enterBattlePacket.LocationNum = 0;
+            enterBattlePacket.BushNum = 0;
 
             Managers.Network.Send(enterBattlePacket);
         }
@@ -178,403 +173,491 @@ public class BattleScene : BaseScene
             Managers.Network.SendSavedPacket();
     }
 
-    void MakeUI(PokemonSummary pokemonSum)
-    {
-        // 액션 버튼 데이터 채우기
-        List<string> btnNames = new List<string>()
-        {
-            "Fight",
-            "Bag",
-            "Pokemon",
-            "Run"
-        };
-        _actionSelectBox.CreateButtons(btnNames, 2, 400, 100);
-
-        // 기술 버튼 데이터 채우기
-        List<string> moveNames = new List<string>();
-        foreach (PokemonMoveSummary moveSum in pokemonSum.PokemonMoves)
-            moveNames.Add(moveSum.MoveName);
-
-        List<object> moves = new List<object>();
-        foreach (PokemonMove move in _myPokemon.PokemonMoves)
-            moves.Add(move);
-        _moveSelectBox.CreateButtons(moveNames, 2, 600, 100, moves);
-    }
-
     public override void UpdateData(IMessage packet)
     {
         _loadingPacket = false;
-
         _packet = packet;
-        
-        if (packet is S_ProcessTurn)
+
+        // 어떤 상황에서도 우선적으로 발생해야 하는 콘텐츠
+        if (_packet is S_SurrenderTrainerBattle)
         {
-            S_ProcessTurn processTurnPacket = packet as S_ProcessTurn;
-            PokemonMoveSummary usedMoveSum = processTurnPacket.UsedMoveSum;
-            bool canUseMove = processTurnPacket.CanUseMove;
-            bool isMyPokemon = processTurnPacket.IsMyPokemon;
-            int moveOrder = processTurnPacket.UsedMoveOrder;
+            int surrenderPlayerId = ((S_SurrenderTrainerBattle)_packet).SurrenderPlayerId;
 
-            if (canUseMove)
+            ObjectContents content = _contentStack.Peek();
+            content.SetIsActionStop(true);
+            content.InactiveContent();
+
+            List<string> scripts;
+
+            if (surrenderPlayerId == Managers.Object.MyPlayerController.Id)
+                scripts = new List<string>() { $"You surrendered the battle." };
+            else
+                scripts = new List<string>() { $"The other side surrendered in battle." };
+
+            ContentManager.Instance.BeginScriptTyping(scripts, false, 1, true);
+
+            SceneState = BattleSceneState.OnlineBattleSurrenderScripting;
+        }
+
+        if (_contentStack.Count == 0)
+        {
+            if (packet is S_EnterPokemonBattleScene)
             {
-                Pokemon attackPokemon = isMyPokemon ? _myPokemon : _enemyPokemon;
+                ContentManager.Instance.PlayScreenEffecter("PokemonAppear_FadeIn");
 
-                if (isMyPokemon && moveOrder != -1)
+                Managers.Object.MyPlayerController.State = CreatureState.Fight;
+
+                _playableDirector.Play();
+
+                S_EnterPokemonBattleScene enterBattleScenePacket = packet as S_EnterPokemonBattleScene;
+                int battlePokemonOrder = enterBattleScenePacket.MyFirstBattlePokemonOrder;
+                PokemonSummary enemyPokemonSum = enterBattleScenePacket.EnemyPokemonSum;
+                NPCInfo npcInfo = enterBattleScenePacket.NpcInfo;
+
+                if (npcInfo != null)
                 {
-                    (_moveSelectBox.GetSelectedBtn().BtnData as PokemonMove).CurPP = usedMoveSum.CurPP;
-                }
-
-                RefillScriptBox(new string[] { $"{attackPokemon.PokemonInfo.NickName} used {usedMoveSum.MoveName}!" }, true);
-                SceneState = BattleSceneState.ATTACK_INSTRUCTING;
-            }
-            else
-            {
-                RefillScriptBox(new string[] { $"Cannot use this move!" });
-                SceneState = BattleSceneState.CANNOT_USE_MOVE;
-            }
-        }
-        else if (packet is S_CheckAvailableBattlePokemon)
-        {
-            S_CheckAvailableBattlePokemon checkBattlePokemonPacket = packet as S_CheckAvailableBattlePokemon;
-            bool canFight = checkBattlePokemonPacket.CanFight;
-
-            if (canFight)
-            {
-                RefillScriptBox(
-                    new string[] { $"Do you want to change to another Pokemon?" }
-                    );
-                SceneState = BattleSceneState.ASKING_TO_SWITCH_POKEMON;
-            }
-            else
-            {
-                RefillScriptBox(
-                    new string[] { 
-                        "There is no more pokemon to fight!",
-                        "......",
-                        "I took the injured Pokemon to the nearby Pokemon Center in a hurry."
-                    });
-            }
-        }
-        else if (packet is S_GetEnemyPokemonExp)
-        {
-            S_GetEnemyPokemonExp getExpPacket = packet as S_GetEnemyPokemonExp;
-            PokemonSummary pokemonSum = getExpPacket.GotExpPokemonSum;
-            int exp = getExpPacket.Exp;
-
-            RefillScriptBox(new string[] { $"{pokemonSum.PokemonInfo.NickName} got {exp} exp!" });
-            SceneState = BattleSceneState.GOT_EXP_SCRIPTING;
-            return;
-        }
-        else if (packet is S_CheckAndApplyRemainedExp)
-        {
-            S_CheckAndApplyRemainedExp expPacket = packet as S_CheckAndApplyRemainedExp;
-            PokemonSummary expPokemonSum = expPacket.ExpPokemonSum;
-            int finalExp = expPacket.FinalExp;
-            bool isMainPokemon = expPacket.IsMainPokemon;
-
-            if (isMainPokemon)
-            {
-                _myPokemon.PokemonExpInfo.CurExp += finalExp;
-                _myPokemonArea.ChangePokemonEXP(_myPokemon.PokemonExpInfo.CurExp);
-                SceneState = BattleSceneState.GETTING_EXP;
-            }
-            else
-            {
-                LevelUpStatusDiff statDiff = expPacket.StatDiff;
-
-                if (statDiff != null)
-                {
-                    _statusBox.SetStatusDiffRate(statDiff);
-                    RefillScriptBox(new string[] { $"{expPokemonSum.PokemonInfo.NickName}'s level went up to {expPokemonSum.PokemonInfo.Level}." });
-                    SceneState = BattleSceneState.LEVEL_UP_SCRIPTING;
+                    _npcInfo = npcInfo;
+                    _enemyPokemonArea.FillOpponentTrainerImage(_npcInfo.NpcType);
+                    _enemyPokemonArea.PlayInfoZoneAnim("Zone_LeftHide");
+                    _enemyPokemonArea.PlayPokemonZoneAnim("Zone_RightHide");
                 }
                 else
                 {
-                    SendRequestDataPacket(RequestType.CheckExpPokemon);
+                    _enemyPokemonArea.PlayPokemonZoneAnim("Zone_Default");
+                    _enemyPokemonArea.PlayTrainerZoneAnim("Zone_RightHide");
                 }
-            }
 
-            return;
-        }
-        else if (packet is S_SwitchBattlePokemon)
-        {
-            _enterEffect.PlayEffect("FadeIn");
-            _myPokemonArea.SetActiveTrainer(false);
+                // 포켓몬 및 플레이어 데이터 채우기
+                _enemyPokemon = new Pokemon(enemyPokemonSum);
 
-            S_SwitchBattlePokemon switchPokemonPacket = packet as S_SwitchBattlePokemon;
-            PlayerInfo playerInfo = switchPokemonPacket.PlayerInfo;
-            PokemonSummary enemyPokemonSum = switchPokemonPacket.EnemyPokemonSum;
-            IList myPokemonSums = switchPokemonPacket.MyPokemonSums;
-            PokemonSummary prevPokemonSum = switchPokemonPacket.PrevPokemonSum;
+                foreach (Pokemon pokemon in Managers.Object.MyPlayerController.MyPokemons)
+                {
+                    _myPokemons.Add(pokemon);
+                }
 
-            // 포켓몬 및 플레이어 데이터 채우기
-            _playerInfo = playerInfo;
-            _enemyPokemon = new Pokemon(enemyPokemonSum);
+                // 선두 포켓몬이 기절일 경우를 대비
+                Pokemon temp = _myPokemons[0];
+                _myPokemons[0] = _myPokemons[battlePokemonOrder];
+                _myPokemons[battlePokemonOrder] = temp;
 
-            _myPokemon = new Pokemon(myPokemonSums[0] as PokemonSummary);
+                _myPokemon = _myPokemons[0];
 
-            // 포켓몬 랜더링
-            _enemyPokemonArea.FillPokemonInfo(_enemyPokemon, false);
-            _myPokemonArea.FillPokemonInfo(new Pokemon(prevPokemonSum), true);
-
-            // UI 생성
-            MakeUI(myPokemonSums[0] as PokemonSummary);
-
-            if (prevPokemonSum.PokemonInfo.PokemonStatus == PokemonStatusCondition.Fainting)
-            {
+                // 포켓몬 랜더링
+                _myPokemonArea.FillTrainerImage(Managers.Object.MyPlayerController.PlayerGender, true);
                 _myPokemonArea.PlayPokemonZoneAnim("Zone_LeftHide");
                 _myPokemonArea.PlayInfoZoneAnim("Zone_RightHide");
-                SceneState = BattleSceneState.AFTER_DIE_SWITCH_POKEMON;
+
+                _enemyPokemonArea.FillPokemonInfo(_enemyPokemon, false);
+
+                // 기술 버튼 데이터 채우기
+                _actionSelectContent.CreateButton(_myPokemon);
             }
-            else
+            else if (packet is S_EnterTrainerBattle)
             {
-                SceneState = BattleSceneState.NONE;
-            }
-        }
-        else if (packet is S_ItemSceneToBattleScene)
-        {
-            _enterEffect.PlayEffect("FadeIn");
-            _myPokemonArea.SetActiveTrainer(false);
+                int firstBattlePokemonOrder = ((S_EnterTrainerBattle)_packet).FirstBattlePokemonOrder;
 
-            S_ItemSceneToBattleScene itemToBattlePacket = packet as S_ItemSceneToBattleScene;
-            PlayerInfo playerInfo = itemToBattlePacket.PlayerInfo;
-            PokemonSummary enemyPokemonSum = itemToBattlePacket.EnemyPokemonSum;
-            PokemonSummary myPokemonSum = itemToBattlePacket.PlayerPokemonSum;
-            ItemSummary itemSumamary = itemToBattlePacket.UsedItem;
+                Managers.Object.MyPlayerController.State = CreatureState.Fight;
 
-            // 포켓몬 및 플레이어 데이터 채우기
-            _playerInfo = playerInfo;
-            _enemyPokemon = new Pokemon(enemyPokemonSum);
-            _myPokemon = new Pokemon(myPokemonSum);
-
-            // 포켓몬 랜더링
-            _enemyPokemonArea.FillPokemonInfo(_enemyPokemon, false);
-            _myPokemonArea.FillPokemonInfo(_myPokemon, true);
-
-            // UI 생성
-            MakeUI(myPokemonSum);
-
-            if (itemSumamary != null)
-            {
-                _usedItem = new Item(itemSumamary);
-                SceneState = BattleSceneState.AFTER_USE_ITEM_UPDATE;
-            }
-        }
-        else if (packet is S_IsSuccessPokeBallCatch)
-        {
-            S_IsSuccessPokeBallCatch successCatchPacket = packet as S_IsSuccessPokeBallCatch;
-            bool isCatch = successCatchPacket.IsCatch;
-
-            if (isCatch)
-            {
-                _myPokemonArea.PlaySuccessCatchBallAnim();
-                _sceneState = BattleSceneState.POKE_BALL_ANIMATION;
-            }
-            else
-            {
-                int ran = Random.Range(1, 4);
-                _myPokemonArea.PlayFailCatchBallAnim(ran);
-                _sceneState = BattleSceneState.POKE_BALL_ANIMATION;
-            }
-        }
-        else if (packet is S_EscapeFromWildPokemon)
-        {
-            S_EscapeFromWildPokemon escapePacket = packet as S_EscapeFromWildPokemon;
-            bool canEscape = escapePacket.CanEscape;
-
-            if (canEscape)
-                RefillScriptBox(new string[] { $"Got away safely!" });
-            else
-                RefillScriptBox(new string[] { $"Can't escape!" });
-
-            SceneState = BattleSceneState.ESCAPE_SCRIPTING;
-
-            return;
-        }
-        else if (packet is S_CheckExpPokemon)
-        {
-            S_CheckExpPokemon checkExpPokemonPacket = packet as S_CheckExpPokemon;
-            bool isThereMoreExpPokemon = checkExpPokemonPacket.IsThereMoreExpPokemon;
-
-            if (isThereMoreExpPokemon)
-                SendRequestDataPacket(RequestType.GetEnemyPokemonExp);
-            else
-                SendRequestDataPacket(RequestType.CheckPokemonEvolution);
-        }
-        else if (packet is S_CheckPokemonEvolution)
-        {
-            S_CheckPokemonEvolution checkEvolutionPacket = packet as S_CheckPokemonEvolution;
-            bool goToEvolutionScene = checkEvolutionPacket.GoToEvolutionScene;
-
-            IMessage moveScenePacket;
-            if (goToEvolutionScene)
-            {
-                moveScenePacket = new C_EnterPokemonEvolutionScene();
-                (moveScenePacket as C_EnterPokemonEvolutionScene).PlayerId = _playerInfo.ObjectInfo.ObjectId;
-            }
-            else
-            {
-                moveScenePacket = new C_ReturnGame();
-                (moveScenePacket as C_ReturnGame).PlayerId = _playerInfo.ObjectInfo.ObjectId;
-            }
-
-            Managers.Network.SavePacket(moveScenePacket);
-            SceneState = BattleSceneState.MOVING_SCENE;
-            _actionSelectBox.gameObject.SetActive(false);
-        }
-        else if (packet is S_ReturnPokemonBattleScene)
-        {
-            _enterEffect.PlayEffect("FadeIn");
-            _myPokemonArea.SetActiveTrainer(false);
-
-            S_ReturnPokemonBattleScene returnBattleScenePacket = packet as S_ReturnPokemonBattleScene;
-
-            PlayerInfo playerInfo = returnBattleScenePacket.PlayerInfo;
-            PokemonSummary enemyPokemonSum = returnBattleScenePacket.EnemyPokemonSum;
-            IList myPokemonSums = returnBattleScenePacket.MyPokemonSums;
-
-            // 포켓몬 및 플레이어 데이터 채우기
-            _playerInfo = playerInfo;
-            _enemyPokemon = new Pokemon(enemyPokemonSum);
-
-            _myPokemon = new Pokemon(myPokemonSums[0] as PokemonSummary);
-
-            // 포켓몬 랜더링
-            _enemyPokemonArea.FillPokemonInfo(_enemyPokemon, false);
-            _myPokemonArea.FillPokemonInfo(_myPokemon, true);
-
-            // UI 생성
-            MakeUI(myPokemonSums[0] as PokemonSummary);
-
-            return;
-        }
-        else if (packet is S_MoveSceneToBattleScene)
-        {
-            _enterEffect.PlayEffect("FadeIn");
-            _myPokemonArea.SetActiveTrainer(false);
-
-            S_MoveSceneToBattleScene battleScenePacket = packet as S_MoveSceneToBattleScene;
-
-            PlayerInfo playerInfo = battleScenePacket.PlayerInfo;
-            PokemonSummary enemyPokemonSum = battleScenePacket.EnemyPokemonSum;
-            PokemonSummary myPokemonSum = battleScenePacket.MyPokemonSum;
-
-            // 포켓몬 및 플레이어 데이터 채우기
-            _playerInfo = playerInfo;
-            _enemyPokemon = new Pokemon(enemyPokemonSum);
-
-            _myPokemon = new Pokemon(myPokemonSum);
-
-            // 포켓몬 랜더링
-            _enemyPokemonArea.FillPokemonInfo(_enemyPokemon, false);
-            _myPokemonArea.FillPokemonInfo(_myPokemon, true);
-
-            // UI 생성
-            MakeUI(myPokemonSum);
-
-            // 기술 선택창에서 돌아왔다면(상대 포켓몬 기절상태)
-            _enemyPokemonArea.PlayPokemonZoneAnim("Zone_LeftHide");
-            SceneState = BattleSceneState.NONE;
-        }
-
-        switch (_sceneState)
-        {
-            case BattleSceneState.NONE:
+                foreach (Pokemon pokemon in Managers.Object.MyPlayerController.MyPokemons)
                 {
-                    if (packet is S_EnterPokemonBattleScene)
+                    _myPokemons.Add(pokemon);
+                }
+
+                // 선두 포켓몬이 기절일 경우를 대비
+                Pokemon temp = _myPokemons[0];
+                _myPokemons[0] = _myPokemons[firstBattlePokemonOrder];
+                _myPokemons[firstBattlePokemonOrder] = temp;
+
+                _myPokemon = _myPokemons[0];
+
+                _contentStack.Push(_onlineBattleContent);
+                _contentStack.Peek().UpdateData(packet);
+            }
+            else if (packet is S_ProcessTurn)
+            {
+                S_ProcessTurn processTurnPacket = packet as S_ProcessTurn;
+                PokemonMoveSummary usedMoveSum = processTurnPacket.UsedMoveSum;
+                PokemonSummary defensePokemonSum = processTurnPacket.DefensePokemonSum;
+                bool isMyPokemon = processTurnPacket.IsMyPokemon;
+                int moveOrder = processTurnPacket.UsedMoveOrder;
+
+                if (isMyPokemon)
+                {
+                    _attackPokemon = _myPokemon;
+                    _attackPokemonArea = _myPokemonArea;
+
+                    _defensePokemon = _enemyPokemon;
+                    _defensePokemonArea = _enemyPokemonArea;
+                }
+                else
+                {
+                    _attackPokemon = _enemyPokemon;
+                    _attackPokemonArea = _enemyPokemonArea;
+
+                    _defensePokemon = _myPokemon;
+                    _defensePokemonArea = _myPokemonArea;
+                }
+
+                if (moveOrder != -1)
+                    _attackPokemon.PokemonMoves[moveOrder].UpdatePokemonMoveSummary(usedMoveSum);
+
+                _defensePokemon.UpdatePokemonSummary(defensePokemonSum);
+
+                RefillScriptBox(new string[] { $"{_attackPokemon.PokemonInfo.NickName} used {usedMoveSum.MoveName}!" }, true);
+                SceneState = BattleSceneState.ATTACK_INSTRUCTING;
+            }
+            else if (packet is S_CheckAvailableBattlePokemon)
+            {
+                S_CheckAvailableBattlePokemon checkBattlePokemonPacket = packet as S_CheckAvailableBattlePokemon;
+                bool canFight = checkBattlePokemonPacket.CanFight;
+
+                if (canFight)
+                {
+                    if (Managers.Object.MyPlayerController.NPC != null)
                     {
-                        _enterEffect.PlayEffect("FadeIn");
-                        _playableDirector.Play();
-
-                        S_EnterPokemonBattleScene enterBattleScenePacket = packet as S_EnterPokemonBattleScene;
-                        PlayerInfo playerInfo = enterBattleScenePacket.PlayerInfo;
-                        PokemonSummary enemyPokemonSum = enterBattleScenePacket.EnemyPokemonSum;
-                        IList myPokemonSums = enterBattleScenePacket.PlayerPokemonSums;
-
-                        // 포켓몬 및 플레이어 데이터 채우기
-                        _playerInfo = playerInfo;
-                        _enemyPokemon = new Pokemon(enemyPokemonSum);
-
-                        _myPokemon = new Pokemon(myPokemonSums[0] as PokemonSummary);
-
-                        // 포켓몬 랜더링
-                        _myPokemonArea.FillTrainerImage(playerInfo.PlayerGender);
-                        _myPokemonArea.PlayPokemonZoneAnim("Zone_LeftHide");
-                        _myPokemonArea.PlayInfoZoneAnim("Zone_RightHide");
-
-                        _enemyPokemonArea.FillPokemonInfo(_enemyPokemon, false);
-                        _enemyPokemonArea.PlayPokemonZoneAnim("Zone_Default");
-
-                        // UI 생성
-                        MakeUI(myPokemonSums[0] as PokemonSummary);
+                        List<string> actionBtnNames = new List<string>()
+                        {
+                            "Send Out",
+                            "Summary",
+                            "Cancel"
+                        };
+                        ContentManager.Instance.OpenPokemonList(_myPokemons, actionBtnNames);
+                    }
+                    else
+                    {
+                        RefillScriptBox(new string[] { $"Do you want to change to another Pokemon?" });
+                        SceneState = BattleSceneState.ASKING_TO_SWITCH_POKEMON;
                     }
                 }
-                break;
+                else
+                {
+                    RefillScriptBox(
+                        new string[] {
+                            "There is no more pokemon to fight!",
+                            "......",
+                            "I took the injured Pokemon to the nearby Pokemon Center in a hurry."
+                        });
+                }
+            }
+            else if (packet is S_GetEnemyPokemonExp)
+            {
+                S_GetEnemyPokemonExp getExpPacket = packet as S_GetEnemyPokemonExp;
+                string expPokemonName = getExpPacket.ExpPokemonName;
+                int exp = getExpPacket.Exp;
+
+                RefillScriptBox(new string[] { $"{expPokemonName} got {exp} exp!" });
+                SceneState = BattleSceneState.GOT_EXP_SCRIPTING;
+                return;
+            }
+            else if (packet is S_CheckAndApplyRemainedExp)
+            {
+                S_CheckAndApplyRemainedExp expPacket = packet as S_CheckAndApplyRemainedExp;
+                PokemonSummary expPokemonSum = expPacket.ExpPokemonSum;
+                PokemonMoveSummary newMoveSum = expPacket.NewMoveSum;
+                LevelUpStatusDiff statDiff = expPacket.StatDiff;
+                int finalExp = expPacket.FinalExp;
+                int expPokemonOrder = expPacket.ExpPokemonOrder;
+                bool isExpFinish = expPacket.IsExpFinish;
+
+                _expPokemon = _myPokemons[expPokemonOrder];
+
+                if (newMoveSum != null)
+                    _newMove = new PokemonMove(newMoveSum);
+
+                if (expPokemonOrder == 0)
+                {
+                    _myPokemonArea.ChangePokemonEXP(_expPokemon.PokemonExpInfo.CurExp + finalExp);
+
+                    _expPokemon.UpdatePokemonSummary(expPokemonSum);
+
+                    SceneState = BattleSceneState.GETTING_EXP;
+                }
+                else
+                {
+                    _expPokemon.UpdatePokemonSummary(expPokemonSum);
+
+                    if (statDiff != null)
+                    {
+                        _statusBox.SetLevelUpStatusBox(statDiff, _expPokemon.PokemonStat);
+                        RefillScriptBox(new string[] { $"{_expPokemon.PokemonInfo.NickName}'s level went up to {_expPokemon.PokemonInfo.Level}." });
+                        SceneState = BattleSceneState.LEVEL_UP_SCRIPTING;
+                    }
+                    else
+                    {
+                        _expPokemon = null;
+
+                        if (isExpFinish)
+                        {
+                            if (_npcInfo != null)
+                            {
+                                SendRequestDataPacket(RequestType.SendOpponentNextPokemon);
+                            }
+                            else
+                            {
+                                SceneState = BattleSceneState.MOVING_SCENE;
+                            }
+                        }
+                        else
+                        {
+                            SendRequestDataPacket(RequestType.GetEnemyPokemonExp);
+                        }
+                    }
+                }
+
+                return;
+            }
+            else if (packet is S_ForgetAndLearnNewMove)
+            {
+                S_ForgetAndLearnNewMove learnNewMovePacket = packet as S_ForgetAndLearnNewMove;
+                string prevMoveName = learnNewMovePacket.PrevMoveName;
+
+                if (prevMoveName == "")
+                {
+                    RefillScriptBox(new string[] {
+                        $"{_expPokemon.PokemonInfo.NickName} did not learn the move {_newMove.MoveName}."
+                    });
+                }
+                else
+                {
+                    RefillScriptBox(new string[] {
+                        $"1, 2, and... ... ... Poof!",
+                        $"{_expPokemon.PokemonInfo.NickName} forgot how to use {prevMoveName}.",
+                        "And...",
+                        $"{_expPokemon.PokemonInfo.NickName} learned {_newMove.MoveName}!",
+                    });
+                }
+
+                _actionSelectContent.CreateButton(_myPokemon);
+
+                _newMove = null;
+
+                _sceneState = BattleSceneState.AFTER_MOVE_SELECTION_SCRIPTING;
+            }
+            else if (packet is S_SwitchBattlePokemon)
+            {
+                S_SwitchBattlePokemon switchPokemonPacket = packet as S_SwitchBattlePokemon;
+
+                PokemonSummary prevPokemonSum = switchPokemonPacket.PrevPokemonSum;
+
+                _myPokemon = _myPokemons[0];
+
+                // 기술 버튼 데이터 채우기
+                _actionSelectContent.CreateButton(_myPokemon);
+
+                if (prevPokemonSum.PokemonInfo.PokemonStatus == PokemonStatusCondition.Fainting)
+                {
+                    // 포켓몬 랜더링
+                    _myPokemonArea.PlayPokemonZoneAnim("Zone_LeftHide");
+                    _myPokemonArea.PlayInfoZoneAnim("Zone_RightHide");
+
+                    RefillScriptBox(new string[] { $"Go! {_myPokemon.PokemonInfo.NickName}!" });
+                    SceneState = BattleSceneState.AFTER_SWITCH_POKEMON_SCRIPTING;
+                }
+                else
+                {
+                    RefillScriptBox(new string[] { $"That is enough! Come back {prevPokemonSum.PokemonInfo.NickName}!" });
+                    SceneState = BattleSceneState.AFTER_SWITCH_POKEMON_SCRIPTING;
+                }
+            }
+            else if (packet is S_SendOpponentNextPokemon)
+            {
+                PokemonSummary pokemonSum = ((S_SendOpponentNextPokemon)packet).OpponentPokemonSum;
+
+                if (pokemonSum != null)
+                {
+                    _enemyPokemonArea.PlayPokemonZoneAnim("Zone_RightHide");
+                    _enemyPokemon = new Pokemon(pokemonSum);
+                    _enemyPokemonArea.FillPokemonInfo(_enemyPokemon, false);
+
+                    RefillScriptBox(new string[] { $"{_npcInfo.NpcName} sent out {pokemonSum.PokemonInfo.NickName}!" });
+                    SceneState = BattleSceneState.OPPONENT_POKEMON_APPEAR_SCRIPTING;
+                }
+                else
+                {
+                    if (!_loadingPacket)
+                    {
+                        _loadingPacket = true;
+
+                        C_GetRewardInfo getRewardPacket = new C_GetRewardInfo();
+                        getRewardPacket.PlayerId = Managers.Object.MyPlayerController.Id;
+
+                        Managers.Network.Send(getRewardPacket);
+                    }
+                }
+            }
+            else if (packet is S_GetRewardInfo)
+            {
+                S_GetRewardInfo getRewardPacket = packet as S_GetRewardInfo;
+                int reward = getRewardPacket.Money;
+                IList scripts = getRewardPacket.AfterBattleScripts;
+
+                if (reward > 0)
+                {
+                    RefillScriptBox(new string[] { $"Player defeated {_npcInfo.NpcType} {_npcInfo.NpcName}!" });
+                    SceneState = BattleSceneState.TRAINER_DEATED_SCRIPTING;
+                }
+                else
+                {
+                    SceneState = BattleSceneState.MOVING_SCENE;
+                }
+            }
+            else if (packet is S_CheckPokemonEvolution)
+            {
+                S_CheckPokemonEvolution checkEvolutionPacket = packet as S_CheckPokemonEvolution;
+                int evolvePokemonIdx = checkEvolutionPacket.EvolvePokemonIdx;
+                string evolutionPokemonName = checkEvolutionPacket.EvolutionPokemonName;
+
+                if (evolvePokemonIdx != -1)
+                {
+                    ContentManager.Instance.OpenPokemonEvolution(Managers.Object.MyPlayerController.MyPokemons[evolvePokemonIdx], evolutionPokemonName);
+                }
+                else
+                {
+                    C_ReturnGame returnGamePacket = new C_ReturnGame();
+                    returnGamePacket.PlayerId = Managers.Object.MyPlayerController.Id;
+
+                    Managers.Scene.AsyncUnLoadScene(Define.Scene.Battle, () =>
+                    {
+                        ContentManager.Instance.ScriptBox.gameObject.SetActive(false);
+                        Managers.Scene.CurrentScene = GameObject.FindFirstObjectByType<GameScene>();
+                        Managers.Network.Send(returnGamePacket);
+                    });
+                }
+            }
+            else if (packet is S_UseItemInListScene)
+            {
+                ItemSummary itemSumamary = ((S_UseItemInListScene)_packet).ItemSum;
+
+                RefillScriptBox(new string[] { $"{Managers.Object.MyPlayerController.PlayerName} used {itemSumamary.ItemName}!" }, true);
+                _sceneState = BattleSceneState.ITEM_USE_SCRIPTING;
+            }
+            if (packet is S_EscapeFromWildPokemon)
+            {
+                S_EscapeFromWildPokemon escapePacket = packet as S_EscapeFromWildPokemon;
+                bool canEscape = escapePacket.CanEscape;
+
+                if (canEscape)
+                {
+                    List<string> scripts = new List<string>()
+                    {
+                        $"Got away safely!"
+                    };
+                    ContentManager.Instance.BeginScriptTyping(scripts);
+                }
+                else
+                {
+                    List<string> scripts = new List<string>()
+                    {
+                        $"Can't escape!"
+                    };
+                    ContentManager.Instance.BeginScriptTyping(scripts);
+                }
+
+                SceneState = BattleSceneState.ESCAPE_SCRIPTING;
+            }
         }
+        else
+        {
+            _contentStack.Peek().UpdateData(packet);
+            return;
+        }
+    }
+
+    public void UpdateMyPokemonInfo(Pokemon pokemon)
+    {
+        _myPokemonArea.FillPokemonInfo(pokemon, true);
     }
 
     public override void DoNextAction(object value = null)
     {
+        if (_contentStack.Count > 0)
+        {
+            _contentStack.Peek().SetNextAction(value);
+            return;
+        }
+
         switch (_sceneState)
         {
-            case BattleSceneState.NONE:
+            case BattleSceneState.AFTER_SWITCH_POKEMON_SCRIPTING:
                 {
                     if (_packet is S_SwitchBattlePokemon)
                     {
-                        PokemonSummary prevPokemonSum = (_packet as S_SwitchBattlePokemon).PrevPokemonSum;
+                        S_SwitchBattlePokemon switchPokemonPacket = _packet as S_SwitchBattlePokemon;
+                        PokemonSummary prevPokemonSum = switchPokemonPacket.PrevPokemonSum;
 
-                        RefillScriptBox(new string[] { $"That is enough! Come back {prevPokemonSum.PokemonInfo.NickName}!" });
-                        SceneState = BattleSceneState.COME_BACK_POKEMON_SCRIPTING;
-                    }
-                    else if (_packet is S_ReturnPokemonBattleScene)
-                    {
-                        SceneState = BattleSceneState.SELECTING_ACTION;
-                    }
-                    else if (_packet is S_ItemSceneToBattleScene)
-                    {
-                        SceneState = BattleSceneState.SELECTING_ACTION;
-                    }
-                    else if (_packet is S_MoveSceneToBattleScene)
-                    {
-                        S_MoveSceneToBattleScene battleScenePacket = _packet as S_MoveSceneToBattleScene;
-                        string movePokemonName = battleScenePacket.MovePokemonName;
-                        string prevMoveName = battleScenePacket.PrevMoveName;
-                        string newMoveName = battleScenePacket.NewMoveName;
-
-                        if (prevMoveName == "")
+                        if (prevPokemonSum.PokemonInfo.PokemonStatus == PokemonStatusCondition.Fainting)
                         {
-                            RefillScriptBox(new string[] {
-                                $"{movePokemonName} did not learn the move {newMoveName}."
-                            });
-                            _sceneState = BattleSceneState.NEW_MOVE_LEARN_SCRIPTING;
+                            _myPokemonArea.PlayPokemonZoneAnim("Zone_RightAppear");
+                            SceneState = BattleSceneState.SHOWING_POKEMON;
                         }
                         else
                         {
-                            RefillScriptBox(new string[] {
-                                $"1, 2, and... ... ... Poof!",
-                                $"{movePokemonName} forgot how to use {prevMoveName}.",
-                                "And...",
-                                $"{movePokemonName} learned {newMoveName}!",
-                            });
-                            _sceneState = BattleSceneState.NEW_MOVE_LEARN_SCRIPTING;
+                            _myPokemonArea.PlayPokemonZoneAnim("Zone_LeftDisappear");
+                            SceneState = BattleSceneState.COMING_BACK_POKEMON;
                         }
-                    }
-                    else
-                    {
-                        SceneState = BattleSceneState.INTRO;
                     }
                 }
                 break;
-            case BattleSceneState.INTRO:
+            case BattleSceneState.NONE:
                 {
-                    RefillScriptBox(new string[] { $"Wild {_enemyPokemon.PokemonInfo.PokemonName} appeard!" });
-                    SceneState = BattleSceneState.WILD_POKEMON_APPEAR_SCRIPTING;
+                    if (_npcInfo != null)
+                    {
+                        RefillScriptBox(new string[] { $"{_npcInfo.NpcType} {_npcInfo.NpcName} would like to battle!" });
+                        SceneState = BattleSceneState.WILD_POKEMON_APPEAR_SCRIPTING;
+                    }
+                    else
+                    {
+                        RefillScriptBox(new string[] { $"Wild {_enemyPokemon.PokemonInfo.PokemonName} appeard!" });
+                        SceneState = BattleSceneState.WILD_POKEMON_APPEAR_SCRIPTING;
+                    }
                 }
                 break;
             case BattleSceneState.WILD_POKEMON_APPEAR_SCRIPTING:
                 {
-                    _myPokemonArea.PlayTrainerZoneAnim("Zone_LeftDisappear");
-                    SceneState = BattleSceneState.TRAINER_DISAPPEARING;
+                    if (_npcInfo != null)
+                    {
+                        _enemyPokemonArea.PlayTrainerZoneAnim("Zone_RightDisappear");
+                        SceneState = BattleSceneState.OPPONENT_TRAINER_DISAPPEARING;
+                    }
+                    else
+                    {
+                        _myPokemonArea.PlayTrainerZoneAnim("Zone_LeftDisappear");
+                        SceneState = BattleSceneState.TRAINER_DISAPPEARING;
+                    }
+                }
+                break;
+            case BattleSceneState.OPPONENT_TRAINER_DISAPPEARING:
+                {
+                    RefillScriptBox(new string[] { $"{_npcInfo.NpcName} sent out {_enemyPokemon.PokemonInfo.NickName}!" });
+                    SceneState = BattleSceneState.OPPONENT_POKEMON_APPEAR_SCRIPTING;
+                }
+                break;
+            case BattleSceneState.OPPONENT_POKEMON_APPEAR_SCRIPTING:
+                {
+                    _enemyPokemonArea.PlayPokemonZoneAnim("Zone_LeftAppear");
+                    SceneState = BattleSceneState.OPPONENT_POKEMON_APPEARING;    
+                }
+                break;
+            case BattleSceneState.OPPONENT_POKEMON_APPEARING:
+                {
+                    _enemyPokemonArea.PlayInfoZoneAnim("Zone_RightAppear");
+                    SceneState = BattleSceneState.OPPONENT_POKEMON_CARD_APPEARING;
+                }
+                break;
+            case BattleSceneState.OPPONENT_POKEMON_CARD_APPEARING:
+                {
+                    if (_packet is S_SendOpponentNextPokemon)
+                    {
+                        ContentManager.Instance.ScriptBox.gameObject.SetActive(false);
+
+                        _contentStack.Push(_actionSelectContent);
+                        _contentStack.Peek().SetNextAction();
+                    }
+                    else
+                    {
+                        _myPokemonArea.PlayTrainerZoneAnim("Zone_LeftDisappear");
+                        SceneState = BattleSceneState.TRAINER_DISAPPEARING;
+                    }
                 }
                 break;
             case BattleSceneState.TRAINER_DISAPPEARING:
@@ -604,104 +687,22 @@ public class BattleScene : BaseScene
 
                         if (prevPokemonSum.PokemonInfo.PokemonStatus == PokemonStatusCondition.Fainting)
                         {
-                            SceneState = BattleSceneState.SELECTING_ACTION;
+                            ContentManager.Instance.ScriptBox.gameObject.SetActive(false);
+
+                            _contentStack.Push(_actionSelectContent);
+                            _contentStack.Peek().SetNextAction();
                         }
                         else
                         {
-                            SendProcessTurnPacket(_moveSelectBox.GetSelectedIdx());
+                            SendProcessTurnPacket(0);
                         }
                     }
                     else
                     {
-                        SceneState = BattleSceneState.SELECTING_ACTION;
-                    }
-                }
-                break;
-            case BattleSceneState.CANNOT_USE_MOVE:
-                {
-                    SceneState = BattleSceneState.SELECTING_MOVE;
-                }
-                break;
-            case BattleSceneState.SELECTING_ACTION:
-                {
-                    if (value is Define.InputSelectBoxEvent)
-                    {
-                        Define.InputSelectBoxEvent inputEvent = (Define.InputSelectBoxEvent)value;
+                        ContentManager.Instance.ScriptBox.gameObject.SetActive(false);
 
-                        if (inputEvent == Define.InputSelectBoxEvent.SELECT)
-                        {
-                            string selectedAction = _actionSelectBox.GetSelectedBtnData() as string;
-
-                            if (selectedAction == "Fight")
-                            {
-                                // 내 포켓몬에 사용 가능한 기술이 있는 지 확인한다.
-                                List<PokemonMove> myPKMAvailableMoves = FindAvailableMove(_myPokemon);
-
-                                if (myPKMAvailableMoves.Count > 0)
-                                {
-                                    SceneState = BattleSceneState.SELECTING_MOVE;
-                                }
-                                else
-                                {
-                                    SendProcessTurnPacket(-1);
-                                }
-                            }
-                            else if (selectedAction == "Pokemon")
-                            {
-                                C_EnterPokemonListScene enterPokemonPacket = new C_EnterPokemonListScene();
-                                enterPokemonPacket.PlayerId = _playerInfo.ObjectInfo.ObjectId;
-
-                                Managers.Network.SavePacket(enterPokemonPacket);
-
-                                SceneState = BattleSceneState.MOVING_SCENE;
-                            }
-                            else if (selectedAction == "Bag")
-                            {
-                                C_EnterPlayerBagScene enterBagPacket = new C_EnterPlayerBagScene();
-                                enterBagPacket.PlayerId = _playerInfo.ObjectInfo.ObjectId;
-
-                                Managers.Network.SavePacket(enterBagPacket);
-
-                                SceneState = BattleSceneState.MOVING_SCENE;
-                            }
-                            else if (selectedAction == "Run")
-                            {
-                                if (!_loadingPacket)
-                                {
-                                    C_RequestDataById requestPacket = new C_RequestDataById();
-                                    requestPacket.PlayerId = _playerInfo.ObjectInfo.ObjectId;
-                                    requestPacket.RequestType = RequestType.EscapeFromWildPokemon;
-
-                                    Managers.Network.Send(requestPacket);
-
-                                    _loadingPacket = true;
-                                }
-                            }
-                        }
-                    }
-                }
-                break;
-            case BattleSceneState.SELECTING_MOVE:
-                {
-                    if (value is Define.InputSelectBoxEvent)
-                    {
-                        Define.InputSelectBoxEvent inputEvent = (Define.InputSelectBoxEvent)value;
-
-                        if (inputEvent == Define.InputSelectBoxEvent.SELECT)
-                        {
-                            SendProcessTurnPacket(_moveSelectBox.GetSelectedIdx());
-                        }
-                        else if (inputEvent == Define.InputSelectBoxEvent.BACK)
-                        {
-                            SceneState = BattleSceneState.SELECTING_ACTION;
-                        }
-                    }
-                    else
-                    {
-                        PokemonMove selectedMove = _moveSelectBox.GetSelectedBtnData() as PokemonMove;
-
-                        _moveInfoTMPs[1].text = $"{selectedMove.CurPP.ToString()} / {selectedMove.MaxPP.ToString()}";
-                        _moveInfoTMPs[2].text = $"TYPE / {selectedMove.MoveType.ToString()}";
+                        _contentStack.Push(_actionSelectContent);
+                        _contentStack.Peek().SetNextAction();
                     }
                 }
                 break;
@@ -710,48 +711,39 @@ public class BattleScene : BaseScene
                     if (_packet is S_ProcessTurn)
                     {
                         S_ProcessTurn processTurn = _packet as S_ProcessTurn;
-                        bool isMyPokemon = processTurn.IsMyPokemon;
                         int usedMoveOrder = processTurn.UsedMoveOrder;
                         bool isHit = processTurn.IsHit;
                         float typeEffectiveness = processTurn.TypeEffectiveness;
 
-                        if (isMyPokemon)
+                        if (isHit)
                         {
-                            if (isHit)
+                            if (typeEffectiveness == 0f)
                             {
-                                if (typeEffectiveness == 0f)
-                                {
-                                    RefillScriptBox(new string[] { $"It doesn't affect {_enemyPokemon.PokemonInfo.NickName}..." }, true);
-                                    SceneState = BattleSceneState.EFFECTIVENESS_SCRIPTING;
-                                }
-                                else
-                                {
-                                    SceneState = BattleSceneState.FIRST_ATTACK_ANIMATION;
-                                    PokemonMove usedMove = usedMoveOrder != -1 ? _myPokemon.PokemonMoves[usedMoveOrder] : _myPokemon.NoPPMove;
-
-                                    _myPokemonArea.PlayBattlePokemonAnim("BattlePokemon_RightAttack");
-                                    _enemyPokemonArea.TriggerPokemonHitImage(usedMove);
-                                }
+                                RefillScriptBox(new string[] { $"It doesn't affect {_defensePokemon.PokemonInfo.NickName}..." }, true);
+                                SceneState = BattleSceneState.EFFECTIVENESS_SCRIPTING;
                             }
                             else
                             {
-                                RefillScriptBox(new string[] { $"{_myPokemon.PokemonInfo.NickName}'s attack is off the mark!" }, true);
-                                SceneState = BattleSceneState.FIRST_ATTACK_FAILED;
+                                SceneState = BattleSceneState.ATTACK_ANIMATION;
+                                PokemonMove usedMove = usedMoveOrder != -1 ? _attackPokemon.PokemonMoves[usedMoveOrder] : _attackPokemon.NoPPMove;
+
+                                if (_attackPokemonArea == _myPokemonArea)
+                                    _attackPokemonArea.PlayBattlePokemonAnim("BattlePokemon_RightAttack");
+                                else
+                                    _attackPokemonArea.PlayBattlePokemonAnim("BattlePokemon_LeftAttack");
+
+                                _defensePokemonArea.TriggerPokemonHitImage(usedMove);
                             }
                         }
                         else
                         {
-
-                            PokemonMove usedMove = usedMoveOrder != -1 ? _enemyPokemon.PokemonMoves[usedMoveOrder] : _enemyPokemon.NoPPMove;
-
-                            _enemyPokemonArea.PlayBattlePokemonAnim("BattlePokemon_LeftAttack");
-                            _myPokemonArea.TriggerPokemonHitImage(usedMove);
-                            SceneState = BattleSceneState.FIRST_ATTACK_ANIMATION;
+                            RefillScriptBox(new string[] { $"{_attackPokemon.PokemonInfo.NickName}'s attack is off the mark!" }, true);
+                            SceneState = BattleSceneState.ATTACK_MISSED_SCRIPTING;
                         }
                     }
                 }
                 break;
-            case BattleSceneState.FIRST_ATTACK_FAILED:
+            case BattleSceneState.ATTACK_MISSED_SCRIPTING:
                 {
                     if (_packet is S_ProcessTurn)
                     {
@@ -760,42 +752,28 @@ public class BattleScene : BaseScene
 
                         if (isTurnFinish)
                         {
-                            SceneState = BattleSceneState.SELECTING_ACTION;
+                            ContentManager.Instance.ScriptBox.gameObject.SetActive(false);
+
+                            _contentStack.Push(_actionSelectContent);
+                            _contentStack.Peek().SetNextAction();
                         }
                         else
                         {
-                            SendProcessTurnPacket(_moveSelectBox.GetSelectedIdx());
+                            SendProcessTurnPacket(_actionSelectContent.GetSelectMoveOrder());
                         }
                     }
                 }
                 break;
-            case BattleSceneState.FIRST_ATTACK_ANIMATION:
+            case BattleSceneState.ATTACK_ANIMATION:
                 {
-                    if (_packet is S_ProcessTurn)
-                    {
-                        S_ProcessTurn processTurnPacket = _packet as S_ProcessTurn;
-                        bool isMyPokemon = processTurnPacket.IsMyPokemon;
-
-                        BattleArea defensePokemonArea = isMyPokemon ? _enemyPokemonArea : _myPokemonArea;
-
-                        SceneState = BattleSceneState.HIT_POKEMON_BLINK;
-                        defensePokemonArea.PlayBattlePokemonAnim("BattlePokemon_Hit");
-                    }
+                    SceneState = BattleSceneState.POKEMON_BLINK_ANIMATION;
+                    _defensePokemonArea.PlayBattlePokemonAnim("BattlePokemon_Hit");
                 }
                 break;
-            case BattleSceneState.HIT_POKEMON_BLINK:
+            case BattleSceneState.POKEMON_BLINK_ANIMATION:
                 {
-                    if (_packet is S_ProcessTurn)
-                    {
-                        S_ProcessTurn processTurnPacket = _packet as S_ProcessTurn;
-                        PokemonSummary defensePokemonSum = processTurnPacket.DefensePokemonSum;
-                        bool isMyPokemon = processTurnPacket.IsMyPokemon;
-
-                        BattleArea defensePokemonArea = isMyPokemon ? _enemyPokemonArea : _myPokemonArea;
-
-                        defensePokemonArea.ChangePokemonHP(defensePokemonSum.PokemonStat.Hp);
-                        SceneState = BattleSceneState.CHANGE_POKEMON_HP;
-                    }
+                    _defensePokemonArea.ChangePokemonHP(_defensePokemon.PokemonStat.Hp);
+                    SceneState = BattleSceneState.CHANGE_POKEMON_HP;
                 }
                 break;
             case BattleSceneState.CHANGE_POKEMON_HP:
@@ -803,7 +781,6 @@ public class BattleScene : BaseScene
                     if (_packet is S_ProcessTurn)
                     {
                         S_ProcessTurn processTurnPacket = _packet as S_ProcessTurn;
-                        PokemonSummary defensePokemonSum = processTurnPacket.DefensePokemonSum;
                         float typeEffectiveness = processTurnPacket.TypeEffectiveness;
                         bool isCriticalHit = processTurnPacket.IsCriticalHit;
 
@@ -812,7 +789,7 @@ public class BattleScene : BaseScene
 
                         if (scripts.Count > 0)
                         {
-                            _scriptBox.BeginScriptTyping(scripts, true);
+                            ContentManager.Instance.ScriptBox.BeginScriptTyping(scripts, true);
                             SceneState = BattleSceneState.EFFECTIVENESS_SCRIPTING;
                         }
                         else
@@ -832,6 +809,23 @@ public class BattleScene : BaseScene
                     if (_packet is S_ProcessTurn)
                     {
                         S_ProcessTurn processTurnPacket = _packet as S_ProcessTurn;
+                        bool isMyPokemon = processTurnPacket.IsMyPokemon;
+                        bool isTurnFinish = processTurnPacket.IsTurnFinish;
+
+                        if (isMyPokemon)
+                            _enemyPokemonArea.PlayInfoZoneAnim("Zone_LeftDisappear");
+                        else
+                            _myPokemonArea.PlayInfoZoneAnim("Zone_RightDisappear");
+
+                        SceneState = BattleSceneState.POKEMON_CARD_DISAPPEAR_ANIMATION;
+                    }
+                }
+                break;
+            case BattleSceneState.POKEMON_CARD_DISAPPEAR_ANIMATION:
+                {
+                    if (_packet is S_ProcessTurn)
+                    {
+                        S_ProcessTurn processTurnPacket = _packet as S_ProcessTurn;
                         PokemonSummary defensePokemonSum = processTurnPacket.DefensePokemonSum;
 
                         RefillScriptBox(new string[] { $"{defensePokemonSum.PokemonInfo.NickName} fell down!" });
@@ -844,7 +838,6 @@ public class BattleScene : BaseScene
                     if (_packet is S_ProcessTurn)
                     {
                         S_ProcessTurn processTurnPacket = _packet as S_ProcessTurn;
-                        PokemonSummary defensePokemonSum = processTurnPacket.DefensePokemonSum;
                         bool isMyPokemon = processTurnPacket.IsMyPokemon;
 
                         if (isMyPokemon)
@@ -876,96 +869,76 @@ public class BattleScene : BaseScene
                     if (_packet is S_CheckAndApplyRemainedExp)
                     {
                         S_CheckAndApplyRemainedExp expPacket = _packet as S_CheckAndApplyRemainedExp;
-                        PokemonSummary expPokemonSum = expPacket.ExpPokemonSum;
                         LevelUpStatusDiff statDiff = expPacket.StatDiff;
-
-                        _myPokemon.PokemonExpInfo = expPokemonSum.PokemonExpInfo;
+                        bool isExpFinish = expPacket.IsExpFinish;
 
                         if (statDiff != null)
                         {
-                            _myPokemon.PokemonInfo.Level = expPokemonSum.PokemonInfo.Level;
-                            _myPokemon.PokemonStat = expPokemonSum.PokemonStat;
-
+                            _statusBox.SetLevelUpStatusBox(statDiff, _expPokemon.PokemonStat);
                             _myPokemonArea.FillPokemonInfo(_myPokemon, true);
-                            _statusBox.SetStatusDiffRate(statDiff);
 
                             RefillScriptBox(new string[] { $"{_myPokemon.PokemonInfo.NickName}'s level went up to {_myPokemon.PokemonInfo.Level}." });
                             SceneState = BattleSceneState.LEVEL_UP_SCRIPTING;
                         }
                         else
                         {
-                            SendRequestDataPacket(RequestType.CheckExpPokemon);
+                            _expPokemon = null;
+
+                            if (isExpFinish)
+                            {
+                                if (_npcInfo != null)
+                                {
+                                    SendRequestDataPacket(RequestType.SendOpponentNextPokemon);
+                                }
+                                else
+                                {
+                                    SceneState = BattleSceneState.MOVING_SCENE;
+                                }
+                            }
+                            else
+                            {
+                                SendRequestDataPacket(RequestType.GetEnemyPokemonExp);
+                            }
                         }
                     }
                 }
                 break;
             case BattleSceneState.LEVEL_UP_SCRIPTING:
                 {
-                    SceneState = BattleSceneState.UPGRADING_STATUS;
+                    SceneState = BattleSceneState.SHOWING_LEVEL_UP_STATUS_BOX;
                 }
                 break;
-            case BattleSceneState.UPGRADING_STATUS:
+            case BattleSceneState.SHOWING_LEVEL_UP_STATUS_BOX:
                 {
-                    if (_packet is S_CheckAndApplyRemainedExp)
+                    if (_newMove != null)
                     {
-                        PokemonSummary expPokemonSum = (_packet as S_CheckAndApplyRemainedExp).ExpPokemonSum;
-                        bool isMainPokemon = (_packet as S_CheckAndApplyRemainedExp).IsMainPokemon;
-
-                        if (isMainPokemon)
+                        if (_expPokemon.PokemonMoves.Count < 4)
                         {
-                            _statusBox.ShowFinalStat(_myPokemon.PokemonStat);
-                            SceneState = BattleSceneState.SHOWING_UPGRADED_STATUS;
+                            _expPokemon.PokemonMoves.Add(_newMove);
+                            _actionSelectContent.CreateMoveButtons();
+
+                            RefillScriptBox(new string[] { $"{_expPokemon.PokemonInfo.NickName} learned {_newMove.MoveName}!" });
+
+                            SceneState = BattleSceneState.AFTER_MOVE_SELECTION_SCRIPTING;
                         }
                         else
                         {
-                            _statusBox.ShowFinalStat(expPokemonSum.PokemonStat);
-                            SceneState = BattleSceneState.SHOWING_UPGRADED_STATUS;
-                        }
-                    }
-                }
-                break;
-            case BattleSceneState.SHOWING_UPGRADED_STATUS:
-                {
-                    if (_packet is S_CheckAndApplyRemainedExp)
-                    {
-                        S_CheckAndApplyRemainedExp expPacket = _packet as S_CheckAndApplyRemainedExp;
-                        PokemonSummary expPokemonSum = expPacket.ExpPokemonSum;
-                        PokemonMoveSummary newMoveSum = expPacket.NewMoveSum;
-                        bool isMainPokemon = expPacket.IsMainPokemon;
-
-                        if (newMoveSum != null)
-                        {
-                            if (expPokemonSum.PokemonMoves.Count < 4)
-                            {
-                                if (isMainPokemon)
-                                {
-                                    PokemonMove move = new PokemonMove(newMoveSum);
-                                    _myPokemon.PokemonMoves.Add(move);
-                                }
-
-                                RefillScriptBox(new string[] { $"{expPokemonSum.PokemonInfo.NickName} learned {newMoveSum.MoveName}!" });
-
-                                SceneState = BattleSceneState.NEW_MOVE_LEARN_SCRIPTING;
-                            }
-                            else
-                            {
-                                RefillScriptBox(new string[] { 
-                                    $"{expPokemonSum.PokemonInfo.NickName} wants to learn the move {newMoveSum.MoveName}.", 
-                                    $"However, {expPokemonSum.PokemonInfo.NickName} already knows four moves.", 
-                                    $"Sould a move be deleted and replaced with {newMoveSum.MoveName}?" 
+                            RefillScriptBox(new string[] {
+                                    $"{_expPokemon.PokemonInfo.NickName} wants to learn the move {_newMove.MoveName}.",
+                                    $"However, {_expPokemon.PokemonInfo.NickName} already knows four moves.",
+                                    $"Sould a move be deleted and replaced with {_newMove.MoveName}?"
                                 });
 
-                                SceneState = BattleSceneState.ASKING_TO_LEARN_NEW_MOVE;
-                            }
+                            SceneState = BattleSceneState.ASKING_TO_LEARN_NEW_MOVE;
                         }
-                        else
-                        {
-                            SendRequestDataPacket(RequestType.CheckAndApplyRemainedExp);
-                        }
+                    }
+                    else
+                    {
+                        SendRequestDataPacket(RequestType.CheckAndApplyRemainedExp);
                     }
                 }
                 break;
-            case BattleSceneState.NEW_MOVE_LEARN_SCRIPTING:
+            case BattleSceneState.AFTER_MOVE_SELECTION_SCRIPTING:
                 {
                     SendRequestDataPacket(RequestType.CheckAndApplyRemainedExp);
                 }
@@ -983,33 +956,19 @@ public class BattleScene : BaseScene
 
                         if (inputEvent == Define.InputSelectBoxEvent.SELECT)
                         {
-                            GridLayoutSelectBox selectBox = _scriptBox.ScriptSelectBox;
+                            GridLayoutSelectBox selectBox = ContentManager.Instance.ScriptBox.ScriptSelectBox;
 
                             if (selectBox.GetSelectedBtnData() as string == "Yes")
                             {
-                                C_EnterMoveSelectionScene enterMoveScene = new C_EnterMoveSelectionScene();
-                                enterMoveScene.PlayerId = _playerInfo.ObjectInfo.ObjectId;
-
-                                Managers.Network.SavePacket(enterMoveScene);
-
-                                SceneState = BattleSceneState.MOVING_SCENE;
-                                _actionSelectBox.gameObject.SetActive(false);
-                                _scriptBox.ScriptSelectBox.gameObject.SetActive(true);
-                                _enterEffect.PlayEffect("FadeOut");
+                                ContentManager.Instance.OpenMoveSelection(_expPokemon, _newMove);
                             }
                             else if (selectBox.GetSelectedBtnData() as string == "No")
                             {
-                                if (_packet is S_CheckAndApplyRemainedExp)
-                                {
-                                    S_CheckAndApplyRemainedExp expPacket = _packet as S_CheckAndApplyRemainedExp;
-                                    PokemonSummary expPokemonSum = expPacket.ExpPokemonSum;
-                                    PokemonMoveSummary newMoveSum = expPacket.NewMoveSum;
-
-                                    RefillScriptBox(new string[] { 
-                                        $"{expPokemonSum.PokemonInfo.NickName} did not learn the move {newMoveSum.MoveName}." 
-                                    });
-                                    SceneState = BattleSceneState.NEW_MOVE_NOT_LEARN_SCRIPTING;
-                                }
+                                RefillScriptBox(new string[] {
+                                    $"{_expPokemon.PokemonInfo.NickName} did not learn the move {_newMove.MoveName}."
+                                });
+                                _newMove = null;
+                                SceneState = BattleSceneState.NEW_MOVE_NOT_LEARN_SCRIPTING;
                             }
                         }
                     }
@@ -1023,17 +982,19 @@ public class BattleScene : BaseScene
 
                         if (inputEvent == Define.InputSelectBoxEvent.SELECT)
                         {
-                            GridLayoutSelectBox selectBox = _scriptBox.ScriptSelectBox;
+                            GridLayoutSelectBox selectBox = ContentManager.Instance.ScriptBox.ScriptSelectBox;
 
                             if (selectBox.GetSelectedBtnData() as string == "Yes")
                             {
-                                C_EnterPokemonListScene enterPokemonPacket = new C_EnterPokemonListScene();
-                                enterPokemonPacket.PlayerId = _playerInfo.ObjectInfo.ObjectId;
+                                List<string> actionBtnNames = new List<string>()
+                                {
+                                    "Send Out",
+                                    "Summary",
+                                    "Cancel"
+                                };
+                                ContentManager.Instance.OpenPokemonList(_myPokemons, actionBtnNames);
 
-                                Managers.Network.SavePacket(enterPokemonPacket);
-
-                                SceneState = BattleSceneState.MOVING_SCENE;
-                                _actionSelectBox.gameObject.SetActive(false);
+                                ContentManager.Instance.ScriptBox.HideSelectBox();
                             }
                             else if (selectBox.GetSelectedBtnData() as string == "No")
                             {
@@ -1048,27 +1009,23 @@ public class BattleScene : BaseScene
                     SendRequestDataPacket(RequestType.CheckAndApplyRemainedExp);
                 }
                 break;
-            case BattleSceneState.AFTER_USE_ITEM_UPDATE:
-                {
-                    if (_packet is S_ItemSceneToBattleScene)
-                    {
-                        S_ItemSceneToBattleScene itemToBattlePacket = _packet as S_ItemSceneToBattleScene;
-                        PlayerInfo playerInfo = itemToBattlePacket.PlayerInfo;
-                        ItemSummary itemSumamary = itemToBattlePacket.UsedItem;
-
-                        RefillScriptBox(new string[] { $"{playerInfo.PlayerName} used {itemSumamary.ItemName}!" }, true);
-                        _sceneState = BattleSceneState.ITEM_USE_SCRIPTING;
-                    }
-                }
-                break;
             case BattleSceneState.ITEM_USE_SCRIPTING:
                 {
-                    if (_packet is S_ItemSceneToBattleScene)
+                    if (_packet is S_UseItemInListScene)
                     {
-                        S_ItemSceneToBattleScene itemToBattlePacket = _packet as S_ItemSceneToBattleScene;
-                        ItemSummary itemSumamary = itemToBattlePacket.UsedItem;
+                        ItemSummary itemSummary = ((S_UseItemInListScene)_packet).ItemSum;
 
-                        _myPokemonArea.CreateAndThrowBall(itemSumamary.ItemName);
+                        // 아이템도 사용처리
+                        Item usedItem = ContentManager.Instance.BagContent.GetSelectedItem();
+                        usedItem.UpdateItemSummary(itemSummary);
+
+                        if (usedItem.ItemCnt == 0)
+                            ContentManager.Instance.BagContent.RemoveSelectedItem();
+                        else
+                            ContentManager.Instance.BagContent.UpdateSelectedItem();
+
+                        // 포켓볼 준비
+                        _myPokemonArea.CreateAndThrowBall(usedItem);
                         _sceneState = BattleSceneState.BALL_THROW_ANIMATION;
                     }
                 }
@@ -1081,34 +1038,60 @@ public class BattleScene : BaseScene
                 break;
             case BattleSceneState.POKEMON_SUCKED_ANIMATION:
                 {
-                    if (!_loadingPacket)
+                    if (_packet is S_UseItemInListScene)
                     {
-                        C_IsSuccessPokeBallCatch successCatchPacket = new C_IsSuccessPokeBallCatch();
-                        successCatchPacket.PlayerId = _playerInfo.ObjectInfo.ObjectId;
+                        ItemUseResult itemUseResult = ((S_UseItemInListScene)_packet).ItemUseResult;
 
-                        Managers.Network.Send(successCatchPacket);
+                        switch (itemUseResult.SpecialInfoCase)
+                        {
+                            case ItemUseResult.SpecialInfoOneofCase.PokeBallUseResult:
+                                {
+                                    PokeBallUseResult useResult = itemUseResult.PokeBallUseResult;
+                                    bool didCatch = useResult.DidCatch;
 
-                        _loadingPacket = true;
+                                    if (didCatch)
+                                    {
+                                        _myPokemonArea.PlaySuccessCatchBallAnim();
+                                    }
+                                    else
+                                    {
+                                        int ran = Random.Range(1, 4);
+                                        _myPokemonArea.PlayFailCatchBallAnim(ran);
+                                    }
+
+                                    _sceneState = BattleSceneState.POKE_BALL_ANIMATION;
+                                }
+                                break;
+                        }
                     }
                 }
                 break;
             case BattleSceneState.POKE_BALL_ANIMATION:
                 {
-                    if (_packet is S_IsSuccessPokeBallCatch)
+                    if (_packet is S_UseItemInListScene)
                     {
-                        S_IsSuccessPokeBallCatch successCatchPacket = _packet as S_IsSuccessPokeBallCatch;
-                        bool isCatch = successCatchPacket.IsCatch;
-                        string catchPokemonName = successCatchPacket.CatchPokemonName;
+                        ItemUseResult itemUseResult = ((S_UseItemInListScene)_packet).ItemUseResult;
 
-                        if (isCatch)
+                        switch (itemUseResult.SpecialInfoCase)
                         {
-                            RefillScriptBox(new string[] { $"Gotcha! {catchPokemonName} was caught!" }, true);
-                            SceneState = BattleSceneState.CATCH_SCRIPTING;
-                        }
-                        else
-                        {
-                            _enemyPokemonArea.PlayBattlePokemonAnim("BattlePokemon_ComeOutFromBall");
-                            _sceneState = BattleSceneState.POKEMON_COME_OUT_ANIMATION;
+                            case ItemUseResult.SpecialInfoOneofCase.PokeBallUseResult:
+                                {
+                                    PokeBallUseResult useResult = itemUseResult.PokeBallUseResult;
+                                    bool didCatch = useResult.DidCatch;
+
+                                    if (didCatch)
+                                    {
+                                        Managers.Object.MyPlayerController.AddPokemon(_enemyPokemon);
+                                        RefillScriptBox(new string[] { $"Gotcha! {_enemyPokemon} was caught!" }, true);
+                                        SceneState = BattleSceneState.CATCH_SCRIPTING;
+                                    }
+                                    else
+                                    {
+                                        _enemyPokemonArea.PlayBattlePokemonAnim("BattlePokemon_ComeOutFromBall");
+                                        _sceneState = BattleSceneState.POKEMON_COME_OUT_ANIMATION;
+                                    }
+                                }
+                                break;
                         }
                     }
                 }
@@ -1121,24 +1104,27 @@ public class BattleScene : BaseScene
                 break;
             case BattleSceneState.CATCH_SCRIPTING:
                 {
-                    if (_packet is S_IsSuccessPokeBallCatch)
+                    if (_packet is S_UseItemInListScene)
                     {
-                        S_IsSuccessPokeBallCatch successCatchPacket = _packet as S_IsSuccessPokeBallCatch;
-                        bool isCatch = successCatchPacket.IsCatch;
+                        ItemUseResult itemUseResult = ((S_UseItemInListScene)_packet).ItemUseResult;
 
-                        if (isCatch)
+                        switch (itemUseResult.SpecialInfoCase)
                         {
-                            C_ReturnGame returnGamePacket = new C_ReturnGame();
-                            returnGamePacket.PlayerId = _playerInfo.ObjectInfo.ObjectId;
+                            case ItemUseResult.SpecialInfoOneofCase.PokeBallUseResult:
+                                {
+                                    PokeBallUseResult useResult = itemUseResult.PokeBallUseResult;
+                                    bool didCatch = useResult.DidCatch;
 
-                            Managers.Network.SavePacket(returnGamePacket);
-
-                            SceneState = BattleSceneState.MOVING_SCENE;
-                            _actionSelectBox.gameObject.SetActive(false);
-                        }
-                        else
-                        {
-                            SendProcessTurnPacket(_moveSelectBox.GetSelectedIdx());
+                                    if (didCatch)
+                                    {
+                                        SceneState = BattleSceneState.MOVING_SCENE;
+                                    }
+                                    else
+                                    {
+                                        SendProcessTurnPacket(_actionSelectContent.GetSelectMoveOrder());
+                                    }
+                                }
+                                break;
                         }
                     }
                 }
@@ -1154,12 +1140,6 @@ public class BattleScene : BaseScene
                     SceneState = BattleSceneState.SHOWING_POKEMON;
                 }
                 break;
-            case BattleSceneState.COME_BACK_POKEMON_SCRIPTING:
-                {
-                    _myPokemonArea.PlayPokemonZoneAnim("Zone_LeftDisappear");
-                    SceneState = BattleSceneState.COMING_BACK_POKEMON;
-                }
-                break;
             case BattleSceneState.COMING_BACK_POKEMON:
                 {
                     _myPokemonArea.PlayInfoZoneAnim("Zone_RightDisappear");
@@ -1172,6 +1152,44 @@ public class BattleScene : BaseScene
                     SceneState = BattleSceneState.MY_POKEMON_APPEAR_SCRIPTING;
                 }
                 break;
+            case BattleSceneState.TRAINER_DEATED_SCRIPTING:
+                {
+                    _enemyPokemonArea.PlayTrainerZoneAnim("Zone_LeftAppear");
+                    SceneState = BattleSceneState.OPPONENT_TRAINER_APPEARING;
+                }
+                break;
+            case BattleSceneState.OPPONENT_TRAINER_APPEARING:
+                {
+                    if (_packet is S_GetRewardInfo)
+                    {
+                        IList scripts = ((S_GetRewardInfo)_packet).AfterBattleScripts;
+                        _script.Clear();
+
+                        for (int i = 0; i < scripts.Count; i++)
+                            _script.Add(scripts[i] as string);
+
+                        ContentManager.Instance.ScriptBox.BeginScriptTyping(_script);
+                        SceneState = BattleSceneState.AFTER_BATTLE_NPC_SCRIPTING;
+                    }
+                }
+                break;
+            case BattleSceneState.AFTER_BATTLE_NPC_SCRIPTING:
+                {
+                    if (_packet is S_GetRewardInfo)
+                    {
+                        int rewardMoney = ((S_GetRewardInfo)_packet).Money;
+                        Managers.Object.MyPlayerController.ChangeMoney(Managers.Object.MyPlayerController.Money + rewardMoney);
+
+                        RefillScriptBox(new string[] { $"{Managers.Object.MyPlayerController.PlayerName} got ${rewardMoney} for winning!" });
+                        SceneState = BattleSceneState.GOT_REWARD_SCRIPTING;
+                    }
+                }
+                break;
+            case BattleSceneState.GOT_REWARD_SCRIPTING:
+                {
+                    SceneState = BattleSceneState.MOVING_SCENE;
+                }
+                break;
             case BattleSceneState.ESCAPE_SCRIPTING:
                 {
                     if (_packet is S_EscapeFromWildPokemon)
@@ -1181,29 +1199,23 @@ public class BattleScene : BaseScene
 
                         if (canEscape)
                         {
-                            C_ReturnGame returnGamePacket = new C_ReturnGame();
-                            returnGamePacket.PlayerId = _playerInfo.ObjectInfo.ObjectId;
-
-                            Managers.Network.SavePacket(returnGamePacket);
-
                             SceneState = BattleSceneState.MOVING_SCENE;
-                            _actionSelectBox.gameObject.SetActive(false);
                         }
                         else
                         {
                             if (_myPokemon.PokemonInfo.PokemonStatus == PokemonStatusCondition.Fainting)
                             {
-                                C_EnterPokemonListScene enterPokemonPacket = new C_EnterPokemonListScene();
-                                enterPokemonPacket.PlayerId = _playerInfo.ObjectInfo.ObjectId;
-
-                                Managers.Network.SavePacket(enterPokemonPacket);
-
-                                SceneState = BattleSceneState.MOVING_SCENE;
-                                _actionSelectBox.gameObject.SetActive(false);
+                                List<string> actionBtnNames = new List<string>()
+                                {
+                                    "Send Out",
+                                    "Summary",
+                                    "Cancel"
+                                };
+                                ContentManager.Instance.OpenPokemonList(_myPokemons, actionBtnNames);
                             }
                             else
                             {
-                                SendProcessTurnPacket(_moveSelectBox.GetSelectedIdx());
+                                SendProcessTurnPacket(_actionSelectContent.GetSelectMoveOrder());
                             }
                         }
                     }
@@ -1211,16 +1223,38 @@ public class BattleScene : BaseScene
                 break;
             case BattleSceneState.MOVING_SCENE:
                 {
-                    if (Managers.Network.Packet is C_EnterPlayerBagScene)
-                        Managers.Scene.LoadScene(Define.Scene.Bag);
-                    else if (Managers.Network.Packet is C_EnterPokemonListScene)
-                        Managers.Scene.LoadScene(Define.Scene.PokemonList);
-                    else if (Managers.Network.Packet is C_ReturnGame)
-                        Managers.Scene.LoadScene(Define.Scene.Game);
-                    else if (Managers.Network.Packet is C_EnterPokemonEvolutionScene)
-                        Managers.Scene.LoadScene(Define.Scene.Evolution);
-                    else if (Managers.Network.Packet is C_EnterMoveSelectionScene)
-                        Managers.Scene.LoadScene(Define.Scene.MoveSelection);
+                    SendRequestDataPacket(RequestType.CheckPokemonEvolution);
+                }
+                break;
+            case BattleSceneState.MovingScene:
+                {
+                    C_ReturnGame returnGamePacket = new C_ReturnGame();
+                    returnGamePacket.PlayerId = Managers.Object.MyPlayerController.Id;
+
+                    Managers.Scene.AsyncUnLoadScene(Define.Scene.Battle, () =>
+                    {
+                        ContentManager.Instance.ScriptBox.gameObject.SetActive(false);
+                        Managers.Scene.CurrentScene = GameObject.FindFirstObjectByType<GameScene>();
+                        Managers.Network.Send(returnGamePacket);
+                    });
+                }
+                break;
+        }
+    }
+
+    public override void DoNextStaticAction(object value = null)
+    {
+        base.DoNextStaticAction(value);
+
+        switch (_sceneState)
+        {
+            case BattleSceneState.OnlineBattleSurrenderScripting:
+                {
+                    PopAllContents();
+
+                    ContentManager.Instance.PlayScreenEffecter("FadeOut");
+
+                    SceneState = BattleSceneState.MovingScene;
                 }
                 break;
         }
@@ -1250,7 +1284,7 @@ public class BattleScene : BaseScene
         if (!_loadingPacket)
         {
             C_RequestDataById c_RequestDataPacket = new C_RequestDataById();
-            c_RequestDataPacket.PlayerId = _playerInfo.ObjectInfo.ObjectId;
+            c_RequestDataPacket.PlayerId = Managers.Object.MyPlayerController.Id;
             c_RequestDataPacket.RequestType = requestType;
 
             Managers.Network.Send(c_RequestDataPacket);
@@ -1259,12 +1293,19 @@ public class BattleScene : BaseScene
         }
     }
 
+    public void SwitchPokemon(int from, int to)
+    {
+        Pokemon pokemon = _myPokemons[from];
+        _myPokemons[from] = _myPokemons[to];
+        _myPokemons[to] = pokemon;
+    }
+
     void SendProcessTurnPacket(int moveOrder)
     {
         if (!_loadingPacket)
         {
             C_ProcessTurn processTurnPacket = new C_ProcessTurn();
-            processTurnPacket.PlayerId = _playerInfo.ObjectInfo.ObjectId;
+            processTurnPacket.PlayerId = Managers.Object.MyPlayerController.Id;
             processTurnPacket.MoveOrder = moveOrder;
 
             Managers.Network.Send(processTurnPacket);
@@ -1273,13 +1314,13 @@ public class BattleScene : BaseScene
         }
     }
 
-    void RefillScriptBox(string[] scripts, bool autoSkip = false, float autoSkipTime = 1f)
+    void RefillScriptBox(string[] scripts, bool autoSkip = false, float autoSkipTime = 1f, bool isStatic = false)
     {
         _script.Clear();
 
         for (int i = 0; i < scripts.Length; i++)
             _script.Add(scripts[i]);
-        _scriptBox.BeginScriptTyping(_script, autoSkip, autoSkipTime);
+        ContentManager.Instance.ScriptBox.BeginScriptTyping(_script, autoSkip, autoSkipTime, isStatic);
     }
 
     IEnumerator ActionAfterChangeHP()
@@ -1289,15 +1330,12 @@ public class BattleScene : BaseScene
         if (_packet is S_ProcessTurn)
         {
             S_ProcessTurn processTurnPacket = _packet as S_ProcessTurn;
-            PokemonSummary defensePokemonSum = processTurnPacket.DefensePokemonSum;
             bool isMyPokemon = processTurnPacket.IsMyPokemon;
             bool isTurnFinish = processTurnPacket.IsTurnFinish;
 
-            BattleArea defensePokemonArea = isMyPokemon ? _enemyPokemonArea : _myPokemonArea;
-
-            if (defensePokemonSum.PokemonInfo.PokemonStatus == PokemonStatusCondition.Fainting)
+            if (_defensePokemon.PokemonInfo.PokemonStatus == PokemonStatusCondition.Fainting)
             {
-                defensePokemonArea.PlayPokemonZoneAnim("Zone_DownDisappear");
+                _defensePokemonArea.PlayPokemonZoneAnim("Zone_DownDisappear");
 
                 SceneState = BattleSceneState.POKEMON_DIE;
             }
@@ -1305,18 +1343,21 @@ public class BattleScene : BaseScene
             {
                 if (isTurnFinish)
                 {
-                    SceneState = BattleSceneState.SELECTING_ACTION;
+                    ContentManager.Instance.ScriptBox.gameObject.SetActive(false);
+
+                    _contentStack.Push(_actionSelectContent);
+                    _contentStack.Peek().SetNextAction();
                 }
                 else
                 {
                     if (!isMyPokemon)
                     {
                         // 내 포켓몬에 사용 가능한 기술이 있는 지 확인한다.
-                        List<PokemonMove> myPKMAvailableMoves = FindAvailableMove(_myPokemon);
+                        List<PokemonMove> myAvailableMoves = _actionSelectContent.FindAvailableMove();
 
-                        if (myPKMAvailableMoves.Count > 0)
+                        if (myAvailableMoves.Count > 0)
                         {
-                            SendProcessTurnPacket(_moveSelectBox.GetSelectedIdx());
+                            SendProcessTurnPacket(_actionSelectContent.GetSelectMoveOrder());
                         }
                         else
                         {
@@ -1325,28 +1366,11 @@ public class BattleScene : BaseScene
                     }
                     else
                     {
-                        SendProcessTurnPacket(_moveSelectBox.GetSelectedIdx());
+                        SendProcessTurnPacket(_actionSelectContent.GetSelectMoveOrder());
                     }
                 }
             }
         }
-    }
-
-    List<PokemonMove> FindAvailableMove(Pokemon pokemon)
-    {
-        List<PokemonMove> availableMoves = new List<PokemonMove>();
-
-        for (int i = 0; i < pokemon.PokemonMoves.Count; i++)
-        {
-            PokemonMove move = pokemon.PokemonMoves[i];
-
-            if (move.CurPP == 0)
-                continue;
-            else
-                availableMoves.Add(move);
-        }
-
-        return availableMoves;
     }
 
     public override void Clear()

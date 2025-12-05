@@ -2,6 +2,10 @@ using UnityEngine;
 using UnityEngine.Tilemaps;
 using System.IO;
 using System.Collections.Generic;
+using Google.Protobuf.Protocol;
+using UnityEngine.UI;
+
+
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -23,8 +27,49 @@ public class MapEditor
 
         foreach (GameObject go in gameObjects)
         {
+            Grid grid = Util.FindChild<Grid>(go, "Grid", true);
             Tilemap tmBase = Util.FindChild<Tilemap>(go, "Tilemap_Base", true);
             Tilemap tmCol = Util.FindChild<Tilemap>(go, "Tilemap_Collision", true);
+
+            // NPC 정보를 담는 파일 생성
+            using (var writer = File.CreateText($"{pathPrefix}/{go.name}_NPCMap.txt"))
+            {
+                CreatureController[] npcs = go.GetComponentsInChildren<CreatureController>();
+                writer.WriteLine(npcs.Length);
+
+                foreach (CreatureController npc in npcs)
+                {
+                    ObjectContents content = npc.GetComponent<ObjectContents>();
+                    SpriteRenderer sprite = npc.GetComponent<SpriteRenderer>();
+                    Vector3 npcPos = npc.transform.position - new Vector3(0.5f, 0.5f);
+                    Vector3Int cellPos = grid.WorldToCell(npcPos);
+                    string contentType = "";
+                    NPCType npcType = NPCType.NoneType;
+                    string spriteName = npc.GetComponent<SpriteRenderer>().sprite.name;
+                    MoveDir moveDir = MoveDir.Up;
+
+                    string dirNum = spriteName.Substring(spriteName.LastIndexOf('_') + 1);
+
+                    if (dirNum == "0")
+                        moveDir = MoveDir.Down;
+                    else if (dirNum == "1")
+                        moveDir = MoveDir.Up;
+                    else if (dirNum == "2")
+                        moveDir = MoveDir.Left;
+                    else if (dirNum == "3")
+                        moveDir = MoveDir.Right;
+
+                    if (content is TrainerContent)
+                        contentType = "Trainer";
+                    else
+                        contentType = "NPC";
+
+                    if (sprite.sprite.name.Contains(NPCType.SchoolBoy.ToString()))
+                        npcType = NPCType.SchoolBoy;
+
+                    writer.Write(npc.name + " " + cellPos.x + ", " + cellPos.y + ", " + cellPos.z + ", " + contentType + ", " + npcType + ", " + moveDir);
+                }
+            }
 
             // 콜리전 텍스트파일 맵 생성
             using (var writer = File.CreateText($"{pathPrefix}/{go.name}.txt"))

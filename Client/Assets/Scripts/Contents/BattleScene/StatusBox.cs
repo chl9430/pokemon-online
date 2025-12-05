@@ -12,8 +12,22 @@ public enum StatusBoxState
 
 public class StatusBox : MonoBehaviour
 {
-    BaseScene _scene;
+    LevelUpStatusDiff _statDiff;
+    PokemonStat _upgradedStat;
     StatusBoxState _uiState = StatusBoxState.NONE;
+
+    public StatusBoxState State 
+    { 
+        set 
+        {  
+            _uiState = value;
+
+            if (_uiState == StatusBoxState.SHOWING_RATE)
+                ShowStatusDiffRate();
+            else if (_uiState == StatusBoxState.SHOWING_FINAL_STAT)
+                ShowFinalStat();
+        } 
+    }
 
     [SerializeField] TextMeshProUGUI maxHPText;
     [SerializeField] TextMeshProUGUI attackText;
@@ -21,11 +35,6 @@ public class StatusBox : MonoBehaviour
     [SerializeField] TextMeshProUGUI specialAttackText;
     [SerializeField] TextMeshProUGUI specialDefenseText;
     [SerializeField] TextMeshProUGUI speedText;
-
-    void Start()
-    {
-        _scene = Managers.Scene.CurrentScene;
-    }
 
     void Update()
     {
@@ -35,7 +44,7 @@ public class StatusBox : MonoBehaviour
                 {
                     if (Input.GetKeyDown(KeyCode.D))
                     {
-                        _scene.DoNextAction();
+                        State = StatusBoxState.SHOWING_FINAL_STAT;
                     }
                 }
                 break;
@@ -43,34 +52,41 @@ public class StatusBox : MonoBehaviour
                 {
                     if (Input.GetKeyDown(KeyCode.D))
                     {
-                        _scene.DoNextAction();
+                        State = StatusBoxState.NONE;
+                        Managers.Scene.CurrentScene.DoNextAction();
                     }
                 }
                 break;
         }
     }
 
-    public void SetStatusDiffRate(LevelUpStatusDiff diff)
+    public void ShowStatusDiffRate()
     {
         _uiState = StatusBoxState.SHOWING_RATE;
 
-        maxHPText.text = "+" + diff.MaxHP.ToString();
-        attackText.text = "+" + diff.Attack.ToString();
-        defenseText.text = "+" + diff.Defense.ToString();
-        specialAttackText.text = "+" + diff.SpecialAttack.ToString();
-        specialDefenseText.text = "+" + diff.SpecialDefense.ToString();
-        speedText.text = "+" + diff.Speed.ToString();
+        maxHPText.text = "+" + _statDiff.MaxHP.ToString();
+        attackText.text = "+" + _statDiff.Attack.ToString();
+        defenseText.text = "+" + _statDiff.Defense.ToString();
+        specialAttackText.text = "+" + _statDiff.SpecialAttack.ToString();
+        specialDefenseText.text = "+" + _statDiff.SpecialDefense.ToString();
+        speedText.text = "+" + _statDiff.Speed.ToString();
     }
 
-    public void ShowFinalStat(PokemonStat stat)
+    public void ShowFinalStat()
     {
         _uiState = StatusBoxState.SHOWING_FINAL_STAT;
 
-        maxHPText.text = stat.MaxHp.ToString();
-        attackText.text = stat.Attack.ToString();
-        defenseText.text = stat.Defense.ToString();
-        specialAttackText.text = stat.SpecialAttack.ToString();
-        specialDefenseText.text = stat.SpecialDefense.ToString();
-        speedText.text = stat.Speed.ToString();
+        maxHPText.text = _upgradedStat.MaxHp.ToString();
+        attackText.text = _upgradedStat.Attack.ToString();
+        defenseText.text = _upgradedStat.Defense.ToString();
+        specialAttackText.text = _upgradedStat.SpecialAttack.ToString();
+        specialDefenseText.text = _upgradedStat.SpecialDefense.ToString();
+        speedText.text = _upgradedStat.Speed.ToString();
+    }
+
+    public void SetLevelUpStatusBox(LevelUpStatusDiff diff, PokemonStat stat)
+    {
+        _statDiff = diff;
+        _upgradedStat = stat;
     }
 }

@@ -21,8 +21,7 @@ public class PacketHandler
 
         Debug.Log($"S_EnterRoom : {s_enterRoomPacket}");
 
-        BaseScene scene = Managers.Scene.CurrentScene;
-        scene.UpdateData(s_enterRoomPacket);
+        Managers.Scene.CurrentScene.UpdateData(s_enterRoomPacket);
     }
 
     public static void S_LeaveRoomHandler(PacketSession session, IMessage packet)
@@ -38,22 +37,19 @@ public class PacketHandler
 
         Debug.Log($"S_Spawn : {s_SpawnPacket}");
 
-        foreach (PlayerInfo player in s_SpawnPacket.Players)
+        foreach (OtherPlayerInfo otherPlayer in s_SpawnPacket.OtherPlayers)
         {
             GameObject anotherPlayer = null;
 
-            if (player.PlayerGender == PlayerGender.PlayerMale)
+            if (otherPlayer.PlayerGender == PlayerGender.PlayerMale)
                 anotherPlayer = Managers.Resource.Instantiate("Creature/PlayerMale");
-            else if (player.PlayerGender == PlayerGender.PlayerFemale)
+            else if (otherPlayer.PlayerGender == PlayerGender.PlayerFemale)
                 anotherPlayer = Managers.Resource.Instantiate("Creature/PlayerFemale");
 
-            anotherPlayer.name = player.PlayerName;
-
-            Managers.Object.Add(anotherPlayer, player.ObjectInfo);
+            Managers.Object.Add(anotherPlayer, otherPlayer.ObjectInfo);
 
             PlayerController pc = anotherPlayer.GetComponent<PlayerController>();
-            pc.PlayerName = player.PlayerName;
-            pc.PlayerGender = player.PlayerGender;
+            pc.SetPlayerInfo(otherPlayer);
         }
     }
 
@@ -78,8 +74,7 @@ public class PacketHandler
         if (bc == null)
             return;
 
-        // Debug.Log($"{movePacket.ObjectId} : [{movePacket.PosInfo.PosX}, {movePacket.PosInfo.PosY}]");
-        // Debug.Log($"{movePacket.ObjectId} : [{movePacket.PosInfo.State}]");
+        //Debug.Log($"{movePacket.ObjectId} : [{movePacket.PosInfo.State}], [{movePacket.PosInfo.PosX}, {movePacket.PosInfo.PosY}]");
 
         Vector3 curPos = new Vector3(bc.PosInfo.PosX, bc.PosInfo.PosY, 0);
         Vector3 nextPos = new Vector3(movePacket.PosInfo.PosX, movePacket.PosInfo.PosY, 0);
@@ -98,8 +93,7 @@ public class PacketHandler
 
         Debug.Log($"S_SendTalk : {s_TalkPacket}");
 
-        BaseScene scene = Managers.Scene.CurrentScene;
-        scene.UpdateData(s_TalkPacket);
+        Managers.Scene.CurrentScene.UpdateData(s_TalkPacket);
     }
 
     public static void S_ReceiveTalkHandler(PacketSession session, IMessage packet)
@@ -108,18 +102,16 @@ public class PacketHandler
 
         Debug.Log($"S_ReceiveTalkHandler : {s_TalkPacket}");
 
-        BaseScene scene = Managers.Scene.CurrentScene;
-        scene.UpdateData(s_TalkPacket);
+        Managers.Scene.CurrentScene.UpdateData(s_TalkPacket);
     }
 
-    public static void S_EnterPokemonListSceneHandler(PacketSession session, IMessage packet)
+    public static void S_UseItemInListSceneHandler(PacketSession session, IMessage packet)
     {
-        S_EnterPokemonListScene s_enterPokemonListPacket = packet as S_EnterPokemonListScene;
+        S_UseItemInListScene s_UseItemPacket = packet as S_UseItemInListScene;
 
-        Debug.Log($"S_EnterPokemonListScene : {s_enterPokemonListPacket}");
+        Debug.Log($"S_UseItemInListScene : {s_UseItemPacket}");
 
-        BaseScene scene = Managers.Scene.CurrentScene;
-        scene.UpdateData(s_enterPokemonListPacket);
+        Managers.Scene.CurrentScene.UpdateData(s_UseItemPacket);
     }
 
     public static void S_AccessPokemonSummaryHandler(PacketSession session, IMessage packet)
@@ -128,8 +120,7 @@ public class PacketHandler
 
         Debug.Log($"S_AccessPokemonSummary : {s_AccessPacket}");
 
-        BaseScene scene = Managers.Scene.CurrentScene;
-        scene.UpdateData(s_AccessPacket);
+        Managers.Scene.CurrentScene.UpdateData(s_AccessPacket);
     }
 
     public static void S_EnterPokemonBattleSceneHandler(PacketSession session, IMessage packet)
@@ -138,8 +129,7 @@ public class PacketHandler
 
         Debug.Log($"S_EnterPokemonBattleScene : {s_EnterBattleScenePacket}");
 
-        BaseScene scene = Managers.Scene.CurrentScene;
-        scene.UpdateData(s_EnterBattleScenePacket);
+        Managers.Scene.CurrentScene.UpdateData(s_EnterBattleScenePacket);
     }
 
     public static void S_MeetWildPokemonHandler(PacketSession session, IMessage packet)
@@ -148,8 +138,7 @@ public class PacketHandler
 
         Debug.Log($"S_MeetWildPokemon : {meetPokemonPacket}");
 
-        BaseScene scene = Managers.Scene.CurrentScene;
-        scene.UpdateData(meetPokemonPacket);
+        Managers.Scene.CurrentScene.UpdateData(meetPokemonPacket);
     }
 
     public static void S_GetDoorDestDirHandler(PacketSession session, IMessage packet)
@@ -158,8 +147,7 @@ public class PacketHandler
 
         Debug.Log($"S_GetDoorDestDir : {doorDestDirPacket}");
 
-        BaseScene scene = Managers.Scene.CurrentScene;
-        scene.UpdateData(doorDestDirPacket);
+        Managers.Scene.CurrentScene.UpdateData(doorDestDirPacket);
     }
 
     public static void S_GetNpcTalkHandler(PacketSession session, IMessage packet)
@@ -168,8 +156,16 @@ public class PacketHandler
 
         Debug.Log($"S_GetNpcTalk : {npcTalkPacket}");
 
-        BaseScene scene = Managers.Scene.CurrentScene;
-        scene.UpdateData(npcTalkPacket);
+        Managers.Scene.CurrentScene.UpdateData(npcTalkPacket);
+    }
+
+    public static void S_GetTrainerTalkHandler(PacketSession session, IMessage packet)
+    {
+        S_GetTrainerTalk trainerTalkPacket = packet as S_GetTrainerTalk;
+
+        Debug.Log($"S_GetTrainerTalk : {trainerTalkPacket}");
+
+        Managers.Scene.CurrentScene.UpdateData(trainerTalkPacket);
     }
 
     public static void S_ShopItemListHandler(PacketSession session, IMessage packet)
@@ -178,8 +174,7 @@ public class PacketHandler
 
         Debug.Log($"S_ShopItemList : {itemListPacket}");
 
-        BaseScene scene = Managers.Scene.CurrentScene;
-        scene.UpdateData(itemListPacket);
+        Managers.Scene.CurrentScene.UpdateData(itemListPacket);
     }
 
     public static void S_GetItemCountHandler(PacketSession session, IMessage packet)
@@ -188,8 +183,7 @@ public class PacketHandler
 
         Debug.Log($"S_GetItemCount : {getItemCountPacket}");
 
-        BaseScene scene = Managers.Scene.CurrentScene;
-        scene.UpdateData(getItemCountPacket);
+        Managers.Scene.CurrentScene.UpdateData(getItemCountPacket);
     }
 
     public static void S_BuyItemHandler(PacketSession session, IMessage packet)
@@ -198,8 +192,7 @@ public class PacketHandler
 
         Debug.Log($"S_BuyItem : {buyItemPacket}");
 
-        BaseScene scene = Managers.Scene.CurrentScene;
-        scene.UpdateData(buyItemPacket);
+        Managers.Scene.CurrentScene.UpdateData(buyItemPacket);
     }
 
     public static void S_SellItemHandler(PacketSession session, IMessage packet)
@@ -208,8 +201,7 @@ public class PacketHandler
 
         Debug.Log($"S_SellItem : {sellItemPacket}");
 
-        BaseScene scene = Managers.Scene.CurrentScene;
-        scene.UpdateData(sellItemPacket);
+        Managers.Scene.CurrentScene.UpdateData(sellItemPacket);
     }
 
     public static void S_RestorePokemonHandler(PacketSession session, IMessage packet)
@@ -218,8 +210,7 @@ public class PacketHandler
 
         Debug.Log($"S_RestorePokemon : {restorePacket}");
 
-        BaseScene scene = Managers.Scene.CurrentScene;
-        scene.UpdateData(restorePacket);
+        Managers.Scene.CurrentScene.UpdateData(restorePacket);
     }
 
     public static void S_CheckAndApplyRemainedExpHandler(PacketSession session, IMessage packet)
@@ -228,8 +219,16 @@ public class PacketHandler
 
         Debug.Log($"S_CheckAndApplyRemainedExp : {s_CheckAndApplyExpPacket}");
 
-        BaseScene scene = Managers.Scene.CurrentScene;
-        scene.UpdateData(s_CheckAndApplyExpPacket);
+        Managers.Scene.CurrentScene.UpdateData(s_CheckAndApplyExpPacket);
+    }
+
+    public static void S_ForgetAndLearnNewMoveHandler(PacketSession session, IMessage packet)
+    {
+        S_ForgetAndLearnNewMove learnNewMovePacket = packet as S_ForgetAndLearnNewMove;
+
+        Debug.Log($"S_ForgetAndLearnNewMove : {learnNewMovePacket}");
+
+        Managers.Scene.CurrentScene.UpdateData(learnNewMovePacket);
     }
 
     public static void S_CheckAvailableBattlePokemonHandler(PacketSession session, IMessage packet)
@@ -238,18 +237,16 @@ public class PacketHandler
 
         Debug.Log($"S_CheckAvailableBattlePokemon : {checkBattlePokemonPacket}");
 
-        BaseScene scene = Managers.Scene.CurrentScene;
-        scene.UpdateData(checkBattlePokemonPacket);
+        Managers.Scene.CurrentScene.UpdateData(checkBattlePokemonPacket);
     }
 
-    public static void S_IsSuccessPokeBallCatchHandler(PacketSession session, IMessage packet)
+    public static void S_SendOpponentNextPokemonHandler(PacketSession session, IMessage packet)
     {
-        S_IsSuccessPokeBallCatch successCatchPacket = packet as S_IsSuccessPokeBallCatch;
+        S_SendOpponentNextPokemon sendPokemon = packet as S_SendOpponentNextPokemon;
 
-        Debug.Log($"S_IsSuccessPokeBallCatch : {successCatchPacket}");
+        Debug.Log($"S_SendOpponentNextPokemon : {sendPokemon}");
 
-        BaseScene scene = Managers.Scene.CurrentScene;
-        scene.UpdateData(successCatchPacket);
+        Managers.Scene.CurrentScene.UpdateData(sendPokemon);
     }
 
     public static void S_EscapeFromWildPokemonHandler(PacketSession session, IMessage packet)
@@ -258,28 +255,52 @@ public class PacketHandler
 
         Debug.Log($"S_EscapeFromWildPokemon : {s_EscapePacket}");
 
-        BaseScene scene = Managers.Scene.CurrentScene;
-        scene.UpdateData(s_EscapePacket);
+        Managers.Scene.CurrentScene.UpdateData(s_EscapePacket);
     }
 
-    public static void S_EnterPlayerBagSceneHandler(PacketSession session, IMessage packet)
+    public static void S_EnterTrainerBattleHandler(PacketSession session, IMessage packet)
     {
-        S_EnterPlayerBagScene s_EnterPlayerBagScenePacket = packet as S_EnterPlayerBagScene;
+        S_EnterTrainerBattle enterBattlePacket = packet as S_EnterTrainerBattle;
 
-        Debug.Log($"S_EnterPlayerBagScene : {s_EnterPlayerBagScenePacket}");
+        Debug.Log($"S_EnterTrainerBattle : {enterBattlePacket}");
 
-        BaseScene scene = Managers.Scene.CurrentScene;
-        scene.UpdateData(s_EnterPlayerBagScenePacket);
+        Managers.Scene.CurrentScene.UpdateData(enterBattlePacket);
     }
 
-    public static void S_ItemSceneToBattleSceneHandler(PacketSession session, IMessage packet)
+    public static void S_CheckAvailableMoveHandler(PacketSession session, IMessage packet)
     {
-        S_ItemSceneToBattleScene itemToBattlePacket = packet as S_ItemSceneToBattleScene;
+        S_CheckAvailableMove checkMovePacket = packet as S_CheckAvailableMove;
 
-        Debug.Log($"S_ItemSceneToBattleScene : {itemToBattlePacket}");
+        Debug.Log($"S_CheckAvailableMove : {checkMovePacket}");
 
-        BaseScene scene = Managers.Scene.CurrentScene;
-        scene.UpdateData(itemToBattlePacket);
+        Managers.Scene.CurrentScene.UpdateData(checkMovePacket);
+    }
+
+    public static void S_SendActionHandler(PacketSession session, IMessage packet)
+    {
+        S_SendAction sendActionPacket = packet as S_SendAction;
+
+        Debug.Log($"S_SendAction : {sendActionPacket}");
+
+        Managers.Scene.CurrentScene.UpdateData(sendActionPacket);
+    }
+
+    public static void S_CheckAvailablePokemonHandler(PacketSession session, IMessage packet)
+    {
+        S_CheckAvailablePokemon checkPokemonPacket = packet as S_CheckAvailablePokemon;
+
+        Debug.Log($"S_CheckAvailablePokemon : {checkPokemonPacket}");
+
+        Managers.Scene.CurrentScene.UpdateData(checkPokemonPacket);
+    }
+
+    public static void S_SurrenderTrainerBattleHandler(PacketSession session, IMessage packet)
+    {
+        S_SurrenderTrainerBattle surrenderPacket = packet as S_SurrenderTrainerBattle;
+
+        Debug.Log($"S_SurrenderTrainerBattle : {surrenderPacket}");
+
+        Managers.Scene.CurrentScene.UpdateData(surrenderPacket);
     }
 
     public static void S_EnterPokemonExchangeSceneHandler(PacketSession session, IMessage packet)
@@ -288,8 +309,7 @@ public class PacketHandler
 
         Debug.Log($"S_EnterPokemonExchangeScene : {s_EnterPokemonExchangeScenePacket}");
 
-        BaseScene scene = Managers.Scene.CurrentScene;
-        scene.UpdateData(s_EnterPokemonExchangeScenePacket);
+        Managers.Scene.CurrentScene.UpdateData(s_EnterPokemonExchangeScenePacket);
     }
 
     public static void S_ChooseExchangePokemonHandler(PacketSession session, IMessage packet)
@@ -298,8 +318,7 @@ public class PacketHandler
 
         Debug.Log($"S_ChooseExchangePokemon : {chooseExchangePacket}");
 
-        BaseScene scene = Managers.Scene.CurrentScene;
-        scene.UpdateData(chooseExchangePacket);
+        Managers.Scene.CurrentScene.UpdateData(chooseExchangePacket);
     }
 
     public static void S_FinalAnswerToExchangeHandler(PacketSession session, IMessage packet)
@@ -308,8 +327,7 @@ public class PacketHandler
 
         Debug.Log($"S_FinalAnswerToExchange : {finalAnswerPacket}");
 
-        BaseScene scene = Managers.Scene.CurrentScene;
-        scene.UpdateData(finalAnswerPacket);
+        Managers.Scene.CurrentScene.UpdateData(finalAnswerPacket);
     }
 
     public static void S_ExitPokemonExchangeSceneHandler(PacketSession session, IMessage packet)
@@ -318,8 +336,7 @@ public class PacketHandler
 
         Debug.Log($"S_ExitPokemonExchangeScene : {exitExchangePacket}");
 
-        BaseScene scene = Managers.Scene.CurrentScene;
-        scene.UpdateData(exitExchangePacket);
+        Managers.Scene.CurrentScene.UpdateData(exitExchangePacket);
     }
 
     public static void S_MoveExchangeCursorHandler(PacketSession session, IMessage packet)
@@ -328,8 +345,7 @@ public class PacketHandler
 
         Debug.Log($"S_MoveExchangeCursor : {s_MoveCursorPacket}");
 
-        BaseScene scene = Managers.Scene.CurrentScene;
-        scene.UpdateData(s_MoveCursorPacket);
+        Managers.Scene.CurrentScene.UpdateData(s_MoveCursorPacket);
     }
 
     public static void S_ProcessTurnHandler(PacketSession session, IMessage packet)
@@ -338,8 +354,7 @@ public class PacketHandler
 
         Debug.Log($"S_ProcessTurn : {processTrun}");
 
-        BaseScene scene = Managers.Scene.CurrentScene;
-        scene.UpdateData(processTrun);
+        Managers.Scene.CurrentScene.UpdateData(processTrun);
     }
 
     public static void S_GetEnemyPokemonExpHandler(PacketSession session, IMessage packet)
@@ -348,8 +363,7 @@ public class PacketHandler
 
         Debug.Log($"S_GetEnemyPokemonExp : {s_GetExpPacket}");
 
-        BaseScene scene = Managers.Scene.CurrentScene;
-        scene.UpdateData(s_GetExpPacket);
+        Managers.Scene.CurrentScene.UpdateData(s_GetExpPacket);
     }
 
     public static void S_SendTalkRequestHandler(PacketSession session, IMessage packet)
@@ -358,8 +372,7 @@ public class PacketHandler
 
         Debug.Log($"S_SendTalkRequest : {s_SendTalkPacket}");
 
-        BaseScene scene = Managers.Scene.CurrentScene;
-        scene.UpdateData(s_SendTalkPacket);
+        Managers.Scene.CurrentScene.UpdateData(s_SendTalkPacket);
     }
 
     public static void S_SwitchBattlePokemonHandler(PacketSession session, IMessage packet)
@@ -368,8 +381,7 @@ public class PacketHandler
 
         Debug.Log($"S_SwitchBattlePokemon : {s_SwitchPokemonPacket}");
 
-        BaseScene scene = Managers.Scene.CurrentScene;
-        scene.UpdateData(s_SwitchPokemonPacket);
+        Managers.Scene.CurrentScene.UpdateData(s_SwitchPokemonPacket);
     }
 
     public static void S_CheckPokemonEvolutionHandler(PacketSession session, IMessage packet)
@@ -378,38 +390,25 @@ public class PacketHandler
 
         Debug.Log($"S_CheckPokemonEvolution : {checkEvolution}");
 
-        BaseScene scene = Managers.Scene.CurrentScene;
-        scene.UpdateData(checkEvolution);
+        Managers.Scene.CurrentScene.UpdateData(checkEvolution);
     }
 
-    public static void S_CheckExpPokemonHandler(PacketSession session, IMessage packet)
+    public static void S_GetRewardInfoHandler(PacketSession session, IMessage packet)
     {
-        S_CheckExpPokemon checkExpPacket = packet as S_CheckExpPokemon;
+        S_GetRewardInfo getRewardPacket = packet as S_GetRewardInfo;
 
-        Debug.Log($"S_CheckExpPokemon : {checkExpPacket}");
+        Debug.Log($"S_GetRewardInfo : {getRewardPacket}");
 
-        BaseScene scene = Managers.Scene.CurrentScene;
-        scene.UpdateData(checkExpPacket);
+        Managers.Scene.CurrentScene.UpdateData(getRewardPacket);
     }
 
-    public static void S_ReturnPokemonBattleSceneHandler(PacketSession session, IMessage packet)
+    public static void S_ReturnGameHandler(PacketSession session, IMessage packet)
     {
-        S_ReturnPokemonBattleScene s_ReturnBattleScenePacket = packet as S_ReturnPokemonBattleScene;
+        S_ReturnGame returnGamePacket = packet as S_ReturnGame;
 
-        Debug.Log($"S_ReturnPokemonBattleScene : {s_ReturnBattleScenePacket}");
+        Debug.Log($"S_ReturnGame : {returnGamePacket}");
 
-        BaseScene scene = Managers.Scene.CurrentScene;
-        scene.UpdateData(s_ReturnBattleScenePacket);
-    }
-
-    public static void S_EnterPokemonEvolutionSceneHandler(PacketSession session, IMessage packet)
-    {
-        S_EnterPokemonEvolutionScene enterEvolutionPacket = packet as S_EnterPokemonEvolutionScene;
-
-        Debug.Log($"S_EnterPokemonEvolutionScene : {enterEvolutionPacket}");
-
-        BaseScene scene = Managers.Scene.CurrentScene;
-        scene.UpdateData(enterEvolutionPacket);
+        Managers.Scene.CurrentScene.UpdateData(returnGamePacket);
     }
 
     public static void S_PokemonEvolutionHandler(PacketSession session, IMessage packet)
@@ -418,37 +417,6 @@ public class PacketHandler
 
         Debug.Log($"S_PokemonEvolution : {evolutionPacket}");
 
-        BaseScene scene = Managers.Scene.CurrentScene;
-        scene.UpdateData(evolutionPacket);
-    }
-
-    public static void S_EnterMoveSelectionSceneHandler(PacketSession session, IMessage packet)
-    {
-        S_EnterMoveSelectionScene enterMovePacket = packet as S_EnterMoveSelectionScene;
-
-        Debug.Log($"S_EnterMoveSelectionScene : {enterMovePacket}");
-
-        BaseScene scene = Managers.Scene.CurrentScene;
-        scene.UpdateData(enterMovePacket);
-    }
-
-    public static void S_MoveSceneToBattleSceneHandler(PacketSession session, IMessage packet)
-    {
-        S_MoveSceneToBattleScene battleScenePacket = packet as S_MoveSceneToBattleScene;
-
-        Debug.Log($"S_MoveSceneToBattleScene : {battleScenePacket}");
-
-        BaseScene scene = Managers.Scene.CurrentScene;
-        scene.UpdateData(battleScenePacket);
-    }
-
-    public static void S_MoveSceneToEvolveSceneHandler(PacketSession session, IMessage packet)
-    {
-        S_MoveSceneToEvolveScene evolveScenePacket = packet as S_MoveSceneToEvolveScene;
-
-        Debug.Log($"S_MoveSceneToEvolveScene : {evolveScenePacket}");
-
-        BaseScene scene = Managers.Scene.CurrentScene;
-        scene.UpdateData(evolveScenePacket);
+        Managers.Scene.CurrentScene.UpdateData(evolutionPacket);
     }
 }

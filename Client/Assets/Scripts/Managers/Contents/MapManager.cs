@@ -42,6 +42,10 @@ public class MapManager : MonoBehaviour
     bool[,] _collision;
     int[,] _doorMap;
 
+    GameObject _gameMap;
+
+    public GameObject GameMap { get { return _gameMap; } }
+
     public bool CanGo(Vector3Int cellPos)
     {
         if (cellPos.x < MinX || cellPos.x > MaxX)
@@ -75,21 +79,21 @@ public class MapManager : MonoBehaviour
         // DestroyMap();
 
         string mapName = $"{roomType.ToString()}_" + mapId.ToString();
-        GameObject go = Managers.Resource.Instantiate($"Map/{mapName}");
-        go.name = mapName;
+        _gameMap = Managers.Resource.Instantiate($"Map/{mapName}");
+        _gameMap.name = mapName;
 
-        GameObject baseTile = Util.FindChild(go, "Tilemap_Base", true);
+        GameObject baseTile = Util.FindChild(_gameMap, "Tilemap_Base", true);
         if (baseTile != null)
             baseTile.SetActive(false);
 
-        GameObject collision = Util.FindChild(go, "Tilemap_Collision", true);
+        GameObject collision = Util.FindChild(_gameMap, "Tilemap_Collision", true);
         if (collision != null)
             collision.SetActive(false);
 
         int doorId = 1;
         while (true)
         {
-            Tilemap tileMap = Util.FindChild<Tilemap>(go, $"Tilemap_Door_{doorId}", true);
+            Tilemap tileMap = Util.FindChild<Tilemap>(_gameMap, $"Tilemap_Door_{doorId}", true);
 
             if (tileMap != null)
             {
@@ -100,7 +104,7 @@ public class MapManager : MonoBehaviour
                 break;
         }
 
-        CurrentGrid = Util.FindChild<Grid>(go);
+        CurrentGrid = Util.FindChild<Grid>(_gameMap);
 
         // Collision 관련 파일
         TextAsset txt = Managers.Resource.Load<TextAsset>($"Map/{mapName}");
@@ -156,7 +160,6 @@ public class MapManager : MonoBehaviour
         Grid map = GameObject.FindAnyObjectByType<Grid>();
         if (map != null)
         {
-            Debug.Log(map);
             GameObject.Destroy(map.gameObject);
             CurrentGrid = null;
         }

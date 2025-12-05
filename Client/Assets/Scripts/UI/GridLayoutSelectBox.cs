@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.UIElements;
 
 public enum GridLayoutSelectBoxState
 {
@@ -15,7 +16,6 @@ public class GridLayoutSelectBox : MonoBehaviour
     int _y;
     int _row;
     int _col;
-    BaseScene _scene;
     RectTransform _rt;
     GridLayoutGroup _gridLayoutGroup;
     DynamicButton[,] _btnGrid;
@@ -38,7 +38,7 @@ public class GridLayoutSelectBox : MonoBehaviour
 
                 _btnGrid[_x, _y].SetSelectedOrNotSelected(true);
 
-                _scene.DoNextAction(_x * _col + _y);
+                Managers.Scene.CurrentScene.DoNextAction(_x * _col + _y);
             }
         }
     }
@@ -47,7 +47,6 @@ public class GridLayoutSelectBox : MonoBehaviour
     {
         _rt = GetComponent<RectTransform>();
         _gridLayoutGroup = GetComponent<GridLayoutGroup>();
-        _scene = Managers.Scene.CurrentScene;
     }
 
     void Update()
@@ -73,7 +72,7 @@ public class GridLayoutSelectBox : MonoBehaviour
 
             _btnGrid[_x, _y].SetSelectedOrNotSelected(true);
 
-            _scene.DoNextAction(_x * _col + _y);
+            Managers.Scene.CurrentScene.DoNextAction(_x * _col + _y);
         }
         else if (Input.GetKeyDown(KeyCode.RightArrow))
         {
@@ -86,7 +85,7 @@ public class GridLayoutSelectBox : MonoBehaviour
 
             _btnGrid[_x, _y].SetSelectedOrNotSelected(true);
 
-            _scene.DoNextAction(_x * _col + _y);
+            Managers.Scene.CurrentScene.DoNextAction(_x * _col + _y);
         }
         else if (Input.GetKeyDown(KeyCode.DownArrow))
         {
@@ -99,7 +98,7 @@ public class GridLayoutSelectBox : MonoBehaviour
 
             _btnGrid[_x, _y].SetSelectedOrNotSelected(true);
 
-            _scene.DoNextAction(_x * _col + _y);
+            Managers.Scene.CurrentScene.DoNextAction(_x * _col + _y);
         }
         else if (Input.GetKeyDown(KeyCode.UpArrow))
         {
@@ -112,23 +111,20 @@ public class GridLayoutSelectBox : MonoBehaviour
 
             _btnGrid[_x, _y].SetSelectedOrNotSelected(true);
 
-            _scene.DoNextAction(_x * _col + _y);
+            Managers.Scene.CurrentScene.DoNextAction(_x * _col + _y);
         }
         else if (Input.GetKeyDown(KeyCode.D))
         {
-            _scene.DoNextAction(Define.InputSelectBoxEvent.SELECT);
+            Managers.Scene.CurrentScene.DoNextAction(Define.InputSelectBoxEvent.SELECT);
         }
         else if (Input.GetKeyDown(KeyCode.S))
         {
-            _scene.DoNextAction(Define.InputSelectBoxEvent.BACK);
+            Managers.Scene.CurrentScene.DoNextAction(Define.InputSelectBoxEvent.BACK);
         }
     }
 
     public void SetSelectBoxContent(List<DynamicButton> btns, int row, int col)
     {
-        if (_scene == null)
-            _scene = Managers.Scene.CurrentScene;
-
         if (_gridLayoutGroup == null)
             _gridLayoutGroup = GetComponent<GridLayoutGroup>();
 
@@ -177,13 +173,15 @@ public class GridLayoutSelectBox : MonoBehaviour
             {
                 for (int j = 0; j < _btnGrid.GetLength(1); j++)
                 {
-                    Destroy(_btnGrid[i, j].gameObject);
+                    if (_btnGrid[i, j] != null)
+                    {
+                        Destroy(_btnGrid[i, j].gameObject);
+                    }
                 }
             }
-        }
 
-        if (_scene == null)
-            _scene = Managers.Scene.CurrentScene;
+            _btnGrid = null;
+        }
 
         if (_gridLayoutGroup == null)
             _gridLayoutGroup = GetComponent<GridLayoutGroup>();

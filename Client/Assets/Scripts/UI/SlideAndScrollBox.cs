@@ -13,9 +13,8 @@ public class SlideAndScrollBox : MonoBehaviour
     int _curPosInScrollBox = 0;
     int _scrollCnt = 0;
     float _heightPerContent;
-    BaseScene _scene;
     int _curIdx;
-    protected List<DynamicButton> _btnGrid;
+    protected List<DynamicButton> _btnGrid = new List<DynamicButton>();
     SlideAndScrollBoxState _state;
 
     [SerializeField] int _scrollBoxMaxView;
@@ -37,11 +36,10 @@ public class SlideAndScrollBox : MonoBehaviour
 
             if (_state == SlideAndScrollBoxState.SELECTING)
             {
-                if (_scene == null)
-                    _scene = Managers.Scene.CurrentScene;
-
-                if (_btnGrid != null)
-                    _scene.DoNextAction(_btnGrid[_curIdx].BtnData);
+                if (_btnGrid.Count == 0)
+                    Managers.Scene.CurrentScene.DoNextAction(null);
+                else
+                    Managers.Scene.CurrentScene.DoNextAction(_btnGrid[_curIdx].BtnData);
             }
         }
     }
@@ -67,15 +65,7 @@ public class SlideAndScrollBox : MonoBehaviour
 
     void ChooseAction()
     {
-        if (Input.GetKeyDown(KeyCode.S))
-        {
-            _scene.DoNextAction(Define.InputSelectBoxEvent.BACK);
-        }
-
-        if (_btnGrid == null)
-            return;
-
-        if (_btnGrid.Count == 1)
+        if (_btnGrid.Count <= 1)
             return;
 
         if (Input.GetKeyDown(KeyCode.DownArrow))
@@ -124,7 +114,7 @@ public class SlideAndScrollBox : MonoBehaviour
                 }
             }
 
-            _scene.DoNextAction(_btnGrid[_curIdx].BtnData);
+            Managers.Scene.CurrentScene.DoNextAction(_btnGrid[_curIdx].BtnData);
         }
         else if (Input.GetKeyDown(KeyCode.UpArrow))
         {
@@ -172,11 +162,15 @@ public class SlideAndScrollBox : MonoBehaviour
                 }
             }
 
-            _scene.DoNextAction(_btnGrid[_curIdx].BtnData);
+            Managers.Scene.CurrentScene.DoNextAction(_btnGrid[_curIdx].BtnData);
         }
         else if (Input.GetKeyDown(KeyCode.D))
         {
-            _scene.DoNextAction(Define.InputSelectBoxEvent.SELECT);
+            Managers.Scene.CurrentScene.DoNextAction(Define.InputSelectBoxEvent.SELECT);
+        }
+        else if (Input.GetKeyDown(KeyCode.S))
+        {
+            Managers.Scene.CurrentScene.DoNextAction(Define.InputSelectBoxEvent.BACK);
         }
     }
 
@@ -208,15 +202,51 @@ public class SlideAndScrollBox : MonoBehaviour
     public void ClearBtnGrid()
     {
         // 기존에 있던 버튼들 삭제
-        if (_btnGrid != null)
+        if (_btnGrid.Count > 0)
         {
             foreach (DynamicButton btn in _btnGrid)
             {
                 Destroy(btn.gameObject);
             }
+
+            _btnGrid.Clear();
+        }
+    }
+
+    public DynamicButton AddNewBtn(object data)
+    {
+        DynamicButton btn = GameObject.Instantiate(_btn, _btnPos);
+        btn.BtnData = data;
+        btn.SetSelectedOrNotSelected(false);
+
+        _btnGrid.Add(btn);
+
+        if (_btnGrid.Count == 1)
+        {
+            btn.SetSelectedOrNotSelected(true);
         }
 
-        _btnGrid = null;
+        // 아이템 리스트 칸 상, 하 화살표 갱신
+        if (_btnGrid.Count > _scrollBoxMaxView)
+        {
+            if (_scrollCnt == 0)
+            {
+                _scrollUpArrow.gameObject.SetActive(false);
+                _scrollDownArrow.gameObject.SetActive(true);
+            }
+            else if (_scrollCnt == _btnGrid.Count - _scrollBoxMaxView)
+            {
+                _scrollUpArrow.gameObject.SetActive(true);
+                _scrollDownArrow.gameObject.SetActive(false);
+            }
+            else
+            {
+                _scrollUpArrow.gameObject.SetActive(true);
+                _scrollDownArrow.gameObject.SetActive(true);
+            }
+        }
+
+        return btn;
     }
 
     public void CreateScrollAreaButtons(List<object> datas, int row, int col)
@@ -224,12 +254,6 @@ public class SlideAndScrollBox : MonoBehaviour
         ClearBtnGrid();
 
         _curIdx = 0;
-
-        if (_scene == null)
-            _scene = Managers.Scene.CurrentScene;
-
-        if (_btnGrid == null)
-            _btnGrid = new List<DynamicButton>();
 
         foreach (object data in datas)
         {
@@ -250,18 +274,15 @@ public class SlideAndScrollBox : MonoBehaviour
     public void ShowUpAndDownArrows()
     {
         // 스크롤 상,하 화살표 표시
-        if (_btnGrid != null)
+        if (_btnGrid.Count > _scrollBoxMaxView)
         {
-            if (_btnGrid.Count > _scrollBoxMaxView)
-            {
-                _scrollUpArrow.gameObject.SetActive(false);
-                _scrollDownArrow.gameObject.SetActive(true);
-            }
-            else
-            {
-                _scrollUpArrow.gameObject.SetActive(false);
-                _scrollDownArrow.gameObject.SetActive(false);
-            }
+            _scrollUpArrow.gameObject.SetActive(false);
+            _scrollDownArrow.gameObject.SetActive(true);
+        }
+        else
+        {
+            _scrollUpArrow.gameObject.SetActive(false);
+            _scrollDownArrow.gameObject.SetActive(false);
         }
     }
 
@@ -270,8 +291,16 @@ public class SlideAndScrollBox : MonoBehaviour
         return _btnGrid;
     }
 
+    public DynamicButton GetDynamicButton(int idx)
+    {
+        return _btnGrid[idx];
+    }
+
     public object GetScrollBoxContent()
     {
+        if (_btnGrid.Count == 0)
+            return null;
+
         return _btnGrid[_curIdx].BtnData;
     }
 
@@ -292,6 +321,9 @@ public class SlideAndScrollBox : MonoBehaviour
 
         Destroy(_btnGrid[idx].gameObject);
         _btnGrid.RemoveAt(idx);
+
+        if (_btnGrid.Count == 0)
+            return;
 
         _btnGrid[_curIdx].SetSelectedOrNotSelected(true);
 

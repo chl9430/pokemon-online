@@ -2,6 +2,7 @@ using Google.Protobuf.Protocol;
 using System.Collections;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Analytics;
 using UnityEngine.UI;
 
 public class BattleArea : MonoBehaviour
@@ -25,12 +26,28 @@ public class BattleArea : MonoBehaviour
     [SerializeField] Transform _pokeBallPos;
     [SerializeField] Transform _ballTargetPos;
 
-    public void FillTrainerImage(PlayerGender gender)
+    public void FillTrainerImage(PlayerGender gender, bool isMyPlayer)
     {
-        Texture2D image = Managers.Resource.Load<Texture2D>($"Textures/BattleScene/Trainer_Back_{gender.ToString()}");
+        Texture2D image;
+
+        if (isMyPlayer)
+            image = Managers.Resource.Load<Texture2D>($"Textures/BattleScene/Trainer_Back_{gender.ToString()}");
+        else
+            image = Managers.Resource.Load<Texture2D>($"Textures/BattleScene/Trainer_Front_{gender.ToString()}");
 
         _trainerImage.sprite = Sprite.Create(image, new Rect(0, 0, image.width, image.height), Vector2.one * 0.5f);
         _trainerImage.SetNativeSize();
+    }
+
+    public void FillOpponentTrainerImage(NPCType npcType)
+    {
+        if (npcType == NPCType.SchoolBoy)
+        {
+            Texture2D image = Managers.Resource.Load<Texture2D>($"Textures/BattleScene/Trainer_Front_{npcType}");
+
+            _trainerImage.sprite = Sprite.Create(image, new Rect(0, 0, image.width, image.height), Vector2.one * 0.5f);
+            _trainerImage.SetNativeSize();
+        }
     }
 
     public void FillPokemonInfo(Pokemon pokemon, bool isMyPokemon)
@@ -121,11 +138,10 @@ public class BattleArea : MonoBehaviour
         StartCoroutine(BlinkPokemonHitEffect(texture));
     }
 
-    public void CreateAndThrowBall(string ballName)
+    public void CreateAndThrowBall(Item pokeBall)
     {
         _pokeBallInst = Instantiate(_pokeBall, _pokeBallPos);
-        _pokeBallInst.SetBallImage(ballName);
-
+        _pokeBallInst.SetBallImage(pokeBall);
         _pokeBallInst.ThrowTheBall(_ballTargetPos.position);
     }
 

@@ -8,7 +8,6 @@ public class PokeBall : MonoBehaviour
     float _throwDuration = 1.0f;
     float _rotationAmount = 1080f;
     float _jumpHeight = 300f;
-    BaseScene _scene;
     RectTransform _rt;
     Image _img;
 
@@ -17,7 +16,6 @@ public class PokeBall : MonoBehaviour
     void Awake()
     {
         _rt = GetComponent<RectTransform>();
-        _scene = Managers.Scene.CurrentScene;
         _img = GetComponent<Image>();
     }
 
@@ -41,16 +39,16 @@ public class PokeBall : MonoBehaviour
         // 1. DOJumpAnchorPos로 포물선 이동
         _rt.DOJumpAnchorPos(localUIPosition, _jumpHeight, 1, _throwDuration).SetEase(Ease.Linear).OnComplete(() =>
         {
-            _scene.DoNextAction();
+            Managers.Scene.CurrentScene.DoNextAction();
         });
 
         // 2. DORotate로 회전 효과 추가
         _rt.DORotate(new Vector3(0, 0, _rotationAmount), _throwDuration, RotateMode.FastBeyond360).SetEase(Ease.Linear);
     }
 
-    public void SetBallImage(string ballName)
+    public void SetBallImage(Item pokeBall)
     {
-        Texture2D img = Managers.Resource.Load<Texture2D>($"Textures/Item/PokeBall/{ballName}_Battle");
+        Texture2D img = pokeBall.InBattleImg;
 
         _img.sprite = Sprite.Create(img, new Rect(0, 0, img.width, img.height), Vector2.one * 0.5f);
         _img.SetNativeSize();
@@ -77,7 +75,7 @@ public class PokeBall : MonoBehaviour
 
         // 시퀀스 완료 시 특정 동작 실행
         mySequence.OnComplete(() => {
-            _scene.DoNextAction();
+            Managers.Scene.CurrentScene.DoNextAction();
             Destroy(gameObject);
         });
     }
@@ -107,7 +105,7 @@ public class PokeBall : MonoBehaviour
 
         // 시퀀스 완료 시 특정 동작 실행
         mySequence.OnComplete(() => {
-            _scene.DoNextAction();
+            Managers.Scene.CurrentScene.DoNextAction();
         });
     }
 }

@@ -211,3 +211,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0b298df903c7e3c4f954c3167f52dad2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _screenEffecter: {fileID: 8501555842179633341, guid: 310dcbe579f171d4092226f278ee5be3, type: 3}

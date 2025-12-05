@@ -2,6 +2,7 @@
 using ServerCore;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -81,6 +82,9 @@ namespace Server
         int[,] _bushTileGrid;
         int[,] _doorTileGrid;
         GameObject[,] _objects;
+        GameRoom _gameRoom;
+
+        public GameRoom GameRoom { set { _gameRoom = value; } }
 
         public TileType GetTileType(Vector2Int cellPos)
         {
@@ -296,7 +300,6 @@ namespace Server
             xCount = MaxX - MinX + 1;
             yCount = MaxY - MinY + 1;
 
-            // 부쉬 타일맵의 정보를 불러온다.
             for (int y = 0; y < yCount; y++)
             {
                 string line = reader.ReadLine();
@@ -307,6 +310,82 @@ namespace Server
                     if (line[x] != '0')
                         _collision[y, x] = TileType.BUSH;
                 }
+            }
+
+            // NPC 타일맵의 정보를 불러온다.
+            string npcMapName = mapName + "_NPCMap";
+
+            text = File.ReadAllText($"{pathPrefix}/{npcMapName}.txt");
+            reader = new StringReader(text);
+
+            int npcCount = int.Parse(reader.ReadLine());
+
+            for (int i = 0; i < npcCount; i++)
+            {
+                string line = reader.ReadLine();
+
+                string[] parts = line.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+
+                string name = parts[0];
+
+                int x = int.Parse(parts[1].TrimEnd(',').Trim());
+                int y = int.Parse(parts[2].TrimEnd(',').Trim());
+                int z = int.Parse(parts[3].TrimEnd(',').Trim());
+
+                string contentType = parts[4].TrimEnd(',').Trim();
+                string npcType = parts[5].TrimEnd(',').Trim();
+                MoveDir dir = (MoveDir)Enum.Parse(typeof(MoveDir), parts[6].TrimEnd(',').Trim());
+
+                int cellPosX = int.Parse(parts[1].TrimEnd(','));
+                int cellPosY = int.Parse(parts[2].TrimEnd(','));
+
+                if (name == "Staff")
+                    cellPosX += 1;
+                else if (name == "Nurse")
+                    cellPosY -= 1;
+
+                int posX = cellPosX - MinX;
+                int posY = MaxY - cellPosY;
+
+                NPC npc;
+                if (contentType == "Trainer")
+                {
+                    npc = ObjectManager.Instance.Add<TrainerNPC>();
+                    {
+                        npc.Info.PosInfo.State = CreatureState.Idle;
+                        npc.Info.PosInfo.MoveDir = dir;
+                        npc.Info.PosInfo.PosX = cellPosX;
+                        npc.Info.PosInfo.PosY = cellPosY;
+                        npc.Name = name;
+                        npc.Room = _gameRoom;
+                    }
+                }
+                else
+                {
+                    npc = ObjectManager.Instance.Add<NPC>();
+                    {
+                        npc.Info.PosInfo.State = CreatureState.Idle;
+                        npc.Info.PosInfo.MoveDir = dir;
+                        npc.Info.PosInfo.PosX = cellPosX;
+                        npc.Info.PosInfo.PosY = cellPosY;
+                        npc.Name = name;
+                        npc.Room = _gameRoom;
+                    }
+                }
+
+                npc.NPCType = (NPCType)Enum.Parse(typeof(NPCType), npcType);
+
+                //if (npc.Name == "Staff")
+                //    posX += 1;
+                //else if (npc.Name == "Nurse")
+                //    posY -= 1;
+
+                _objects[posY, posX] = npc;
+
+                if (_gameRoom.Objs.ContainsKey(GameObjectType.Npc) == false)
+                    _gameRoom.Objs.Add(GameObjectType.Npc, new Dictionary<int, GameObject>());
+
+                _gameRoom.NPCs.Add(npc.Id, npc);
             }
         }
 
