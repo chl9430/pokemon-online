@@ -99,7 +99,7 @@ public class BaseController : MonoBehaviour
         if (_animator == null || _sprite == null)
             return;
 
-        if (State == CreatureState.Idle)
+        if (State == CreatureState.Idle || State == CreatureState.NoneState)
         {
             switch (Dir)
             {
