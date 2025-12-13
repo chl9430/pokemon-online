@@ -9,6 +9,7 @@ namespace Server
 {
     public class GameObject
     {
+        ObjectInfo _objInfo = new ObjectInfo();
         public GameObjectType ObjectType
         {
             get
@@ -24,8 +25,20 @@ namespace Server
         }
 
         public GameRoom Room { get; set; }
-        public ObjectInfo Info { get; set; } = new ObjectInfo();
-        public PositionInfo PosInfo { get; private set; } = new PositionInfo();
+        public ObjectInfo Info {
+            get {
+                if (_objInfo.PosInfo == null)
+                    _objInfo.PosInfo = new PositionInfo();
+
+                return _objInfo;
+            }
+            set { _objInfo = value; }
+        }
+        public PositionInfo PosInfo
+        {
+            get { return Info.PosInfo; }
+            set { Info.PosInfo = value; }
+        }
         string _name;
 
         public string Name { get { return _name; } set { _name = value; } }

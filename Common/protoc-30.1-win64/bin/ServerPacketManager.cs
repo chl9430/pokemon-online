@@ -23,6 +23,18 @@ class PacketManager
 
     public void Register()
     {
+        _onRecv.Add((ushort)MsgId.CLogIn, MakePacket<C_LogIn>);
+        _handler.Add((ushort)MsgId.CLogIn, PacketHandler.C_LogInHandler);
+
+        _onRecv.Add((ushort)MsgId.CCreateAccount, MakePacket<C_CreateAccount>);
+        _handler.Add((ushort)MsgId.CCreateAccount, PacketHandler.C_CreateAccountHandler);
+
+        _onRecv.Add((ushort)MsgId.CCheckSaveData, MakePacket<C_CheckSaveData>);
+        _handler.Add((ushort)MsgId.CCheckSaveData, PacketHandler.C_CheckSaveDataHandler);
+
+        _onRecv.Add((ushort)MsgId.CLoadGameData, MakePacket<C_LoadGameData>);
+        _handler.Add((ushort)MsgId.CLoadGameData, PacketHandler.C_LoadGameDataHandler);
+
         _onRecv.Add((ushort)MsgId.CExitGame, MakePacket<C_ExitGame>);
         _handler.Add((ushort)MsgId.CExitGame, PacketHandler.C_ExitGameHandler);
 
@@ -49,6 +61,9 @@ class PacketManager
 
         _onRecv.Add((ushort)MsgId.CFinishNpcTalk, MakePacket<C_FinishNpcTalk>);
         _handler.Add((ushort)MsgId.CFinishNpcTalk, PacketHandler.C_FinishNpcTalkHandler);
+
+        _onRecv.Add((ushort)MsgId.CSaveGameData, MakePacket<C_SaveGameData>);
+        _handler.Add((ushort)MsgId.CSaveGameData, PacketHandler.C_SaveGameDataHandler);
 
         _onRecv.Add((ushort)MsgId.CUseItemInListScene, MakePacket<C_UseItemInListScene>);
         _handler.Add((ushort)MsgId.CUseItemInListScene, PacketHandler.C_UseItemInListSceneHandler);
@@ -94,9 +109,6 @@ class PacketManager
 
         _onRecv.Add((ushort)MsgId.CSwitchPokemon, MakePacket<C_SwitchPokemon>);
         _handler.Add((ushort)MsgId.CSwitchPokemon, PacketHandler.C_SwitchPokemonHandler);
-
-        _onRecv.Add((ushort)MsgId.CAccessPokemonSummary, MakePacket<C_AccessPokemonSummary>);
-        _handler.Add((ushort)MsgId.CAccessPokemonSummary, PacketHandler.C_AccessPokemonSummaryHandler);
 
         _onRecv.Add((ushort)MsgId.CRequestDataById, MakePacket<C_RequestDataById>);
         _handler.Add((ushort)MsgId.CRequestDataById, PacketHandler.C_RequestDataByIdHandler);

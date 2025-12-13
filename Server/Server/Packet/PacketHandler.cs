@@ -1,13 +1,69 @@
 ﻿using Google.Protobuf;
 using Google.Protobuf.Protocol;
+using Newtonsoft.Json;
 using Server;
 using ServerCore;
 using System.Diagnostics;
 using System.Net.Sockets;
 using System.Numerics;
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.Json;
+using System.Xml.Schema;
 
 public class PacketHandler
 {
+    public static void C_LogInHandler(PacketSession session, IMessage packet)
+    {
+        C_LogIn logInPacket = packet as C_LogIn;
+        string id = logInPacket.Id;
+        string pw = logInPacket.Password;
+
+        ClientSession clientSession = session as ClientSession;
+
+        LogInManager.Instance.CheckLogInInfo(clientSession, id, pw);
+    }
+
+    public static void C_CreateAccountHandler(PacketSession session, IMessage packet)
+    {
+        C_CreateAccount createAccountPacket = packet as C_CreateAccount;
+        string id = createAccountPacket.Id;
+        string pw = createAccountPacket.Password;
+
+        ClientSession clientSession = session as ClientSession;
+
+        LogInManager.Instance.CreateNewAccount(clientSession, id, pw);
+    }
+
+    public static void C_CheckSaveDataHandler(PacketSession session, IMessage packet)
+    {
+        C_CheckSaveData checkData = packet as C_CheckSaveData;
+        string id = checkData.Id;
+
+        ClientSession clientSession = session as ClientSession;
+
+        SaveManager.Instance.CheckGameSaveData(clientSession, id);
+    }
+
+    public static void C_LoadGameDataHandler(PacketSession session, IMessage packet)
+    {
+        C_LoadGameData loadGamePacket = packet as C_LoadGameData;
+        string accountId = loadGamePacket.AccountId;
+
+        ClientSession clientSession = session as ClientSession;
+
+        Console.WriteLine(
+            $"=====================\n" +
+            $"C_LoadGameData\n" +
+            $"{loadGamePacket}\n" +
+            $"=====================\n"
+            );
+
+        PlayerInfo info = SaveManager.Instance.GetGameSaveData(accountId);
+
+        Player player = ObjectManager.Instance.AddLoadedPlayer(clientSession, info);
+    }
+
     public static void C_EnterRoomHandler(PacketSession session, IMessage packet)
     {
         C_EnterRoom enterRoom = packet as C_EnterRoom;
@@ -66,6 +122,8 @@ public class PacketHandler
         C_CreatePlayer c_CreatePlayerPacket = packet as C_CreatePlayer;
         ClientSession clientSession = session as ClientSession;
 
+        Random _random = new Random();
+
         Console.WriteLine(
             $"=====================\n" +
             $"C_CreatePlayer\n" +
@@ -93,12 +151,27 @@ public class PacketHandler
 
             player.Name = c_CreatePlayerPacket.Name;
             player.Gender = c_CreatePlayerPacket.Gender;
+            player.UserId = c_CreatePlayerPacket.UserId;
+            Pokemon pokemon = null;
+            
+            player.AddPokemon(new Pokemon("Pikachu", "Pikachu", 5, player.Name, -1));
+            player.AddPokemon(new Pokemon("Charmander", "Charmander", 5, player.Name, -1));
+            player.AddPokemon(new Pokemon("Bulbasaur", "Bulbasaur", 5, player.Name, -1));
+            player.AddPokemon(new Pokemon("Squirtle", "Squirtle", 5, player.Name, -1));
+
+            player.AddItem(ItemCategory.PokeBall, "Monster Ball", 10);
+
+            player.Money += 1000000;
 
             clientSession.MyPlayer = player;
         }
 
-        //GameRoom room = RoomManager.Instance.Find(1, RoomType.Map);
-        //room.Push(room.EnterRoom, player);
+        GameRoom room = RoomManager.Instance.Find(1, RoomType.Map);
+        room.Push(room.EnterRoom, player);
+
+        player.Room = room;
+
+        SaveManager.Instance.SaveGameData(clientSession, c_CreatePlayerPacket.UserId, player.Id);
     }
 
     public static void C_SwitchPokemonHandler(PacketSession session, IMessage packet)
@@ -191,31 +264,6 @@ public class PacketHandler
         room.Push(room.GetAnotherPlayerData, player);
     }
 
-    public static void C_AccessPokemonSummaryHandler(PacketSession session, IMessage packet)
-    {
-        C_AccessPokemonSummary c_AccessSummaryPacket = packet as C_AccessPokemonSummary;
-        int playerId = c_AccessSummaryPacket.PlayerId;
-        int pokemonOrder = c_AccessSummaryPacket.PokemonOrder;
-        
-        ClientSession clientSession = session as ClientSession;
-
-        Console.WriteLine($"" +
-            $"=====================\n" +
-            $"C_AccessPokemonSummary\n" +
-            $"{c_AccessSummaryPacket}\n" +
-            $"=====================\n"
-            );
-
-        Player player = ObjectManager.Instance.Find(playerId);
-
-        Pokemon pokemon = player.Pokemons[pokemonOrder];
-
-        S_AccessPokemonSummary s_AccessPacket = new S_AccessPokemonSummary();
-        s_AccessPacket.PokemonSum = pokemon.MakePokemonSummary();
-
-        player.Session.Send(s_AccessPacket);
-    }
-
     public static void C_UseItemInListSceneHandler(PacketSession session, IMessage packet)
     {
         C_UseItemInListScene useItemPacket = packet as C_UseItemInListScene;
@@ -271,7 +319,7 @@ public class PacketHandler
             player.TalkingNPC = ObjectManager.Instance.FindNPC(1);
 
             GameRoom room = RoomManager.Instance.Find(1, RoomType.Map);
-            
+
             room.Push(room.EnterRoom, player);
         }
 
@@ -460,6 +508,24 @@ public class PacketHandler
         Player player = ObjectManager.Instance.Find(playerId);
 
         player.TalkingNPC = null;
+    }
+
+    public static void C_SaveGameDataHandler(PacketSession session, IMessage packet)
+    {
+        C_SaveGameData saveGamePacket = packet as C_SaveGameData;
+        string accountId = saveGamePacket.AccountId;
+        int playerId = saveGamePacket.PlayerId;
+
+        ClientSession clientSession = session as ClientSession;
+
+        Console.WriteLine($"" +
+            $"=====================\n" +
+            $"C_SaveGameData\n" +
+            $"{saveGamePacket}\n" +
+            $"=====================\n"
+            );
+
+        SaveManager.Instance.SaveGameData(clientSession, accountId, playerId);
     }
 
     public static void C_EnterTrainerBattleHandler(PacketSession session, IMessage packet)
@@ -891,7 +957,7 @@ public class PacketHandler
 
                     Pokemon evolvePokemon = null;
                     if (player.PosInfo.State == CreatureState.Fight)
-                         evolvePokemon = player.BattleRoom.SetEvolutionPokemon();
+                        evolvePokemon = player.BattleRoom.SetEvolutionPokemon();
 
                     if (evolvePokemon != null)
                     {

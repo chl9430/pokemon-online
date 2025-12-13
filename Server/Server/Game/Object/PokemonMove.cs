@@ -46,6 +46,19 @@ namespace Server
             }
         }
 
+        public PokemonMove(PokemonMoveSummary moveSum)
+        {
+            _curPp = moveSum.CurPP;
+            _maxPp = moveSum.MaxPP;
+            _movePower = moveSum.MovePower;
+            _moveAccuracy = moveSum.MoveAccuracy;
+            _criticalRate = moveSum.MoveAccuracy;
+            _moveName = moveSum.MoveName;
+            _moveType = moveSum.MoveType;
+            _moveCategory = moveSum.MoveCategory;
+            _moveDescription = moveSum.MoveDescription;
+        }
+
         public PokemonMoveSummary MakePokemonMoveSummary()
         {
             PokemonMoveSummary moveSum = new PokemonMoveSummary();

@@ -387,7 +387,7 @@ public class PlayerContents : ObjectContents
             case PlayerContentState.RECEIVER_ACCEPT_TO_EXCHANGE:
                 {
                     C_EnterPokemonExchangeScene enterExchangePacket = new C_EnterPokemonExchangeScene();
-                    enterExchangePacket.PlayerId = Managers.Object.PlayerInfo.ObjectInfo.ObjectId;
+                    enterExchangePacket.PlayerId = Managers.Object.MyPlayerController.Id;
 
                     Managers.Network.SavePacket(enterExchangePacket);
 

@@ -1,504 +1,504 @@
 {
-    "pokemonSummaries": [
+  "pokemonSummaries": [
+    {
+      "dictionaryNum": "25",
+      "pokemonName": "Pikachu",
+      "type1": "Electr",
+      "type2": "TypeNone",
+      "genderRatio": [
         {
-            "dictionaryNum": "25",
-            "pokemonName": "Pikachu",
-            "type1": "Electr",
-            "type2": "TypeNone",
-            "genderRatio": [
-                {
-                    "gender": "Male",
-                    "ratio": "50"
-                },
-                {
-                    "gender": "Female",
-                    "ratio": "50"
-                }
-            ],
-            //"ability":  ""
-            "maxHp": "35",
-            "attack": "55",
-            "defense": "40",
-            "specialAttack": "50",
-            "specialDefense": "50",
-            "speed": "90",
-            "baseCatchRate": "200",
-            "learnableMoves": [
-                {
-                    "learnLevel": "1",
-                    "moveName": "Quick Attack"
-                },
-                {
-                    "learnLevel": "1",
-                    "moveName": "Quick Attack"
-                },
-                {
-                    "learnLevel": "1",
-                    "moveName": "Quick Attack"
-                },
-                {
-                    "learnLevel": "3",
-                    "moveName": "Thundershock"
-                },
-                {
-                    "learnLevel": "6",
-                    "moveName": "Thundershock"
-                },
-                {
-                    "learnLevel": "8",
-                    "moveName": "Thunderbolt"
-                }
-            ]
+          "gender": "Male",
+          "ratio": "50"
         },
         {
-            "dictionaryNum": "1",
-            "pokemonName": "Bulbasaur",
-            "type1": "Grass",
-            "type2": "TypeNone",
-            "genderRatio": [
-                {
-                    "gender": "Male",
-                    "ratio": "87.5"
-                },
-                {
-                    "gender": "Female",
-                    "ratio": "12.5"
-                }
-            ],
-            //"ability":  ""
-            "maxHp": "45",
-            "attack": "49",
-            "defense": "49",
-            "specialAttack": "65",
-            "specialDefense": "65",
-            "speed": "45",
-            "baseCatchRate": "200",
-            "learnableMoves": [
-                {
-                    "learnLevel": "1",
-                    "moveName": "Tackle"
-                },
-                {
-                    "learnLevel": "1",
-                    "moveName": "Tackle"
-                },
-                {
-                    "learnLevel": "1",
-                    "moveName": "Tackle"
-                },
-                {
-                    "learnLevel": "3",
-                    "moveName": "Vine Whip"
-                },
-                {
-                    "learnLevel": "6",
-                    "moveName": "Vine Whip"
-                },
-                {
-                    "learnLevel": "8",
-                    "moveName": "Razor Leaf"
-                },
-                {
-                    "learnLevel": "16",
-                    "moveName": "Razor Leaf"
-                }
-            ],
-            "evolutionChain": {
-                "evolutionLevel": "16",
-                "evolutionPokemonName": "Ivysaur"
-            }
-        },
-        {
-            "dictionaryNum": "2",
-            "pokemonName": "Ivysaur",
-            "type1": "Grass",
-            "type2": "Poison",
-            "genderRatio": [
-                {
-                    "gender": "Male",
-                    "ratio": "87.5"
-                },
-                {
-                    "gender": "Female",
-                    "ratio": "12.5"
-                }
-            ],
-            //"ability":  ""
-            "maxHp": "60",
-            "attack": "62",
-            "defense": "63",
-            "specialAttack": "80",
-            "specialDefense": "80",
-            "speed": "60",
-            "baseCatchRate": "100",
-            "learnableMoves": [
-                {
-                    "learnLevel": "1",
-                    "moveName": "Tackle"
-                },
-                {
-                    "learnLevel": "1",
-                    "moveName": "Vine Whip"
-                },
-                {
-                    "learnLevel": "12",
-                    "moveName": "Razor Leaf"
-                },
-                {
-                    "learnLevel": "16",
-                    "moveName": "Seed Bomb"
-                }
-            ],
-            "evolutionChain": {
-                "evolutionLevel": "32",
-                "evolutionPokemonName": "Venusaur"
-            }
-        },
-        {
-            "dictionaryNum": "3",
-            "pokemonName": "Venusaur",
-            "type1": "Grass",
-            "type2": "Poison",
-            "genderRatio": [
-                {
-                    "gender": "Male",
-                    "ratio": "87.5"
-                },
-                {
-                    "gender": "Female",
-                    "ratio": "12.5"
-                }
-            ],
-            //"ability":  ""
-            "maxHp": "80",
-            "attack": "82",
-            "defense": "83",
-            "specialAttack": "100",
-            "specialDefense": "100",
-            "speed": "80",
-            "baseCatchRate": "50",
-            "learnableMoves": [
-                {
-                    "learnLevel": "1",
-                    "moveName": "Tackle"
-                },
-                {
-                    "learnLevel": "1",
-                    "moveName": "Vine Whip"
-                },
-                {
-                    "learnLevel": "12",
-                    "moveName": "Razor Leaf"
-                },
-                {
-                    "learnLevel": "16",
-                    "moveName": "Seed Bomb"
-                }
-            ]
-        },
-        {
-            "dictionaryNum": "4",
-            "pokemonName": "Charmander",
-            "type1": "Fire",
-            "type2": "TypeNone",
-            "genderRatio": [
-                {
-                    "gender": "Male",
-                    "ratio": "87.5"
-                },
-                {
-                    "gender": "Female",
-                    "ratio": "12.5"
-                }
-            ],
-            //"ability":  ""
-            "maxHp": "39",
-            "attack": "52",
-            "defense": "43",
-            "specialAttack": "60",
-            "specialDefense": "50",
-            "speed": "65",
-            "baseCatchRate": "200",
-            "learnableMoves": [
-                {
-                    "learnLevel": "1",
-                    "moveName": "Scratch"
-                },
-                {
-                    "learnLevel": "1",
-                    "moveName": "Scratch"
-                },
-                {
-                    "learnLevel": "1",
-                    "moveName": "Scratch"
-                },
-                {
-                    "learnLevel": "3",
-                    "moveName": "Ember"
-                },
-                {
-                    "learnLevel": "6",
-                    "moveName": "Ember"
-                },
-                {
-                    "learnLevel": "8",
-                    "moveName": "Fire Fang"
-                },
-                {
-                    "learnLevel": "16",
-                    "moveName": "Fire Fang"
-                }
-            ],
-            "evolutionChain": {
-                "evolutionLevel": "16",
-                "evolutionPokemonName": "Charmeleon"
-            }
-        },
-        {
-            "dictionaryNum": "5",
-            "pokemonName": "Charmeleon",
-            "type1": "Fire",
-            "type2": "TypeNone",
-            "genderRatio": [
-                {
-                    "gender": "Male",
-                    "ratio": "87.5"
-                },
-                {
-                    "gender": "Female",
-                    "ratio": "12.5"
-                }
-            ],
-            //"ability":  ""
-            "maxHp": "58",
-            "attack": "64",
-            "defense": "58",
-            "specialAttack": "80",
-            "specialDefense": "65",
-            "speed": "80",
-            "baseCatchRate": "100",
-            "learnableMoves": [
-                {
-                    "learnLevel": "1",
-                    "moveName": "Scratch"
-                },
-                {
-                    "learnLevel": "1",
-                    "moveName": "Ember"
-                },
-                {
-                    "learnLevel": "7",
-                    "moveName": "Fire Fang"
-                }
-            ],
-            "evolutionChain": {
-                "evolutionLevel": "36",
-                "evolutionPokemonName": "Charizard"
-            }
-        },
-        {
-            "dictionaryNum": "6",
-            "pokemonName": "Charizard",
-            "type1": "Fire",
-            "type2": "Flying",
-            "genderRatio": [
-                {
-                    "gender": "Male",
-                    "ratio": "87.5"
-                },
-                {
-                    "gender": "Female",
-                    "ratio": "12.5"
-                }
-            ],
-            //"ability":  ""
-            "maxHp": "78",
-            "attack": "84",
-            "defense": "78",
-            "specialAttack": "109",
-            "specialDefense": "85",
-            "speed": "100",
-            "baseCatchRate": "50",
-            "learnableMoves": [
-                {
-                    "learnLevel": "1",
-                    "moveName": "Scratch"
-                },
-                {
-                    "learnLevel": "1",
-                    "moveName": "Ember"
-                },
-                {
-                    "learnLevel": "7",
-                    "moveName": "Fire Fang"
-                }
-            ]
-        },
-        {
-            "dictionaryNum": "7",
-            "pokemonName": "Squirtle",
-            "type1": "Water",
-            "type2": "TypeNone",
-            "genderRatio": [
-                {
-                    "gender": "Male",
-                    "ratio": "87.5"
-                },
-                {
-                    "gender": "Female",
-                    "ratio": "12.5"
-                }
-            ],
-            //"ability":  ""
-            "maxHp": "44",
-            "attack": "48",
-            "defense": "65",
-            "specialAttack": "50",
-            "specialDefense": "64",
-            "speed": "43",
-            "baseCatchRate": "200",
-            "learnableMoves": [
-                {
-                    "learnLevel": "1",
-                    "moveName": "Tackle"
-                },
-                {
-                    "learnLevel": "1",
-                    "moveName": "Tackle"
-                },
-                {
-                    "learnLevel": "1",
-                    "moveName": "Tackle"
-                },
-                {
-                    "learnLevel": "3",
-                    "moveName": "Water Gun"
-                },
-                {
-                    "learnLevel": "6",
-                    "moveName": "Water Gun"
-                },
-                {
-                    "learnLevel": "8",
-                    "moveName": "Bubble"
-                }
-            ],
-            "evolutionChain": {
-                "evolutionLevel": "16",
-                "evolutionPokemonName": "Wartortle"
-            }
-        },
-        {
-            "dictionaryNum": "8",
-            "pokemonName": "Wartortle",
-            "type1": "Water",
-            "type2": "TypeNone",
-            "genderRatio": [
-                {
-                    "gender": "Male",
-                    "ratio": "87.5"
-                },
-                {
-                    "gender": "Female",
-                    "ratio": "12.5"
-                }
-            ],
-            //"ability":  ""
-            "maxHp": "59",
-            "attack": "63",
-            "defense": "80",
-            "specialAttack": "65",
-            "specialDefense": "80",
-            "speed": "58",
-            "baseCatchRate": "100",
-            "learnableMoves": [
-                {
-                    "learnLevel": "1",
-                    "moveName": "Tackle"
-                },
-                {
-                    "learnLevel": "4",
-                    "moveName": "Bubble"
-                },
-                {
-                    "learnLevel": "7",
-                    "moveName": "Water Gun"
-                },
-                {
-                    "learnLevel": "10",
-                    "moveName": "Tackle"
-                },
-                {
-                    "learnLevel": "13",
-                    "moveName": "Bubble"
-                },
-                {
-                    "learnLevel": "16",
-                    "moveName": "Water Gun"
-                }
-            ],
-            "evolutionChain": {
-                "evolutionLevel": "36",
-                "evolutionPokemonName": "Blastoise"
-            }
-        },
-        {
-            "dictionaryNum": "9",
-            "pokemonName": "Blastoise",
-            "type1": "Water",
-            "type2": "TypeNone",
-            "genderRatio": [
-                {
-                    "gender": "Male",
-                    "ratio": "87.5"
-                },
-                {
-                    "gender": "Female",
-                    "ratio": "12.5"
-                }
-            ],
-            //"ability":  ""
-            "maxHp": "79",
-            "attack": "83",
-            "defense": "100",
-            "specialAttack": "85",
-            "specialDefense": "105",
-            "speed": "78",
-            "baseCatchRate": "50",
-            "learnableMoves": [
-                {
-                    "learnLevel": "1",
-                    "moveName": "Tackle"
-                },
-                {
-                    "learnLevel": "4",
-                    "moveName": "Bubble"
-                },
-                {
-                    "learnLevel": "7",
-                    "moveName": "Water Gun"
-                },
-                {
-                    "learnLevel": "10",
-                    "moveName": "Tackle"
-                },
-                {
-                    "learnLevel": "13",
-                    "moveName": "Bubble"
-                },
-                {
-                    "learnLevel": "16",
-                    "moveName": "Water Gun"
-                },
-                {
-                    "learnLevel": "9",
-                    "moveName": "Tackle"
-                },
-                {
-                    "learnLevel": "22",
-                    "moveName": "Bubble"
-                }
-            ]
+          "gender": "Female",
+          "ratio": "50"
         }
-    ]
-} 
+      ],
+      //"ability":  ""
+      "maxHp": "35",
+      "attack": "55",
+      "defense": "40",
+      "specialAttack": "50",
+      "specialDefense": "50",
+      "speed": "90",
+      "baseCatchRate": "200",
+      "learnableMoves": [
+        {
+          "learnLevel": "1",
+          "moveName": "Quick Attack"
+        },
+        {
+          "learnLevel": "1",
+          "moveName": "Quick Attack"
+        },
+        {
+          "learnLevel": "1",
+          "moveName": "Quick Attack"
+        },
+        {
+          "learnLevel": "3",
+          "moveName": "Thundershock"
+        },
+        {
+          "learnLevel": "6",
+          "moveName": "Thundershock"
+        },
+        {
+          "learnLevel": "8",
+          "moveName": "Thunderbolt"
+        }
+      ]
+    },
+    {
+      "dictionaryNum": "1",
+      "pokemonName": "Bulbasaur",
+      "type1": "Grass",
+      "type2": "TypeNone",
+      "genderRatio": [
+        {
+          "gender": "Male",
+          "ratio": "87.5"
+        },
+        {
+          "gender": "Female",
+          "ratio": "12.5"
+        }
+      ],
+      //"ability":  ""
+      "maxHp": "45",
+      "attack": "49",
+      "defense": "49",
+      "specialAttack": "65",
+      "specialDefense": "65",
+      "speed": "45",
+      "baseCatchRate": "200",
+      "learnableMoves": [
+        {
+          "learnLevel": "1",
+          "moveName": "Tackle"
+        },
+        {
+          "learnLevel": "1",
+          "moveName": "Tackle"
+        },
+        {
+          "learnLevel": "1",
+          "moveName": "Tackle"
+        },
+        {
+          "learnLevel": "3",
+          "moveName": "Vine Whip"
+        },
+        {
+          "learnLevel": "6",
+          "moveName": "Vine Whip"
+        },
+        {
+          "learnLevel": "8",
+          "moveName": "Razor Leaf"
+        },
+        {
+          "learnLevel": "16",
+          "moveName": "Razor Leaf"
+        }
+      ],
+      "evolutionChain": {
+        "evolutionLevel": "16",
+        "evolutionPokemonName": "Ivysaur"
+      }
+    },
+    {
+      "dictionaryNum": "2",
+      "pokemonName": "Ivysaur",
+      "type1": "Grass",
+      "type2": "Poison",
+      "genderRatio": [
+        {
+          "gender": "Male",
+          "ratio": "87.5"
+        },
+        {
+          "gender": "Female",
+          "ratio": "12.5"
+        }
+      ],
+      //"ability":  ""
+      "maxHp": "60",
+      "attack": "62",
+      "defense": "63",
+      "specialAttack": "80",
+      "specialDefense": "80",
+      "speed": "60",
+      "baseCatchRate": "100",
+      "learnableMoves": [
+        {
+          "learnLevel": "1",
+          "moveName": "Tackle"
+        },
+        {
+          "learnLevel": "1",
+          "moveName": "Vine Whip"
+        },
+        {
+          "learnLevel": "12",
+          "moveName": "Razor Leaf"
+        },
+        {
+          "learnLevel": "16",
+          "moveName": "Seed Bomb"
+        }
+      ],
+      "evolutionChain": {
+        "evolutionLevel": "32",
+        "evolutionPokemonName": "Venusaur"
+      }
+    },
+    {
+      "dictionaryNum": "3",
+      "pokemonName": "Venusaur",
+      "type1": "Grass",
+      "type2": "Poison",
+      "genderRatio": [
+        {
+          "gender": "Male",
+          "ratio": "87.5"
+        },
+        {
+          "gender": "Female",
+          "ratio": "12.5"
+        }
+      ],
+      //"ability":  ""
+      "maxHp": "80",
+      "attack": "82",
+      "defense": "83",
+      "specialAttack": "100",
+      "specialDefense": "100",
+      "speed": "80",
+      "baseCatchRate": "50",
+      "learnableMoves": [
+        {
+          "learnLevel": "1",
+          "moveName": "Tackle"
+        },
+        {
+          "learnLevel": "1",
+          "moveName": "Vine Whip"
+        },
+        {
+          "learnLevel": "12",
+          "moveName": "Razor Leaf"
+        },
+        {
+          "learnLevel": "16",
+          "moveName": "Seed Bomb"
+        }
+      ]
+    },
+    {
+      "dictionaryNum": "4",
+      "pokemonName": "Charmander",
+      "type1": "Fire",
+      "type2": "TypeNone",
+      "genderRatio": [
+        {
+          "gender": "Male",
+          "ratio": "87.5"
+        },
+        {
+          "gender": "Female",
+          "ratio": "12.5"
+        }
+      ],
+      //"ability":  ""
+      "maxHp": "39",
+      "attack": "52",
+      "defense": "43",
+      "specialAttack": "60",
+      "specialDefense": "50",
+      "speed": "65",
+      "baseCatchRate": "200",
+      "learnableMoves": [
+        {
+          "learnLevel": "1",
+          "moveName": "Scratch"
+        },
+        {
+          "learnLevel": "1",
+          "moveName": "Scratch"
+        },
+        {
+          "learnLevel": "1",
+          "moveName": "Scratch"
+        },
+        {
+          "learnLevel": "3",
+          "moveName": "Ember"
+        },
+        {
+          "learnLevel": "6",
+          "moveName": "Ember"
+        },
+        {
+          "learnLevel": "8",
+          "moveName": "Fire Fang"
+        },
+        {
+          "learnLevel": "16",
+          "moveName": "Fire Fang"
+        }
+      ],
+      "evolutionChain": {
+        "evolutionLevel": "16",
+        "evolutionPokemonName": "Charmeleon"
+      }
+    },
+    {
+      "dictionaryNum": "5",
+      "pokemonName": "Charmeleon",
+      "type1": "Fire",
+      "type2": "TypeNone",
+      "genderRatio": [
+        {
+          "gender": "Male",
+          "ratio": "87.5"
+        },
+        {
+          "gender": "Female",
+          "ratio": "12.5"
+        }
+      ],
+      //"ability":  ""
+      "maxHp": "58",
+      "attack": "64",
+      "defense": "58",
+      "specialAttack": "80",
+      "specialDefense": "65",
+      "speed": "80",
+      "baseCatchRate": "100",
+      "learnableMoves": [
+        {
+          "learnLevel": "1",
+          "moveName": "Scratch"
+        },
+        {
+          "learnLevel": "1",
+          "moveName": "Ember"
+        },
+        {
+          "learnLevel": "7",
+          "moveName": "Fire Fang"
+        }
+      ],
+      "evolutionChain": {
+        "evolutionLevel": "36",
+        "evolutionPokemonName": "Charizard"
+      }
+    },
+    {
+      "dictionaryNum": "6",
+      "pokemonName": "Charizard",
+      "type1": "Fire",
+      "type2": "Flying",
+      "genderRatio": [
+        {
+          "gender": "Male",
+          "ratio": "87.5"
+        },
+        {
+          "gender": "Female",
+          "ratio": "12.5"
+        }
+      ],
+      //"ability":  ""
+      "maxHp": "78",
+      "attack": "84",
+      "defense": "78",
+      "specialAttack": "109",
+      "specialDefense": "85",
+      "speed": "100",
+      "baseCatchRate": "50",
+      "learnableMoves": [
+        {
+          "learnLevel": "1",
+          "moveName": "Scratch"
+        },
+        {
+          "learnLevel": "1",
+          "moveName": "Ember"
+        },
+        {
+          "learnLevel": "7",
+          "moveName": "Fire Fang"
+        }
+      ]
+    },
+    {
+      "dictionaryNum": "7",
+      "pokemonName": "Squirtle",
+      "type1": "Water",
+      "type2": "TypeNone",
+      "genderRatio": [
+        {
+          "gender": "Male",
+          "ratio": "87.5"
+        },
+        {
+          "gender": "Female",
+          "ratio": "12.5"
+        }
+      ],
+      //"ability":  ""
+      "maxHp": "44",
+      "attack": "48",
+      "defense": "65",
+      "specialAttack": "50",
+      "specialDefense": "64",
+      "speed": "43",
+      "baseCatchRate": "200",
+      "learnableMoves": [
+        {
+          "learnLevel": "1",
+          "moveName": "Tackle"
+        },
+        {
+          "learnLevel": "1",
+          "moveName": "Tackle"
+        },
+        {
+          "learnLevel": "1",
+          "moveName": "Tackle"
+        },
+        {
+          "learnLevel": "3",
+          "moveName": "Water Gun"
+        },
+        {
+          "learnLevel": "6",
+          "moveName": "Water Gun"
+        },
+        {
+          "learnLevel": "8",
+          "moveName": "Bubble"
+        }
+      ],
+      "evolutionChain": {
+        "evolutionLevel": "16",
+        "evolutionPokemonName": "Wartortle"
+      }
+    },
+    {
+      "dictionaryNum": "8",
+      "pokemonName": "Wartortle",
+      "type1": "Water",
+      "type2": "TypeNone",
+      "genderRatio": [
+        {
+          "gender": "Male",
+          "ratio": "87.5"
+        },
+        {
+          "gender": "Female",
+          "ratio": "12.5"
+        }
+      ],
+      //"ability":  ""
+      "maxHp": "59",
+      "attack": "63",
+      "defense": "80",
+      "specialAttack": "65",
+      "specialDefense": "80",
+      "speed": "58",
+      "baseCatchRate": "100",
+      "learnableMoves": [
+        {
+          "learnLevel": "1",
+          "moveName": "Tackle"
+        },
+        {
+          "learnLevel": "4",
+          "moveName": "Bubble"
+        },
+        {
+          "learnLevel": "7",
+          "moveName": "Water Gun"
+        },
+        {
+          "learnLevel": "10",
+          "moveName": "Tackle"
+        },
+        {
+          "learnLevel": "13",
+          "moveName": "Bubble"
+        },
+        {
+          "learnLevel": "16",
+          "moveName": "Water Gun"
+        }
+      ],
+      "evolutionChain": {
+        "evolutionLevel": "36",
+        "evolutionPokemonName": "Blastoise"
+      }
+    },
+    {
+      "dictionaryNum": "9",
+      "pokemonName": "Blastoise",
+      "type1": "Water",
+      "type2": "TypeNone",
+      "genderRatio": [
+        {
+          "gender": "Male",
+          "ratio": "87.5"
+        },
+        {
+          "gender": "Female",
+          "ratio": "12.5"
+        }
+      ],
+      //"ability":  ""
+      "maxHp": "79",
+      "attack": "83",
+      "defense": "100",
+      "specialAttack": "85",
+      "specialDefense": "105",
+      "speed": "78",
+      "baseCatchRate": "50",
+      "learnableMoves": [
+        {
+          "learnLevel": "1",
+          "moveName": "Tackle"
+        },
+        {
+          "learnLevel": "4",
+          "moveName": "Bubble"
+        },
+        {
+          "learnLevel": "7",
+          "moveName": "Water Gun"
+        },
+        {
+          "learnLevel": "10",
+          "moveName": "Tackle"
+        },
+        {
+          "learnLevel": "13",
+          "moveName": "Bubble"
+        },
+        {
+          "learnLevel": "16",
+          "moveName": "Water Gun"
+        },
+        {
+          "learnLevel": "9",
+          "moveName": "Tackle"
+        },
+        {
+          "learnLevel": "22",
+          "moveName": "Bubble"
+        }
+      ]
+    }
+  ]
+}

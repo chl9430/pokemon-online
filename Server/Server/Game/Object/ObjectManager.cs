@@ -51,6 +51,22 @@ namespace Server
             return gameObject;
         }
 
+        public Player AddLoadedPlayer(ClientSession session, PlayerInfo loadedInfo)
+        {
+            Player player = new Player();
+            player.ApplyPlayerInfo(loadedInfo, session);
+            session.MyPlayer = player;
+
+            if (_objs.ContainsKey(GameObjectType.Player) == false)
+            {
+                _objs.Add(GameObjectType.Player, new Dictionary<int, GameObject>());
+            }
+
+            _objs[GameObjectType.Player].Add(player.Id, player);
+
+            return player;
+        }
+
         int GenerateId(GameObjectType type)
         {
             lock (_lock)
@@ -80,7 +96,7 @@ namespace Server
 
         public Player Find(int objectId)
         {
-            GameObjectType objectType  = GetObjectTypeById(objectId);
+            GameObjectType objectType = GetObjectTypeById(objectId);
 
             lock (_lock)
             {

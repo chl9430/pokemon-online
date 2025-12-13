@@ -13,7 +13,7 @@ namespace Server
 {
     public class Player : GameObject
     {
-        List<Pokemon> pokemons;
+        List<Pokemon> pokemons = new List<Pokemon>();
         Dictionary<ItemCategory, List<ItemBase>> _items;
         PlayerTalkRoom _talkRoom;
         PokemonBattleRoom _pokemonBattleRoom;
@@ -23,6 +23,8 @@ namespace Server
         PlayerGender _gender;
         int _money;
         int _npcNumber;
+
+        string _userId;
 
         public ClientSession Session { get; set; }
 
@@ -53,6 +55,8 @@ namespace Server
 
         public int NPCNumber { get { return _npcNumber; } set { _npcNumber = value; } }
 
+        public string UserId { set { _userId = value; } }
+
         public Player()
         {
             Info.ObjectType = GameObjectType.Player;
@@ -64,6 +68,45 @@ namespace Server
             _items.Add(ItemCategory.TechnicalMachine, new List<ItemBase>());
             _items.Add(ItemCategory.Berry, new List<ItemBase>());
             _items.Add(ItemCategory.KeyItem, new List<ItemBase>());
+        }
+
+        public void ApplyPlayerInfo(PlayerInfo playerInfo, ClientSession session)
+        {
+            Info = playerInfo.ObjectInfo;
+            Name = playerInfo.PlayerName;
+            Gender = playerInfo.PlayerGender;
+            Money = playerInfo.Money;
+
+            Session = session;
+            
+            UserId = playerInfo.UserId;
+
+            // 아이템 채우기
+            foreach (var pair in playerInfo.Inventory)
+            {
+                CategoryInventory categoryInventory = pair.Value;
+
+                foreach (ItemSummary item in categoryInventory.CategoryItemSums)
+                {
+                    AddItem(item.ItemCategory, item.ItemName, item.ItemCnt);
+                }
+            }
+
+            // 포켓몬 채우기
+            foreach (PokemonSummary pokemonSum in playerInfo.PokemonSums)
+            {
+                Pokemons.Add(new Pokemon(pokemonSum));
+            }
+
+            string roomName = playerInfo.Room;
+            string[] parts = roomName.Split('_');
+            RoomType roomType = (RoomType)System.Enum.Parse(typeof(RoomType), parts[0]);
+            int roomId = int.Parse(parts[1]);
+
+            GameRoom room = RoomManager.Instance.Find(roomId, roomType);
+            room.Push(room.EnterRoom, this);
+
+            Room = room;
         }
 
         public OtherPlayerInfo MakeOtherPlayerInfo()
@@ -114,6 +157,11 @@ namespace Server
                 foreach (Pokemon pokemon in pokemons)
                     playerInfo.PokemonSums.Add(pokemon.MakePokemonSummary());
             }
+            
+            playerInfo.UserId = _userId;
+
+            if (Room != null)
+                playerInfo.Room = $"{Room.RoomType.ToString()}_" + Room.RoomId.ToString();
 
             return playerInfo;
         }
@@ -288,6 +336,7 @@ namespace Server
 
             s_UseItemPacket.ItemSum = item.MakeItemSummary();
             s_UseItemPacket.TargetPokemonSum = targetPokemon.MakePokemonSummary();
+            s_UseItemPacket.UsedItemOrder = itemOrder;
 
             return s_UseItemPacket;
         }

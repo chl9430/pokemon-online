@@ -32,6 +32,7 @@ public class ContentManager : MonoBehaviour
         if (Instance == null)
         {
             Instance = this;
+            DontDestroyOnLoad(gameObject);
         }
         else
         {
@@ -41,9 +42,19 @@ public class ContentManager : MonoBehaviour
 
     void Start()
     {
-        _canvas = FindFirstObjectByType<Canvas>();
+        _canvas = Util.FindChild<Canvas>(gameObject);
 
         _screenEffecter = Managers.Resource.Instantiate("UI/Fading", _canvas.transform).GetComponent<ScreenEffecter>();
+    }
+
+    public void LoadUIPrefabs()
+    {
+        _gameMenuContent = Managers.Resource.Instantiate("UI/GameScene/GameMenu", _canvas.transform).GetComponent<GameMenuContent>();
+        _pokemonListContent = Managers.Resource.Instantiate("UI/GameScene/PokemonSelectArea", _canvas.transform).GetComponent<PokemonListContent>();
+        _bagContent = Managers.Resource.Instantiate("UI/GameScene/Bag", _canvas.transform).GetComponent<BagContent>();
+        _pokemonSummaryContent = Managers.Resource.Instantiate("UI/GameScene/PokemonSummary", _canvas.transform).GetComponent<PokemonSummaryContent>();
+        _pokemonEvolutionContent = Managers.Resource.Instantiate("UI/GameScene/PokemonEvolution", _canvas.transform).GetComponent<PokemonEvolutionContent>();
+        _moveSelectionContent = Managers.Resource.Instantiate("UI/GameScene/MoveSelection", _canvas.transform).GetComponent<MoveSelectionContent>();
     }
 
     public void SetGameMenu()
@@ -52,11 +63,11 @@ public class ContentManager : MonoBehaviour
         _gameMenuContent.SetMenuButtons();
     }
 
-    public void SetBag(Dictionary<ItemCategory, List<Item>> items)
-    {
-        // 가방 리스트 데이터 채우기
-        _bagContent.SetBagItems(items);
-    }
+    //public void SetBag(Dictionary<ItemCategory, List<Item>> items)
+    //{
+    //    // 가방 리스트 데이터 채우기
+    //    _bagContent.SetBagItems(items);
+    //}
 
     public void OpenGameMenu()
     {
@@ -71,9 +82,10 @@ public class ContentManager : MonoBehaviour
         Managers.Scene.CurrentScene.ContentStack.Peek().SetNextAction();
     }
 
-    public void OpenBag()
+    public void OpenBag(Dictionary<ItemCategory, List<Item>> items)
     {
         Managers.Scene.CurrentScene.ContentStack.Push(_bagContent);
+        _bagContent.SetBagItems(items);
         Managers.Scene.CurrentScene.ContentStack.Peek().SetNextAction();
     }
 

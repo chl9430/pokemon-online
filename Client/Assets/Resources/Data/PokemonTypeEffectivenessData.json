@@ -1,73 +1,73 @@
 {
-    "pokemonTypeEffectiveness": [
+  "pokemonTypeEffectiveness": [
+    {
+      "type": "Fire",
+      "effectiveness": [
         {
-            "type": "Fire",
-            "effectiveness": [
-                {
-                    "targetType": "Fire",
-                    "multiplier": 0.5
-                },
-                {
-                    "targetType": "Water",
-                    "multiplier": 0.5
-                },
-                {
-                    "targetType": "Grass",
-                    "multiplier": 2.0
-                }
-            ]
+          "targetType": "Fire",
+          "multiplier": 0.5
         },
         {
-            "type": "Water",
-            "effectiveness": [
-                {
-                    "targetType": "Water",
-                    "multiplier": 0.5
-                },
-                {
-                    "targetType": "Grass",
-                    "multiplier": 0.5
-                },
-                {
-                    "targetType": "Fire",
-                    "multiplier": 2.0
-                }
-            ]
+          "targetType": "Water",
+          "multiplier": 0.5
         },
         {
-            "type": "Grass",
-            "effectiveness": [
-                {
-                    "targetType": "Grass",
-                    "multiplier": 0.5
-                },
-                {
-                    "targetType": "Fire",
-                    "multiplier": 0.5
-                },
-                {
-                    "targetType": "Water",
-                    "multiplier": 2.0
-                }
-            ]
-        },
-        {
-            "type": "Electr",
-            "effectiveness": [
-                {
-                    "targetType": "Electr",
-                    "multiplier": 0.5
-                },
-                {
-                    "targetType": "Water",
-                    "multiplier": 2.0
-                }
-            ]
-        },
-        {
-            "type": "Normal",
-            "effectiveness": [
-            ]
+          "targetType": "Grass",
+          "multiplier": 2.0
         }
-    ]
-} 
+      ]
+    },
+    {
+      "type": "Water",
+      "effectiveness": [
+        {
+          "targetType": "Water",
+          "multiplier": 0.5
+        },
+        {
+          "targetType": "Grass",
+          "multiplier": 0.5
+        },
+        {
+          "targetType": "Fire",
+          "multiplier": 2.0
+        }
+      ]
+    },
+    {
+      "type": "Grass",
+      "effectiveness": [
+        {
+          "targetType": "Grass",
+          "multiplier": 0.5
+        },
+        {
+          "targetType": "Fire",
+          "multiplier": 0.5
+        },
+        {
+          "targetType": "Water",
+          "multiplier": 2.0
+        }
+      ]
+    },
+    {
+      "type": "Electr",
+      "effectiveness": [
+        {
+          "targetType": "Electr",
+          "multiplier": 0.5
+        },
+        {
+          "targetType": "Water",
+          "multiplier": 2.0
+        }
+      ]
+    },
+    {
+      "type": "Normal",
+      "effectiveness": [
+      ]
+    }
+  ]
+}

@@ -13,7 +13,7 @@ public abstract class BaseScene : MonoBehaviour
     //protected MyPlayerController _playerController;
     protected IMessage _packet;
 
-    [SerializeField] protected Canvas _sceneCanvas;
+    //[SerializeField] protected Canvas _sceneCanvas;
 
     public Stack<ObjectContents> ContentStack { get { return _contentStack; } }
     public Define.Scene SceneType { get; protected set; } = Define.Scene.Unknown;

@@ -36,16 +36,16 @@ public class GameScene : BaseScene
         // 테스트 시 사용.
         if (Managers.Network.Packet == null)
         {
-            C_EnterRoom enterRoomPacket = new C_EnterRoom();
-            enterRoomPacket.PlayerId = -1;
+            //C_EnterRoom enterRoomPacket = new C_EnterRoom();
+            //enterRoomPacket.PlayerId = -1;
 
-            SceneType = Define.Scene.Game;
+            //SceneType = Define.Scene.Game;
 
-            Managers.Network.Send(enterRoomPacket);
+            //Managers.Network.Send(enterRoomPacket);
         }
         else
         {
-            Managers.Network.SendSavedPacket();
+            // Managers.Network.SendSavedPacket();
         }
     }
 
@@ -90,8 +90,7 @@ public class GameScene : BaseScene
                     Managers.Object.Add(npcs[i].gameObject, npcInfo.ObjectInfo);
                 }
 
-                ContentManager.Instance.SetBag(Managers.Object.MyPlayerController.Items);
-
+                ContentManager.Instance.LoadUIPrefabs();
                 ContentManager.Instance.SetGameMenu();
 
                 // 대화중인 npc가 있는 지 확인

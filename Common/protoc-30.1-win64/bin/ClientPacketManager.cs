@@ -23,6 +23,15 @@ class PacketManager
 
     public void Register()
     {
+        _onRecv.Add((ushort)MsgId.SLogIn, MakePacket<S_LogIn>);
+        _handler.Add((ushort)MsgId.SLogIn, PacketHandler.S_LogInHandler);
+
+        _onRecv.Add((ushort)MsgId.SCreateAccount, MakePacket<S_CreateAccount>);
+        _handler.Add((ushort)MsgId.SCreateAccount, PacketHandler.S_CreateAccountHandler);
+
+        _onRecv.Add((ushort)MsgId.SCheckSaveData, MakePacket<S_CheckSaveData>);
+        _handler.Add((ushort)MsgId.SCheckSaveData, PacketHandler.S_CheckSaveDataHandler);
+
         _onRecv.Add((ushort)MsgId.SEnterGame, MakePacket<S_EnterGame>);
         _handler.Add((ushort)MsgId.SEnterGame, PacketHandler.S_EnterGameHandler);
 
@@ -61,6 +70,9 @@ class PacketManager
 
         _onRecv.Add((ushort)MsgId.SRestorePokemon, MakePacket<S_RestorePokemon>);
         _handler.Add((ushort)MsgId.SRestorePokemon, PacketHandler.S_RestorePokemonHandler);
+
+        _onRecv.Add((ushort)MsgId.SSaveGameData, MakePacket<S_SaveGameData>);
+        _handler.Add((ushort)MsgId.SSaveGameData, PacketHandler.S_SaveGameDataHandler);
 
         _onRecv.Add((ushort)MsgId.SUseItemInListScene, MakePacket<S_UseItemInListScene>);
         _handler.Add((ushort)MsgId.SUseItemInListScene, PacketHandler.S_UseItemInListSceneHandler);
@@ -109,9 +121,6 @@ class PacketManager
 
         _onRecv.Add((ushort)MsgId.SReceiveTalk, MakePacket<S_ReceiveTalk>);
         _handler.Add((ushort)MsgId.SReceiveTalk, PacketHandler.S_ReceiveTalkHandler);
-
-        _onRecv.Add((ushort)MsgId.SAccessPokemonSummary, MakePacket<S_AccessPokemonSummary>);
-        _handler.Add((ushort)MsgId.SAccessPokemonSummary, PacketHandler.S_AccessPokemonSummaryHandler);
 
         _onRecv.Add((ushort)MsgId.SProcessTurn, MakePacket<S_ProcessTurn>);
         _handler.Add((ushort)MsgId.SProcessTurn, PacketHandler.S_ProcessTurnHandler);

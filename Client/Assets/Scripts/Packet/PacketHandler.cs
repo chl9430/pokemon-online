@@ -8,6 +8,33 @@ using UnityEngine.Diagnostics;
 
 public class PacketHandler
 {
+    public static void S_LogInHandler(PacketSession session, IMessage packet)
+    {
+        S_LogIn loginPacket = packet as S_LogIn;
+
+        Debug.Log($"S_LogIn : {loginPacket}");
+
+        Managers.Scene.CurrentScene.UpdateData(loginPacket);
+    }
+
+    public static void S_CreateAccountHandler(PacketSession session, IMessage packet)
+    {
+        S_CreateAccount createAccount = packet as S_CreateAccount;
+
+        Debug.Log($"S_CreateAccount : {createAccount}");
+
+        Managers.Scene.CurrentScene.UpdateData(createAccount);
+    }
+
+    public static void S_CheckSaveDataHandler(PacketSession session, IMessage packet)
+    {
+        S_CheckSaveData checkDataPacket = packet as S_CheckSaveData;
+
+        Debug.Log($"S_CheckSaveData : {checkDataPacket}");
+
+        Managers.Scene.CurrentScene.UpdateData(checkDataPacket);
+    }
+
     public static void S_EnterGameHandler(PacketSession session, IMessage packet)
     {
         S_EnterGame enterGamePacket = packet as S_EnterGame;
@@ -114,15 +141,6 @@ public class PacketHandler
         Managers.Scene.CurrentScene.UpdateData(s_UseItemPacket);
     }
 
-    public static void S_AccessPokemonSummaryHandler(PacketSession session, IMessage packet)
-    {
-        S_AccessPokemonSummary s_AccessPacket = packet as S_AccessPokemonSummary;
-
-        Debug.Log($"S_AccessPokemonSummary : {s_AccessPacket}");
-
-        Managers.Scene.CurrentScene.UpdateData(s_AccessPacket);
-    }
-
     public static void S_EnterPokemonBattleSceneHandler(PacketSession session, IMessage packet)
     {
         S_EnterPokemonBattleScene s_EnterBattleScenePacket = packet as S_EnterPokemonBattleScene;
@@ -211,6 +229,15 @@ public class PacketHandler
         Debug.Log($"S_RestorePokemon : {restorePacket}");
 
         Managers.Scene.CurrentScene.UpdateData(restorePacket);
+    }
+
+    public static void S_SaveGameDataHandler(PacketSession session, IMessage packet)
+    {
+        S_SaveGameData savePacket = packet as S_SaveGameData;
+
+        Debug.Log($"S_SaveGameData : {savePacket}");
+
+        Managers.Scene.CurrentScene.UpdateData(savePacket);
     }
 
     public static void S_CheckAndApplyRemainedExpHandler(PacketSession session, IMessage packet)

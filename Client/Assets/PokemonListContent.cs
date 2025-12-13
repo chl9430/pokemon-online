@@ -335,15 +335,14 @@ public class PokemonListContent : ObjectContents
                     if (_packet is S_UseItemInListScene)
                     {
                         ItemSummary usedItemSum = ((S_UseItemInListScene)_packet).ItemSum;
+                        int usedItemOrder = ((S_UseItemInListScene)_packet).UsedItemOrder;
 
                         // 아이템도 사용처리
                         Item usedItem = ContentManager.Instance.BagContent.GetSelectedItem();
                         usedItem.UpdateItemSummary(usedItemSum);
 
                         if (usedItem.ItemCnt == 0)
-                            ContentManager.Instance.BagContent.RemoveSelectedItem();
-                        else
-                            ContentManager.Instance.BagContent.UpdateSelectedItem();
+                            Managers.Object.MyPlayerController.Items[(ItemCategory)usedItem.ItemCategory].RemoveAt(usedItemOrder);
 
                         if (Managers.Scene.CurrentScene is BattleScene)
                         {

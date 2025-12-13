@@ -8,7 +8,7 @@ namespace Server
         PokemonInfo _pokemonInfo;
         PokemonStat _pokemonStat;
         PokemonExpInfo _expInfo;
-        List<PokemonMove> _pokemonMoves;
+        List<PokemonMove> _pokemonMoves = new List<PokemonMove>();
         PokemonMove _noPPMove;
         PokemonSummaryDictData _summaryDictData;
 
@@ -180,6 +180,20 @@ namespace Server
             {
                 Console.WriteLine("Cannot find Pokemon Base Stat!");
             }
+        }
+
+        public Pokemon(PokemonSummary pokemonSum)
+        {
+            _pokemonInfo = pokemonSum.PokemonInfo;
+            _pokemonStat = pokemonSum.PokemonStat;
+            _expInfo = pokemonSum.PokemonExpInfo;
+
+            foreach (PokemonMoveSummary moveSum in pokemonSum.PokemonMoves)
+            {
+                PokemonMove move = new PokemonMove(moveSum);
+                _pokemonMoves.Add(move);
+            }
+            _noPPMove = new PokemonMove(pokemonSum.NoPPMove);
         }
 
         int FindLastLearnableMoveIndex(LearnableMoveData[] moveDatas, int pokemonLevel)

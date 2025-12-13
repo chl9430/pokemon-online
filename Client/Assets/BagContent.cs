@@ -493,28 +493,6 @@ public class BagContent : ObjectContents
         Managers.Scene.CurrentScene.FinishContents();
     }
 
-    public void AddNewItem(Item item)
-    {
-        DynamicButton btn = _scrollBox.AddNewBtn(item);
-
-        TextMeshProUGUI tmp = Util.FindChild<TextMeshProUGUI>(btn.gameObject, "ItemName", true);
-        tmp.text = ((Item)btn.BtnData).ItemName;
-
-        tmp = Util.FindChild<TextMeshProUGUI>(btn.gameObject, "ItemCount", true);
-        tmp.text = $"x{((Item)btn.BtnData).ItemCnt}";
-    }
-
-    public void UpdateItemInIndex(int idx)
-    {
-        DynamicButton btn = _scrollBox.GetDynamicButton(idx);
-
-        TextMeshProUGUI tmp = Util.FindChild<TextMeshProUGUI>(btn.gameObject, "ItemName", true);
-        tmp.text = ((Item)btn.BtnData).ItemName;
-
-        tmp = Util.FindChild<TextMeshProUGUI>(btn.gameObject, "ItemCount", true);
-        tmp.text = $"x{((Item)btn.BtnData).ItemCnt}";
-    }
-
     public Item GetSelectedItem()
     {
         return _scrollBox.GetScrollBoxContent() as Item;

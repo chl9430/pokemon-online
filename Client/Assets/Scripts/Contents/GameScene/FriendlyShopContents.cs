@@ -347,7 +347,7 @@ public class FriendlyShopContents : ObjectContents
                             {
                                 State = FriendlyShopContentsState.Inactiving;
 
-                                ContentManager.Instance.OpenBag();
+                                ContentManager.Instance.OpenBag(Managers.Object.MyPlayerController.Items);
                             }
                             else if (selectBox.GetSelectedBtnData() as string == "Quit")
                             {

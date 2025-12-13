@@ -1,118 +1,118 @@
 {
-    "itemBases": [
-        // 단순 체력 회복
-        {
-            "$type": "Server.HPRecoveryItem, Server",
-            "_name": "Potion",
-            "_description": "Restores the HP of a Pokemon by 20 points.",
-            "_price": 300,
-            "_itemCategory": "Item",
-            "_useState": [ "WatchMenu", "Fight" ],
-            "_itemType": "HPRecoveryItem",
-            "_recoveryAmount": 20,
-            "_recoveryMethod": "Fixed"
-        },
-        {
-            "$type": "Server.HPRecoveryItem, Server",
-            "_name": "Super Potion",
-            "_description": "Restores the HP of a Pokemon by 50 points.",
-            "_price": 700,
-            "_itemCategory": "Item",
-            "_useState": [ "WatchMenu", "Fight" ],
-            "_itemType": "HPRecoveryItem",
-            "_recoveryAmount": 50,
-            "_recoveryMethod": "Fixed"
-        },
-        {
-            "$type": "Server.HPRecoveryItem, Server",
-            "_name": "Hyper Potion",
-            "_description": "Restores the HP of a Pokemon by 200 points.",
-            "_price": 1200,
-            "_itemCategory": "Item",
-            "_useState": [ "WatchMenu", "Fight" ],
-            "_itemType": "HPRecoveryItem",
-            "_recoveryAmount": 200,
-            "_recoveryMethod": "Fixed"
-        },
-        {
-            "$type": "Server.HPRecoveryItem, Server",
-            "_name": "Max Potion",
-            "_description": "Fully restores the HP of a Pokemon.",
-            "_price": 2500,
-            "_itemCategory": "Item",
-            "_useState": [ "WatchMenu", "Fight" ],
-            "_itemType": "HPRecoveryItem",
-            "_recoveryMethod": "Full"
-        },
-        // 기절 회복
-        {
-            "$type": "Server.ReviveItem, Server",
-            "_name": "Revive",
-            "_description": "Revives a fainted Pokemon with half its HP.",
-            "_price": 1500,
-            "_itemCategory": "Item",
-            "_useState": [ "WatchMenu", "Fight" ],
-            "_itemType": "ReviveItem",
-            "_reviveHPRate": 50
-        },
-        // 상태이상 회복
-        {
-            "$type": "Server.StatusCureItem, Server",
-            "_name": "Antidote",
-            "_description": "Heals a poisoned Pokemon.",
-            "_price": 100,
-            "_itemCategory": "Item",
-            "_useState": [ "WatchMenu", "Fight" ],
-            "_itemType": "StatusCureItem",
-            "_statusesToCure": [ "Poisoned" ]
-        },
-        {
-            "$type": "Server.StatusCureItem, Server",
-            "_name": "Parlyz Heal",
-            "_description": "Heals a paralyzed Pokemon.",
-            "_price": 200,
-            "_itemCategory": "Item",
-            "_useState": [ "WatchMenu", "Fight" ],
-            "_itemType": "StatusCureItem",
-            "_statusesToCure": [ "Paralyzed" ]
-        },
-        {
-            "$type": "Server.StatusCureItem, Server",
-            "_name": "Awakening",
-            "_description": "Awakens a sleeping Pokemon.",
-            "_price": 250,
-            "_itemCategory": "Item",
-            "_useState": [ "WatchMenu", "Fight" ],
-            "_itemType": "StatusCureItem",
-            "_statusesToCure": [ "Slept" ]
-        },
-        // 포켓볼
-        {
-            "$type": "Server.PokeBall, Server",
-            "_name": "Monster Ball",
-            "_description": "A device for catching wild Pokémon. It's thrown like a ball at a Pokémon, comfortably encapsulating its target.",
-            "_price": 200,
-            "_itemCategory": "PokeBall",
-            "_useState": [ "Fight" ],
-            "_catchRate": 1.0
-        },
-        {
-            "$type": "Server.PokeBall, Server",
-            "_name": "Great Ball",
-            "_description": "A good, high-performance Poké Ball that provides a higher success rate for catching Pokémon than a standard Poké Ball.",
-            "_price": 600,
-            "_itemCategory": "PokeBall",
-            "_useState": [ "Fight" ],
-            "_catchRate": 1.5
-        },
-        {
-            "$type": "Server.PokeBall, Server",
-            "_name": "Ultra Ball",
-            "_description": "An ultra-high-performance Poké Ball that provides a higher success rate for catching Pokémon than a Great Ball.",
-            "_price": 1200,
-            "_itemCategory": "PokeBall",
-            "_useState": [ "Fight" ],
-            "_catchRate": 2.0
-        }
-    ]
+  "itemBases": [
+    // 단순 체력 회복
+    {
+      "$type": "Server.HPRecoveryItem, Server",
+      "_name": "Potion",
+      "_description": "Restores the HP of a Pokemon by 20 points.",
+      "_price": 300,
+      "_itemCategory": "Item",
+      "_useState": [ "WatchMenu", "Fight" ],
+      "_itemType": "HPRecoveryItem",
+      "_recoveryAmount": 20,
+      "_recoveryMethod": "Fixed"
+    },
+    {
+      "$type": "Server.HPRecoveryItem, Server",
+      "_name": "Super Potion",
+      "_description": "Restores the HP of a Pokemon by 50 points.",
+      "_price": 700,
+      "_itemCategory": "Item",
+      "_useState": [ "WatchMenu", "Fight" ],
+      "_itemType": "HPRecoveryItem",
+      "_recoveryAmount": 50,
+      "_recoveryMethod": "Fixed"
+    },
+    {
+      "$type": "Server.HPRecoveryItem, Server",
+      "_name": "Hyper Potion",
+      "_description": "Restores the HP of a Pokemon by 200 points.",
+      "_price": 1200,
+      "_itemCategory": "Item",
+      "_useState": [ "WatchMenu", "Fight" ],
+      "_itemType": "HPRecoveryItem",
+      "_recoveryAmount": 200,
+      "_recoveryMethod": "Fixed"
+    },
+    {
+      "$type": "Server.HPRecoveryItem, Server",
+      "_name": "Max Potion",
+      "_description": "Fully restores the HP of a Pokemon.",
+      "_price": 2500,
+      "_itemCategory": "Item",
+      "_useState": [ "WatchMenu", "Fight" ],
+      "_itemType": "HPRecoveryItem",
+      "_recoveryMethod": "Full"
+    },
+    // 기절 회복
+    {
+      "$type": "Server.ReviveItem, Server",
+      "_name": "Revive",
+      "_description": "Revives a fainted Pokemon with half its HP.",
+      "_price": 1500,
+      "_itemCategory": "Item",
+      "_useState": [ "WatchMenu", "Fight" ],
+      "_itemType": "ReviveItem",
+      "_reviveHPRate": 50
+    },
+    // 상태이상 회복
+    {
+      "$type": "Server.StatusCureItem, Server",
+      "_name": "Antidote",
+      "_description": "Heals a poisoned Pokemon.",
+      "_price": 100,
+      "_itemCategory": "Item",
+      "_useState": [ "WatchMenu", "Fight" ],
+      "_itemType": "StatusCureItem",
+      "_statusesToCure": [ "Poisoned" ]
+    },
+    {
+      "$type": "Server.StatusCureItem, Server",
+      "_name": "Parlyz Heal",
+      "_description": "Heals a paralyzed Pokemon.",
+      "_price": 200,
+      "_itemCategory": "Item",
+      "_useState": [ "WatchMenu", "Fight" ],
+      "_itemType": "StatusCureItem",
+      "_statusesToCure": [ "Paralyzed" ]
+    },
+    {
+      "$type": "Server.StatusCureItem, Server",
+      "_name": "Awakening",
+      "_description": "Awakens a sleeping Pokemon.",
+      "_price": 250,
+      "_itemCategory": "Item",
+      "_useState": [ "WatchMenu", "Fight" ],
+      "_itemType": "StatusCureItem",
+      "_statusesToCure": [ "Slept" ]
+    },
+    // 포켓볼
+    {
+      "$type": "Server.PokeBall, Server",
+      "_name": "Monster Ball",
+      "_description": "A device for catching wild Pokémon. It's thrown like a ball at a Pokémon, comfortably encapsulating its target.",
+      "_price": 200,
+      "_itemCategory": "PokeBall",
+      "_useState": [ "Fight" ],
+      "_catchRate": 1.0
+    },
+    {
+      "$type": "Server.PokeBall, Server",
+      "_name": "Great Ball",
+      "_description": "A good, high-performance Poké Ball that provides a higher success rate for catching Pokémon than a standard Poké Ball.",
+      "_price": 600,
+      "_itemCategory": "PokeBall",
+      "_useState": [ "Fight" ],
+      "_catchRate": 1.5
+    },
+    {
+      "$type": "Server.PokeBall, Server",
+      "_name": "Ultra Ball",
+      "_description": "An ultra-high-performance Poké Ball that provides a higher success rate for catching Pokémon than a Great Ball.",
+      "_price": 1200,
+      "_itemCategory": "PokeBall",
+      "_useState": [ "Fight" ],
+      "_catchRate": 2.0
+    }
+  ]
 }

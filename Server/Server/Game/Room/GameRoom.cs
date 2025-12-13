@@ -267,10 +267,11 @@ namespace Server
             info.PosInfo.State = movePosInfo.State;
             info.PosInfo.MoveDir = movePosInfo.MoveDir;
             Map.ApplyMove(player, new Vector2Int(movePosInfo.PosX, movePosInfo.PosY));
+            var a = SaveManager.Instance._userSaveDataDict;
 
-            PositionInfo posInfo = player.PosInfo;
-            posInfo.PosX = movePosInfo.PosX;
-            posInfo.PosY = movePosInfo.PosY;
+            //PositionInfo posInfo = player.PosInfo;
+            //posInfo.PosX = movePosInfo.PosX;
+            //posInfo.PosY = movePosInfo.PosY;
 
             // 타인한테 정보 전송
             S_Move resMovePacket = new S_Move();
@@ -312,11 +313,8 @@ namespace Server
         bool IsActiveInGaemRoom(Player player)
         {
             // 게임 맵에 있지 않은 플레이어들에겐 브로드캐스트를 할 필요가 없다.
-            if (player.Info.PosInfo.State == CreatureState.Shopping ||
-                player.Info.PosInfo.State == CreatureState.WatchMenu ||
-                player.Info.PosInfo.State == CreatureState.Fight ||
-                player.Info.PosInfo.State == CreatureState.Exchanging ||
-                player.Info.PosInfo.State == CreatureState.PokemonEvolving)
+            if (player.Info.PosInfo.State == CreatureState.Fight ||
+                player.Info.PosInfo.State == CreatureState.Exchanging)
             {
                 return false;
             }

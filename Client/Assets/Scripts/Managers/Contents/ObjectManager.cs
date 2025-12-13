@@ -4,11 +4,10 @@ using UnityEngine;
 
 public class ObjectManager
 {
-    PlayerInfo _playerInfo;
     MyPlayerController _myPlayerController;
     Dictionary<int, GameObject> _objects = new Dictionary<int, GameObject>();
 
-    public PlayerInfo PlayerInfo { get {  return _playerInfo; } set { _playerInfo = value; } }
+    public string _myAccountId;
     public MyPlayerController MyPlayerController { get { return _myPlayerController; } set { _myPlayerController = value; } }
 
     public static GameObjectType GetObjectTypeById(int id)

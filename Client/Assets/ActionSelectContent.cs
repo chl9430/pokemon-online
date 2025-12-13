@@ -164,7 +164,7 @@ public class ActionSelectContent : ObjectContents
                             }
                             else if (selectedAction == "Bag")
                             {
-                                ContentManager.Instance.OpenBag();
+                                ContentManager.Instance.OpenBag(Managers.Object.MyPlayerController.Items);
 
                                 State = ActionSelectContentState.Inactiving;
                             }

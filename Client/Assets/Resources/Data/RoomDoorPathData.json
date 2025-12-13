@@ -1,70 +1,70 @@
 {
-    "roomPathDoorDatas": [
+  "roomPathDoorDatas": [
+    {
+      "roomType": "Map",
+      "rooms": [
         {
-            "roomType": "Map",
-            "rooms": [
-                {
-                    "roomId": "1",
-                    "doors": [
-                        {
-                            "doorId": "1",
-                            "destRoomType": "PokemonCenter",
-                            "destRoomId": "1",
-                            "destDir": "Up"
-                        },
-                        {
-                            "doorId": "2",
-                            "destRoomType": "Map",
-                            "destRoomId": "2",
-                            "destDir": "Up"
-                        },
-                        {
-                            "doorId": "3",
-                            "destRoomType": "Map",
-                            "destRoomId": "3",
-                            "destDir": "Right"
-                        },
-                        {
-                            "doorId": "4",
-                            "destRoomType": "FriendlyShop",
-                            "destRoomId": "1",
-                            "destDir": "Up"
-                        }
-                    ]
-                }
-            ]
-        },
-        {
-            "roomType": "PokemonCenter",
-            "rooms": [
-                {
-                    "roomId": "1",
-                    "doors": [
-                        {
-                            "doorId": "1",
-                            "destRoomType": "Map",
-                            "destRoomId": "1",
-                            "destDir": "Down"
-                        }
-                    ]
-                }
-            ]
-        },
-        {
-            "roomType": "FriendlyShop",
-            "rooms": [
-                {
-                    "roomId": "1",
-                    "doors": [
-                        {
-                            "doorId": "1",
-                            "destRoomType": "Map",
-                            "destRoomId": "1",
-                            "destDir": "Down"
-                        }
-                    ]
-                }
-            ]
+          "roomId": "1",
+          "doors": [
+            {
+              "doorId": "1",
+              "destRoomType": "PokemonCenter",
+              "destRoomId": "1",
+              "destDir": "Up"
+            },
+            {
+              "doorId": "2",
+              "destRoomType": "Map",
+              "destRoomId": "2",
+              "destDir": "Up"
+            },
+            {
+              "doorId": "3",
+              "destRoomType": "Map",
+              "destRoomId": "3",
+              "destDir": "Right"
+            },
+            {
+              "doorId": "4",
+              "destRoomType": "FriendlyShop",
+              "destRoomId": "1",
+              "destDir": "Up"
+            }
+          ]
         }
-    ]
-} 
+      ]
+    },
+    {
+      "roomType": "PokemonCenter",
+      "rooms": [
+        {
+          "roomId": "1",
+          "doors": [
+            {
+              "doorId": "1",
+              "destRoomType": "Map",
+              "destRoomId": "1",
+              "destDir": "Down"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "roomType": "FriendlyShop",
+      "rooms": [
+        {
+          "roomId": "1",
+          "doors": [
+            {
+              "doorId": "1",
+              "destRoomType": "Map",
+              "destRoomId": "1",
+              "destDir": "Down"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1014,15 +1014,14 @@ public class BattleScene : BaseScene
                     if (_packet is S_UseItemInListScene)
                     {
                         ItemSummary itemSummary = ((S_UseItemInListScene)_packet).ItemSum;
+                        int usedItemOrder = ((S_UseItemInListScene)_packet).UsedItemOrder;
 
                         // 아이템도 사용처리
                         Item usedItem = ContentManager.Instance.BagContent.GetSelectedItem();
                         usedItem.UpdateItemSummary(itemSummary);
 
                         if (usedItem.ItemCnt == 0)
-                            ContentManager.Instance.BagContent.RemoveSelectedItem();
-                        else
-                            ContentManager.Instance.BagContent.UpdateSelectedItem();
+                            Managers.Object.MyPlayerController.Items[(ItemCategory)usedItem.ItemCategory].RemoveAt(usedItemOrder);
 
                         // 포켓볼 준비
                         _myPokemonArea.CreateAndThrowBall(usedItem);

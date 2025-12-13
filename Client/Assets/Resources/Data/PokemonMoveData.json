@@ -1,130 +1,130 @@
 {
-    "pokemonMoves": [
-        {
-            "moveName": "Thundershock",
-            "movePower": "40",
-            "moveAccuracy": "100",
-            "maxPP": "30",
-            "moveCategory": "Special",
-            "moveType": "Electr",
-            "moveDescription": "A jolt of electricity is hurled at the foe to inflict damage. It may also leave the foe paralyzed."
-        },
-        {
-            "moveName": "Quick Attack",
-            "movePower": "40",
-            "moveAccuracy": "100",
-            "maxPP": "30",
-            "moveCategory": "Physical",
-            "moveType": "Normal",
-            "moveDescription": "The user lunges at the foe at a speed that makes it almost invisible. It is sure to strike first."
-        },
-        {
-            "moveName": "Thunderbolt",
-            "movePower": "90",
-            "moveAccuracy": "100",
-            "maxPP": "15",
-            "moveCategory": "Special",
-            "moveType": "Electr",
-            "moveDescription": "A strong electric blast is loosed at the foe. It may also leave the foe paralyzed."
-        },
-        {
-            "moveName": "Slam",
-            "movePower": "60",
-            "moveAccuracy": "75",
-            "maxPP": "20",
-            "moveCategory": "Physical",
-            "moveType": "Normal",
-            "moveDescription": "The foe is slammed with a long tail, vines, etc., to inflict damage."
-        },
-        {
-            "moveName": "Tackle",
-            "movePower": "40",
-            "moveAccuracy": "95",
-            "maxPP": "30",
-            "moveCategory": "Physical",
-            "moveType": "Normal",
-            "moveDescription": "A physical attack in which the user charges and slams into the foe with its whole body."
-        },
-        {
-            "moveName": "Vine Whip",
-            "movePower": "30",
-            "moveAccuracy": "100",
-            "maxPP": "30",
-            "moveCategory": "Physical",
-            "moveType": "Grass",
-            "moveDescription": "The foe is struck with slender, whiplike vines to inflict damage."
-        },
-        {
-            "moveName": "Razor Leaf",
-            "movePower": "50",
-            "moveAccuracy": "95",
-            "maxPP": "30",
-            "moveCategory": "Physical",
-            "moveType": "Grass",
-            "moveDescription": "Sharp-edged leaves are launched to slash at the foe. It has a high critical-hit ratio."
-        },
-        {
-            "moveName": "Seed Bomb",
-            "movePower": "80",
-            "moveAccuracy": "100",
-            "maxPP": "15",
-            "moveCategory": "Physical",
-            "moveType": "Grass",
-            "moveDescription": "The user slams a barrage of hard- shelled seeds down on the foe from above."
-        },
-        {
-            "moveName": "Scratch",
-            "movePower": "30",
-            "moveAccuracy": "100",
-            "maxPP": "35",
-            "moveCategory": "Physical",
-            "moveType": "Normal",
-            "moveDescription": "Hard, pointed, and sharp claws rake the foe to inflict damage."
-        },
-        {
-            "moveName": "Ember",
-            "movePower": "40",
-            "moveAccuracy": "100",
-            "maxPP": "25",
-            "moveCategory": "Special",
-            "moveType": "Fire",
-            "moveDescription": "The foe is attacked with small flames. The target may also be left with a burn."
-        },
-        {
-            "moveName": "Fire Fang",
-            "movePower": "65",
-            "moveAccuracy": "95",
-            "maxPP": "15",
-            "moveCategory": "Physical",
-            "moveType": "Fire",
-            "moveDescription": "The user bites with flame-cloaked fangs. It may also make the foe flinch or sustain a burn."
-        },
-        {
-            "moveName": "Bubble",
-            "movePower": "20",
-            "moveAccuracy": "100",
-            "maxPP": "30",
-            "moveCategory": "Special",
-            "moveType": "Water",
-            "moveDescription": "A spray of countless bubbles is jetted at the foe. It may also lower the target's Speed stat."
-        },
-        {
-            "moveName": "Water Gun",
-            "movePower": "40",
-            "moveAccuracy": "100",
-            "maxPP": "25",
-            "moveCategory": "Special",
-            "moveType": "Water",
-            "moveDescription": "The foe is blasted with a forceful shot of water."
-        },
-        {
-            "moveName": "Struggle",
-            "movePower": "30",
-            "moveAccuracy": "100",
-            "maxPP": "1",
-            "moveCategory": "Physical",
-            "moveType": "Normal",
-            "moveDescription": "An attack that is used in desperation only if the user has no PP. It also hurts the user slightly."
-        }
-    ]
+  "pokemonMoves": [
+    {
+      "moveName": "Thundershock",
+      "movePower": "40",
+      "moveAccuracy": "100",
+      "maxPP": "30",
+      "moveCategory": "Special",
+      "moveType": "Electr",
+      "moveDescription": "A jolt of electricity is hurled at the foe to inflict damage. It may also leave the foe paralyzed."
+    },
+    {
+      "moveName": "Quick Attack",
+      "movePower": "40",
+      "moveAccuracy": "100",
+      "maxPP": "30",
+      "moveCategory": "Physical",
+      "moveType": "Normal",
+      "moveDescription": "The user lunges at the foe at a speed that makes it almost invisible. It is sure to strike first."
+    },
+    {
+      "moveName": "Thunderbolt",
+      "movePower": "90",
+      "moveAccuracy": "100",
+      "maxPP": "15",
+      "moveCategory": "Special",
+      "moveType": "Electr",
+      "moveDescription": "A strong electric blast is loosed at the foe. It may also leave the foe paralyzed."
+    },
+    {
+      "moveName": "Slam",
+      "movePower": "60",
+      "moveAccuracy": "75",
+      "maxPP": "20",
+      "moveCategory": "Physical",
+      "moveType": "Normal",
+      "moveDescription": "The foe is slammed with a long tail, vines, etc., to inflict damage."
+    },
+    {
+      "moveName": "Tackle",
+      "movePower": "40",
+      "moveAccuracy": "95",
+      "maxPP": "30",
+      "moveCategory": "Physical",
+      "moveType": "Normal",
+      "moveDescription": "A physical attack in which the user charges and slams into the foe with its whole body."
+    },
+    {
+      "moveName": "Vine Whip",
+      "movePower": "30",
+      "moveAccuracy": "100",
+      "maxPP": "30",
+      "moveCategory": "Physical",
+      "moveType": "Grass",
+      "moveDescription": "The foe is struck with slender, whiplike vines to inflict damage."
+    },
+    {
+      "moveName": "Razor Leaf",
+      "movePower": "50",
+      "moveAccuracy": "95",
+      "maxPP": "30",
+      "moveCategory": "Physical",
+      "moveType": "Grass",
+      "moveDescription": "Sharp-edged leaves are launched to slash at the foe. It has a high critical-hit ratio."
+    },
+    {
+      "moveName": "Seed Bomb",
+      "movePower": "80",
+      "moveAccuracy": "100",
+      "maxPP": "15",
+      "moveCategory": "Physical",
+      "moveType": "Grass",
+      "moveDescription": "The user slams a barrage of hard- shelled seeds down on the foe from above."
+    },
+    {
+      "moveName": "Scratch",
+      "movePower": "30",
+      "moveAccuracy": "100",
+      "maxPP": "35",
+      "moveCategory": "Physical",
+      "moveType": "Normal",
+      "moveDescription": "Hard, pointed, and sharp claws rake the foe to inflict damage."
+    },
+    {
+      "moveName": "Ember",
+      "movePower": "40",
+      "moveAccuracy": "100",
+      "maxPP": "25",
+      "moveCategory": "Special",
+      "moveType": "Fire",
+      "moveDescription": "The foe is attacked with small flames. The target may also be left with a burn."
+    },
+    {
+      "moveName": "Fire Fang",
+      "movePower": "65",
+      "moveAccuracy": "95",
+      "maxPP": "15",
+      "moveCategory": "Physical",
+      "moveType": "Fire",
+      "moveDescription": "The user bites with flame-cloaked fangs. It may also make the foe flinch or sustain a burn."
+    },
+    {
+      "moveName": "Bubble",
+      "movePower": "20",
+      "moveAccuracy": "100",
+      "maxPP": "30",
+      "moveCategory": "Special",
+      "moveType": "Water",
+      "moveDescription": "A spray of countless bubbles is jetted at the foe. It may also lower the target's Speed stat."
+    },
+    {
+      "moveName": "Water Gun",
+      "movePower": "40",
+      "moveAccuracy": "100",
+      "maxPP": "25",
+      "moveCategory": "Special",
+      "moveType": "Water",
+      "moveDescription": "The foe is blasted with a forceful shot of water."
+    },
+    {
+      "moveName": "Struggle",
+      "movePower": "30",
+      "moveAccuracy": "100",
+      "maxPP": "1",
+      "moveCategory": "Physical",
+      "moveType": "Normal",
+      "moveDescription": "An attack that is used in desperation only if the user has no PP. It also hurts the user slightly."
+    }
+  ]
 }

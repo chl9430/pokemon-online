@@ -1,5 +1,6 @@
 using Google.Protobuf.Protocol;
 using NUnit.Framework.Constraints;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Xml;
@@ -53,9 +54,9 @@ public class IntroScene : BaseScene
         {
             _genderSelectBtns[i].BtnData = (PlayerGender)i;
         }
-        // _genderSelectArea.FillButtonGrid(1, _genderSelectBtns.Count, _genderSelectBtns);
+        _genderSelectArea.FillButtonGrid(1, _genderSelectBtns.Count, _genderSelectBtns);
 
-        ContentManager.Instance.PlayScreenEffecter("BlackFadeIn");
+        ContentManager.Instance.PlayScreenEffecter("FadeIn");
     }
 
     public override void DoNextAction(object value = null)
@@ -193,13 +194,7 @@ public class IntroScene : BaseScene
                 break;
             case IntroSceneState.LAST_TALKING:
                 {
-                    C_CreatePlayer createPacket = new C_CreatePlayer();
-                    createPacket.Name = _playerName;
-                    createPacket.Gender = (PlayerGender)_genderSelectBtns[_selectedGenderBtnIdx].BtnData;
-
-                    Managers.Network.SavePacket(createPacket);
-
-                    ContentManager.Instance.PlayScreenEffecter("BlackFadeOut");
+                    ContentManager.Instance.PlayScreenEffecter("FadeOut");
 
                     _sceneState = IntroSceneState.MOVING_TO_GAME_SCENE;
                     ActiveUIBySceneState(_sceneState);
@@ -207,8 +202,20 @@ public class IntroScene : BaseScene
                 break;
             case IntroSceneState.MOVING_TO_GAME_SCENE:
                 {
+                    // 캐릭터 생성 패킷 전송
+                    C_CreatePlayer createPacket = new C_CreatePlayer();
+                    createPacket.UserId = Managers.Object._myAccountId;
+                    createPacket.Name = _playerName;
+                    createPacket.Gender = (PlayerGender)_genderSelectBtns[_selectedGenderBtnIdx].BtnData;
+
                     // 씬 변경
-                    //Managers.Scene.LoadScene(Define.Scene.Game);
+                    Managers.Scene.AsyncLoadScene(Define.Scene.Game, () =>
+                    {
+                        ContentManager.Instance.ScriptBox.gameObject.SetActive(false);
+                        Managers.Scene.CurrentScene = GameObject.FindFirstObjectByType<GameScene>();
+
+                        Managers.Network.Send(createPacket);
+                    });
                 }
                 break;
         }

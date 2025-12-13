@@ -108,7 +108,7 @@ public class SelectArea : MonoBehaviour
         }
     }
 
-    public void FillButtonGrid(int row, int col, List<object> datas)
+    public void FillButtonGrid(int row, int col, List<DynamicButton> btns)
     {
         // 기존에 있던 버튼들 삭제
         if (_btnGrid != null)
@@ -131,6 +131,55 @@ public class SelectArea : MonoBehaviour
         if (_btnGrid == null)
             _btnGrid = new DynamicButton[_row, _col];
 
+        for (int i = 0; i < _btnGrid.GetLength(0); i++)
+        {
+            for (int j = 0; j < _btnGrid.GetLength(1); j++)
+            {
+                if (_row > _col)
+                {
+                    if (i * _col + j < btns.Count)
+                    {
+                        _btnGrid[i, j] = btns[i * _col + j];
+                    }
+                }
+                else
+                {
+                    if (i * _row + j < btns.Count)
+                    {
+                        _btnGrid[i, j] = btns[i * _row + j];
+                    }
+                }
+            }
+        }
+
+        _x = 0;
+        _y = 0;
+
+        _btnGrid[_x, _y].SetSelectedOrNotSelected(true);
+    }
+
+    public void FillButtonGrid(int row, int col, List<object> datas)
+    {
+        // 기존에 있던 버튼들 삭제
+        if (_btnGrid != null)
+        {
+            for (int i = 0; i < _btnGrid.GetLength(0); i++)
+            {
+                for (int j = 0; j < _btnGrid.GetLength(1); j++)
+                {
+                    if (_btnGrid[i, j] != null)
+                        Destroy(_btnGrid[i, j].gameObject);
+                }
+            }
+
+            _btnGrid = null;
+        }
+
+        _row = row;
+        _col = col;
+
+        if (_btnGrid == null)
+            _btnGrid = new DynamicButton[_row, _col];
 
         for (int i = 0; i < _btnGrid.GetLength(0); i++)
         {

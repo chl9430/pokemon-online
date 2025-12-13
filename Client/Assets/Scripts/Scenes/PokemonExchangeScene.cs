@@ -111,7 +111,6 @@ public class PokemonExchangeScene : BaseScene
             ExchangeCursorPos otherCursorPos = enterExchangeScenePacket.OtherCursorPos;
             PokemonSummary otherPokemonSum = enterExchangeScenePacket.OtherPokemonSum;
 
-            Managers.Object.PlayerInfo = playerInfo;
             _myPlayerInfo = playerInfo;
             _otherPlayerInfo = otherPlayerInfo;
 

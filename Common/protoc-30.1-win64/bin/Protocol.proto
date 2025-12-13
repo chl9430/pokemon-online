@@ -4,12 +4,21 @@ package Protocol;
 option csharp_namespace = "Google.Protobuf.Protocol";
 
 enum MsgId {
+    // 로그인
+    C_LOG_IN = 0;
+    S_LOG_IN = 1;
+    C_CREATE_ACCOUNT = 2;
+    C_CHECK_SAVE_DATA = 4;
+    S_CHECK_SAVE_DATA = 5;
+    C_LOAD_GAME_DATA = 6;
+
+
   // 게임 씬
-  S_ENTER_GAME = 0;
-  C_EXIT_GAME = 1;
+  S_ENTER_GAME = 111;
+  C_EXIT_GAME = 1111;
   C_ENTER_ROOM = 100;
   S_ENTER_ROOM = 110;
-  S_LEAVE_ROOM = 3;
+  S_LEAVE_ROOM = 333;
   C_ENTER_POKEMON_BATTLE_SCENE = 42;
   S_ENTER_POKEMON_BATTLE_SCENE = 43;
   S_MEET_WILD_POKEMON = 150;
@@ -27,6 +36,8 @@ enum MsgId {
   C_RESTORE_POKEMON = 760;
   S_RESTORE_POKEMON = 770;
   C_FINISH_NPC_TALK = 780;
+  C_SAVE_GAME_DATA = 712;
+  S_SAVE_GAME_DATA = 713;
 
   // 포켓몬 리스트 씬
   C_USE_ITEM_IN_LIST_SCENE = 820;
@@ -57,16 +68,14 @@ enum MsgId {
   C_EXIT_POKEMON_EXCHANGE_SCENE = 480;
   S_EXIT_POKEMON_EXCHANGE_SCENE = 490;
 
-  S_SPAWN = 5;
-  S_DESPAWN = 6;
+  S_SPAWN = 544;
+  S_DESPAWN = 655;
   C_MOVE = 7;
   S_MOVE = 8;
   C_CREATE_PLAYER = 9;
   S_SEND_TALK = 15;
   S_RECEIVE_TALK = 16;
   C_SWITCH_POKEMON = 12;
-  C_ACCESS_POKEMON_SUMMARY = 13;
-  S_ACCESS_POKEMON_SUMMARY = 14;
   
   // 배틀 씬
   C_REQUEST_DATA_BY_ID = 60;
@@ -84,8 +93,8 @@ enum MsgId {
   C_GET_REWARD_INFO = 341;
   S_GET_REWARD_INFO = 342;
   
-  C_RETURN_GAME = 4;
-  S_RETURN_GAME = 44;
+  C_RETURN_GAME = 433;
+  S_RETURN_GAME = 443;
 
   C_PLAYER_TALK = 70;
   S_SEND_TALK_REQUEST = 71;
@@ -95,6 +104,48 @@ enum MsgId {
   S_POKEMON_EVOLUTION = 530;
 }
 
+// 로그인
+message C_LogIn {
+    string id = 1;
+    string password = 2;
+}
+
+message S_LogIn {
+    LogInResultType logInResult = 1;
+}
+
+message C_CreateAccount
+{
+    string id = 1;
+    string password = 2;
+}
+
+enum LogInResultType
+{
+    Success = 0;
+    IdError = 1;
+    PassswordError = 2;
+}
+
+message C_CheckSaveData
+{
+    string id = 1;
+}
+
+message S_CheckSaveData
+{
+    string foundDataId = 1;
+    bool isDataFound = 2;
+}
+
+message C_LoadGameData
+{
+    string accountId = 1;
+}
+
+
+
+// 게임 씬
 enum RoomType {
     None = 0;
     Map = 1;
@@ -151,8 +202,9 @@ message S_Move {
 }
 
 message C_CreatePlayer {
-    PlayerGender gender = 1;
-    string name = 2;
+    string userId = 1;
+    PlayerGender gender = 2;
+    string name = 3;
 }
 
 message S_SendTalk
@@ -264,15 +316,15 @@ message S_GetDoorDestDir
     MoveDir destDir = 1;
 }
 
-message C_AccessPokemonSummary
+message C_SaveGameData
 {
-    int32 playerId = 1;
-    int32 pokemonOrder = 2;
+    string accountId = 1;
+    int32 playerId = 2;
 }
 
-message S_AccessPokemonSummary
+message S_SaveGameData
 {
-    PokemonSummary pokemonSum = 1;
+    bool isSuccess = 1;
 }
 
 
@@ -292,6 +344,7 @@ message S_UseItemInListScene
     ItemSummary itemSum = 1;
     PokemonSummary targetPokemonSum = 2;
     ItemUseResult itemUseResult = 3;
+    int32 usedItemOrder = 4;
 }
 
 message ItemUseResult
@@ -679,15 +732,6 @@ message S_PokemonEvolution
     PokemonMoveSummary newMoveSum = 2;
 }
 
-
-
-
-message ObjectInfo {
-  int32 objectId = 1;
-  GameObjectType objectType = 2;
-  PositionInfo posInfo = 3;
-}
-
 enum CreatureState {
     NoneState = 0;
     Idle = 1;
@@ -738,12 +782,14 @@ message PlayerInfo {
     NPCInfo npcInfo = 5;
     map<int32, CategoryInventory> inventory = 6;
     repeated PokemonSummary pokemonSums = 7;
+    string userId = 8;
+    string room = 9;
 }
 
-message NPCInfo {
-    ObjectInfo objectInfo = 1;
-    NPCType npcType = 2;
-    string npcName = 3;
+message ObjectInfo {
+  int32 objectId = 1;
+  GameObjectType objectType = 2;
+  PositionInfo posInfo = 3;
 }
 
 message PositionInfo {
@@ -751,6 +797,12 @@ message PositionInfo {
 	MoveDir moveDir = 2;
 	int32 posX = 3;
 	int32 posY = 4;
+}
+
+message NPCInfo {
+    ObjectInfo objectInfo = 1;
+    NPCType npcType = 2;
+    string npcName = 3;
 }
 
 message ExchangeCursorPos
