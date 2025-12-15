@@ -396,6 +396,403 @@
       ],
       "UserId": "abc",
       "Room": "Map_1"
+    },
+    {
+      "ObjectInfo": {
+        "ObjectId": 16777217,
+        "ObjectType": 1,
+        "PosInfo": {
+          "State": 1,
+          "MoveDir": 1,
+          "PosX": 0,
+          "PosY": 0
+        }
+      },
+      "PlayerName": "VILLA",
+      "PlayerGender": 1,
+      "Money": 1000000,
+      "NpcInfo": null,
+      "Inventory": {
+        "0": {
+          "CategoryItemSums": []
+        },
+        "1": {
+          "CategoryItemSums": [
+            {
+              "ItemCategory": 1,
+              "ItemName": "Monster Ball",
+              "ItemDescription": "A device for catching wild Pokémon. It's thrown like a ball at a Pokémon, comfortably encapsulating its target.",
+              "ItemCnt": 10,
+              "ItemPrice": 200,
+              "UseState": [
+                6
+              ],
+              "AfterUseScript": ""
+            }
+          ]
+        },
+        "2": {
+          "CategoryItemSums": []
+        },
+        "3": {
+          "CategoryItemSums": []
+        },
+        "4": {
+          "CategoryItemSums": []
+        }
+      },
+      "PokemonSums": [
+        {
+          "PokemonInfo": {
+            "DictionaryNum": 25,
+            "NickName": "Pikachu",
+            "PokemonName": "Pikachu",
+            "Level": 5,
+            "Gender": 0,
+            "OwnerName": "VILLA",
+            "OwnerId": -1,
+            "Type1": 3,
+            "Type2": 99,
+            "PokemonStatus": 0,
+            "Nature": 0,
+            "MetLevel": 5
+          },
+          "PokemonStat": {
+            "Hp": 18,
+            "MaxHp": 18,
+            "Attack": 10,
+            "Defense": 9,
+            "SpecialAttack": 10,
+            "SpecialDefense": 10,
+            "Speed": 14
+          },
+          "PokemonExpInfo": {
+            "CurExp": 0,
+            "TotalExp": 64,
+            "RemainExpToNextLevel": 61
+          },
+          "PokemonMoves": [
+            {
+              "MoveName": "Quick Attack",
+              "MovePower": 40,
+              "MoveAccuracy": 100,
+              "CriticalRate": 6.25,
+              "CurPP": 30,
+              "MaxPP": 30,
+              "MoveCategory": 0,
+              "MoveType": 0,
+              "MoveDescription": "The user lunges at the foe at a speed that makes it almost invisible. It is sure to strike first."
+            },
+            {
+              "MoveName": "Quick Attack",
+              "MovePower": 40,
+              "MoveAccuracy": 100,
+              "CriticalRate": 6.25,
+              "CurPP": 30,
+              "MaxPP": 30,
+              "MoveCategory": 0,
+              "MoveType": 0,
+              "MoveDescription": "The user lunges at the foe at a speed that makes it almost invisible. It is sure to strike first."
+            },
+            {
+              "MoveName": "Quick Attack",
+              "MovePower": 40,
+              "MoveAccuracy": 100,
+              "CriticalRate": 6.25,
+              "CurPP": 30,
+              "MaxPP": 30,
+              "MoveCategory": 0,
+              "MoveType": 0,
+              "MoveDescription": "The user lunges at the foe at a speed that makes it almost invisible. It is sure to strike first."
+            },
+            {
+              "MoveName": "Thundershock",
+              "MovePower": 40,
+              "MoveAccuracy": 100,
+              "CriticalRate": 6.25,
+              "CurPP": 30,
+              "MaxPP": 30,
+              "MoveCategory": 1,
+              "MoveType": 3,
+              "MoveDescription": "A jolt of electricity is hurled at the foe to inflict damage. It may also leave the foe paralyzed."
+            }
+          ],
+          "NoPPMove": {
+            "MoveName": "Struggle",
+            "MovePower": 30,
+            "MoveAccuracy": 100,
+            "CriticalRate": 6.25,
+            "CurPP": 1,
+            "MaxPP": 1,
+            "MoveCategory": 0,
+            "MoveType": 0,
+            "MoveDescription": "An attack that is used in desperation only if the user has no PP. It also hurts the user slightly."
+          }
+        },
+        {
+          "PokemonInfo": {
+            "DictionaryNum": 4,
+            "NickName": "Charmander",
+            "PokemonName": "Charmander",
+            "Level": 5,
+            "Gender": 0,
+            "OwnerName": "VILLA",
+            "OwnerId": -1,
+            "Type1": 1,
+            "Type2": 99,
+            "PokemonStatus": 0,
+            "Nature": 5,
+            "MetLevel": 5
+          },
+          "PokemonStat": {
+            "Hp": 18,
+            "MaxHp": 18,
+            "Attack": 10,
+            "Defense": 9,
+            "SpecialAttack": 11,
+            "SpecialDefense": 10,
+            "Speed": 11
+          },
+          "PokemonExpInfo": {
+            "CurExp": 0,
+            "TotalExp": 64,
+            "RemainExpToNextLevel": 61
+          },
+          "PokemonMoves": [
+            {
+              "MoveName": "Scratch",
+              "MovePower": 30,
+              "MoveAccuracy": 100,
+              "CriticalRate": 6.25,
+              "CurPP": 35,
+              "MaxPP": 35,
+              "MoveCategory": 0,
+              "MoveType": 0,
+              "MoveDescription": "Hard, pointed, and sharp claws rake the foe to inflict damage."
+            },
+            {
+              "MoveName": "Scratch",
+              "MovePower": 30,
+              "MoveAccuracy": 100,
+              "CriticalRate": 6.25,
+              "CurPP": 35,
+              "MaxPP": 35,
+              "MoveCategory": 0,
+              "MoveType": 0,
+              "MoveDescription": "Hard, pointed, and sharp claws rake the foe to inflict damage."
+            },
+            {
+              "MoveName": "Scratch",
+              "MovePower": 30,
+              "MoveAccuracy": 100,
+              "CriticalRate": 6.25,
+              "CurPP": 35,
+              "MaxPP": 35,
+              "MoveCategory": 0,
+              "MoveType": 0,
+              "MoveDescription": "Hard, pointed, and sharp claws rake the foe to inflict damage."
+            },
+            {
+              "MoveName": "Ember",
+              "MovePower": 40,
+              "MoveAccuracy": 100,
+              "CriticalRate": 6.25,
+              "CurPP": 25,
+              "MaxPP": 25,
+              "MoveCategory": 1,
+              "MoveType": 1,
+              "MoveDescription": "The foe is attacked with small flames. The target may also be left with a burn."
+            }
+          ],
+          "NoPPMove": {
+            "MoveName": "Struggle",
+            "MovePower": 30,
+            "MoveAccuracy": 100,
+            "CriticalRate": 6.25,
+            "CurPP": 1,
+            "MaxPP": 1,
+            "MoveCategory": 0,
+            "MoveType": 0,
+            "MoveDescription": "An attack that is used in desperation only if the user has no PP. It also hurts the user slightly."
+          }
+        },
+        {
+          "PokemonInfo": {
+            "DictionaryNum": 1,
+            "NickName": "Bulbasaur",
+            "PokemonName": "Bulbasaur",
+            "Level": 5,
+            "Gender": 0,
+            "OwnerName": "VILLA",
+            "OwnerId": -1,
+            "Type1": 4,
+            "Type2": 99,
+            "PokemonStatus": 0,
+            "Nature": 18,
+            "MetLevel": 5
+          },
+          "PokemonStat": {
+            "Hp": 19,
+            "MaxHp": 19,
+            "Attack": 9,
+            "Defense": 9,
+            "SpecialAttack": 11,
+            "SpecialDefense": 11,
+            "Speed": 9
+          },
+          "PokemonExpInfo": {
+            "CurExp": 0,
+            "TotalExp": 64,
+            "RemainExpToNextLevel": 61
+          },
+          "PokemonMoves": [
+            {
+              "MoveName": "Tackle",
+              "MovePower": 40,
+              "MoveAccuracy": 95,
+              "CriticalRate": 6.25,
+              "CurPP": 30,
+              "MaxPP": 30,
+              "MoveCategory": 0,
+              "MoveType": 0,
+              "MoveDescription": "A physical attack in which the user charges and slams into the foe with its whole body."
+            },
+            {
+              "MoveName": "Tackle",
+              "MovePower": 40,
+              "MoveAccuracy": 95,
+              "CriticalRate": 6.25,
+              "CurPP": 30,
+              "MaxPP": 30,
+              "MoveCategory": 0,
+              "MoveType": 0,
+              "MoveDescription": "A physical attack in which the user charges and slams into the foe with its whole body."
+            },
+            {
+              "MoveName": "Tackle",
+              "MovePower": 40,
+              "MoveAccuracy": 95,
+              "CriticalRate": 6.25,
+              "CurPP": 30,
+              "MaxPP": 30,
+              "MoveCategory": 0,
+              "MoveType": 0,
+              "MoveDescription": "A physical attack in which the user charges and slams into the foe with its whole body."
+            },
+            {
+              "MoveName": "Vine Whip",
+              "MovePower": 30,
+              "MoveAccuracy": 100,
+              "CriticalRate": 6.25,
+              "CurPP": 30,
+              "MaxPP": 30,
+              "MoveCategory": 0,
+              "MoveType": 4,
+              "MoveDescription": "The foe is struck with slender, whiplike vines to inflict damage."
+            }
+          ],
+          "NoPPMove": {
+            "MoveName": "Struggle",
+            "MovePower": 30,
+            "MoveAccuracy": 100,
+            "CriticalRate": 6.25,
+            "CurPP": 1,
+            "MaxPP": 1,
+            "MoveCategory": 0,
+            "MoveType": 0,
+            "MoveDescription": "An attack that is used in desperation only if the user has no PP. It also hurts the user slightly."
+          }
+        },
+        {
+          "PokemonInfo": {
+            "DictionaryNum": 7,
+            "NickName": "Squirtle",
+            "PokemonName": "Squirtle",
+            "Level": 5,
+            "Gender": 0,
+            "OwnerName": "VILLA",
+            "OwnerId": -1,
+            "Type1": 2,
+            "Type2": 99,
+            "PokemonStatus": 0,
+            "Nature": 17,
+            "MetLevel": 5
+          },
+          "PokemonStat": {
+            "Hp": 19,
+            "MaxHp": 19,
+            "Attack": 9,
+            "Defense": 11,
+            "SpecialAttack": 10,
+            "SpecialDefense": 11,
+            "Speed": 9
+          },
+          "PokemonExpInfo": {
+            "CurExp": 0,
+            "TotalExp": 64,
+            "RemainExpToNextLevel": 61
+          },
+          "PokemonMoves": [
+            {
+              "MoveName": "Tackle",
+              "MovePower": 40,
+              "MoveAccuracy": 95,
+              "CriticalRate": 6.25,
+              "CurPP": 30,
+              "MaxPP": 30,
+              "MoveCategory": 0,
+              "MoveType": 0,
+              "MoveDescription": "A physical attack in which the user charges and slams into the foe with its whole body."
+            },
+            {
+              "MoveName": "Tackle",
+              "MovePower": 40,
+              "MoveAccuracy": 95,
+              "CriticalRate": 6.25,
+              "CurPP": 30,
+              "MaxPP": 30,
+              "MoveCategory": 0,
+              "MoveType": 0,
+              "MoveDescription": "A physical attack in which the user charges and slams into the foe with its whole body."
+            },
+            {
+              "MoveName": "Tackle",
+              "MovePower": 40,
+              "MoveAccuracy": 95,
+              "CriticalRate": 6.25,
+              "CurPP": 30,
+              "MaxPP": 30,
+              "MoveCategory": 0,
+              "MoveType": 0,
+              "MoveDescription": "A physical attack in which the user charges and slams into the foe with its whole body."
+            },
+            {
+              "MoveName": "Water Gun",
+              "MovePower": 40,
+              "MoveAccuracy": 100,
+              "CriticalRate": 6.25,
+              "CurPP": 25,
+              "MaxPP": 25,
+              "MoveCategory": 1,
+              "MoveType": 2,
+              "MoveDescription": "The foe is blasted with a forceful shot of water."
+            }
+          ],
+          "NoPPMove": {
+            "MoveName": "Struggle",
+            "MovePower": 30,
+            "MoveAccuracy": 100,
+            "CriticalRate": 6.25,
+            "CurPP": 1,
+            "MaxPP": 1,
+            "MoveCategory": 0,
+            "MoveType": 0,
+            "MoveDescription": "An attack that is used in desperation only if the user has no PP. It also hurts the user slightly."
+          }
+        }
+      ],
+      "UserId": "def",
+      "Room": "Map_1"
     }
   ]
 }

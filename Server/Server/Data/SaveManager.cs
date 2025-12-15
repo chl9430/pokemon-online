@@ -22,7 +22,7 @@ namespace Server
         object _lock = new object();
         public Dictionary<string, PlayerInfo> _userSaveDataDict;
 
-        void LoadAllGameSaveData()
+        public void LoadAllGameSaveData()
         {
             if (!File.Exists(_saveFilePath))
             {
@@ -57,6 +57,8 @@ namespace Server
                         .ToDictionary(data => data.UserId, data => data);
                 }
 
+                ObjectManager.Instance.SetIDCounter(_userSaveDataDict.Count);
+
                 Console.WriteLine($"[SUCCESS] 총 {_userSaveDataDict.Count}개의 사용자 정보가 메모리 Dictionary에 로드되었습니다.");
             }
             catch (JsonException e)
@@ -73,11 +75,6 @@ namespace Server
         {
             lock (_lock)
             {
-                if (_userSaveDataDict == null)
-                {
-                    LoadAllGameSaveData();
-                }
-
                 // 저장된 게임 데이터가 있다면
                 if (_userSaveDataDict.ContainsKey(id))
                 {

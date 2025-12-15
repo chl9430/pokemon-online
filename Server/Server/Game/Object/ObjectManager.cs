@@ -122,5 +122,10 @@ namespace Server
 
             return null;
         }
+
+        public void SetIDCounter(int value)
+        {
+            _counter = value;
+        }
     }
 }

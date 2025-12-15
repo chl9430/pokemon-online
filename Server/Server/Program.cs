@@ -17,6 +17,7 @@ namespace Server
         {
             ConfigManager.LoadConfig();
             DataManager.LoadData();
+            SaveManager.Instance.LoadAllGameSaveData();
 
             GameRoom mapRoom = RoomManager.Instance.Add(1, RoomType.Map);
             GameRoom pokemonCenterRoom = RoomManager.Instance.Add(1, RoomType.PokemonCenter);
