@@ -8,6 +8,7 @@ enum MsgId {
     C_LOG_IN = 0;
     S_LOG_IN = 1;
     C_CREATE_ACCOUNT = 2;
+    S_CREATE_ACCOUNT = 3;
     C_CHECK_SAVE_DATA = 4;
     S_CHECK_SAVE_DATA = 5;
     C_LOAD_GAME_DATA = 6;
@@ -118,6 +119,11 @@ message C_CreateAccount
 {
     string id = 1;
     string password = 2;
+}
+
+message S_CreateAccount
+{
+    bool isSuccess = 1;
 }
 
 enum LogInResultType
@@ -779,11 +785,15 @@ message PlayerInfo {
     string playerName = 2;
     PlayerGender playerGender = 3;
     int32 money = 4;
-    NPCInfo npcInfo = 5;
-    map<int32, CategoryInventory> inventory = 6;
-    repeated PokemonSummary pokemonSums = 7;
-    string userId = 8;
-    string room = 9;
+    map<int32, CategoryInventory> inventory = 5;
+    repeated PokemonSummary pokemonSums = 6;
+    string userId = 7;
+    string room = 8;
+    oneof specialInfo
+    {
+        NPCInfo npcInfo = 9;
+        PlayerInfo playerInfo = 10;
+    }
 }
 
 message ObjectInfo {

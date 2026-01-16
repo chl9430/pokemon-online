@@ -658,7 +658,7 @@ public class OnlineBattleContent : ObjectContents
                         "Summary",
                         "Cancel"
                     };
-                    ContentManager.Instance.OpenPokemonList(((BattleScene)Managers.Scene.CurrentScene).Pokemons, btnNames);
+                    GameContentManager.Instance.OpenPokemonList(((BattleScene)Managers.Scene.CurrentScene).Pokemons, btnNames);
 
                     State = OnlineBattleContentState.Inactiving;
                 }

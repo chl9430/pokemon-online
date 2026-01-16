@@ -13,27 +13,27 @@ namespace ServerCore
 
         void RegisterConnect(SocketAsyncEventArgs args)
         {
-            Socket socket = args.UserToken as Socket;
-            if (socket == null)
-                return;
+            //Socket socket = args.UserToken as Socket;
+            //if (socket == null)
+            //    return;
 
-            bool pending = socket.ConnectAsync(args);
-            if (pending == false)
-                OnConnectedCompleted(null, args);
+            //bool pending = socket.ConnectAsync(args);
+            //if (pending == false)
+            //    OnConnectedCompleted(null, args);
         }
 
         void OnConnectedCompleted(object sender, SocketAsyncEventArgs args)
         {
-            if (args.SocketError == SocketError.Success)
-            {
-                Session session = _sessionFactory.Invoke();
-                session.Start(args.ConnectSocket);
-                session.OnConnected(args.RemoteEndPoint);
-            }
-            else
-            {
-                Console.WriteLine($"OnConnectedCompleted Fail : {args.SocketError}");
-            }
+            //if (args.SocketError == SocketError.Success)
+            //{
+            //    Session session = _sessionFactory.Invoke();
+            //    session.Start(args.ConnectSocket);
+            //    session.OnConnected(args.RemoteEndPoint);
+            //}
+            //else
+            //{
+            //    Console.WriteLine($"OnConnectedCompleted Fail : {args.SocketError}");
+            //}
         }
     }
 }

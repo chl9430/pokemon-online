@@ -21,6 +21,13 @@ public class PacketHandler
 
         ClientSession clientSession = session as ClientSession;
 
+        Console.WriteLine(
+            $"=====================\n" +
+            $"C_LogIn\n" +
+            $"{logInPacket}\n" +
+            $"=====================\n"
+            );
+
         LogInManager.Instance.CheckLogInInfo(clientSession, id, pw);
     }
 

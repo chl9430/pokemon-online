@@ -18,11 +18,9 @@ namespace ServerCore
             _listenSocket = new Socket(endPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
             _sessionFactory += sessionFactory;
 
-            // 문지기 교육
             _listenSocket.Bind(endPoint);
 
-            // 영업 시작
-            // backlog : 최대 대기수
+            // 클라이언트 수신 대기
             _listenSocket.Listen(backlog);
 
             for (int i = 0; i < register; i++)
@@ -53,6 +51,7 @@ namespace ServerCore
             else
                 Console.WriteLine(args.SocketError.ToString());
 
+            // SocketAsyncEventArgs를 재사용 한다.
             RegisterAccept(args);
         }
     }

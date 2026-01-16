@@ -321,7 +321,7 @@ public class BattleScene : BaseScene
                             "Summary",
                             "Cancel"
                         };
-                        ContentManager.Instance.OpenPokemonList(_myPokemons, actionBtnNames);
+                        GameContentManager.Instance.OpenPokemonList(_myPokemons, actionBtnNames);
                     }
                     else
                     {
@@ -435,6 +435,8 @@ public class BattleScene : BaseScene
             }
             else if (packet is S_SwitchBattlePokemon)
             {
+                ContentManager.Instance.PlayScreenEffecter("FadeIn_NonBroading");
+
                 S_SwitchBattlePokemon switchPokemonPacket = packet as S_SwitchBattlePokemon;
 
                 PokemonSummary prevPokemonSum = switchPokemonPacket.PrevPokemonSum;
@@ -509,7 +511,7 @@ public class BattleScene : BaseScene
 
                 if (evolvePokemonIdx != -1)
                 {
-                    ContentManager.Instance.OpenPokemonEvolution(Managers.Object.MyPlayerController.MyPokemons[evolvePokemonIdx], evolutionPokemonName);
+                    GameContentManager.Instance.OpenPokemonEvolution(Managers.Object.MyPlayerController.MyPokemons[evolvePokemonIdx], evolutionPokemonName);
                 }
                 else
                 {
@@ -919,6 +921,8 @@ public class BattleScene : BaseScene
 
                             RefillScriptBox(new string[] { $"{_expPokemon.PokemonInfo.NickName} learned {_newMove.MoveName}!" });
 
+                            _newMove = null;
+
                             SceneState = BattleSceneState.AFTER_MOVE_SELECTION_SCRIPTING;
                         }
                         else
@@ -960,7 +964,7 @@ public class BattleScene : BaseScene
 
                             if (selectBox.GetSelectedBtnData() as string == "Yes")
                             {
-                                ContentManager.Instance.OpenMoveSelection(_expPokemon, _newMove);
+                                GameContentManager.Instance.OpenMoveSelection(_expPokemon, _newMove);
                             }
                             else if (selectBox.GetSelectedBtnData() as string == "No")
                             {
@@ -992,7 +996,7 @@ public class BattleScene : BaseScene
                                     "Summary",
                                     "Cancel"
                                 };
-                                ContentManager.Instance.OpenPokemonList(_myPokemons, actionBtnNames);
+                                GameContentManager.Instance.OpenPokemonList(_myPokemons, actionBtnNames);
 
                                 ContentManager.Instance.ScriptBox.HideSelectBox();
                             }
@@ -1017,7 +1021,7 @@ public class BattleScene : BaseScene
                         int usedItemOrder = ((S_UseItemInListScene)_packet).UsedItemOrder;
 
                         // 아이템도 사용처리
-                        Item usedItem = ContentManager.Instance.BagContent.GetSelectedItem();
+                        Item usedItem = GameContentManager.Instance.BagContent.GetSelectedItem();
                         usedItem.UpdateItemSummary(itemSummary);
 
                         if (usedItem.ItemCnt == 0)
@@ -1210,7 +1214,7 @@ public class BattleScene : BaseScene
                                     "Summary",
                                     "Cancel"
                                 };
-                                ContentManager.Instance.OpenPokemonList(_myPokemons, actionBtnNames);
+                                GameContentManager.Instance.OpenPokemonList(_myPokemons, actionBtnNames);
                             }
                             else
                             {

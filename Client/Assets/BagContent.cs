@@ -1,6 +1,7 @@
 using Google.Protobuf;
 using Google.Protobuf.Collections;
 using Google.Protobuf.Protocol;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using TMPro;
@@ -181,6 +182,8 @@ public class BagContent : ObjectContents
             case BagContentState.None:
                 {
                     State = BagContentState.Slider_Ready;
+
+                    ContentManager.Instance.PlayScreenEffecter("FadeIn_NonBroading");
 
                     gameObject.SetActive(true);
                 }
@@ -364,7 +367,7 @@ public class BagContent : ObjectContents
                                     else
                                         pokemons = Managers.Object.MyPlayerController.MyPokemons;
 
-                                    ContentManager.Instance.OpenPokemonList(pokemons, actionBtnNames);
+                                    GameContentManager.Instance.OpenPokemonList(pokemons, actionBtnNames);
 
                                     State = BagContentState.Inactiving;
                                 }
@@ -533,28 +536,18 @@ public class BagContent : ObjectContents
 
         _moneyText.text = Managers.Object.MyPlayerController.Money.ToString();
 
-        // 아이템 카테고리 슬라이더 설정
-        var sortedKeys = _items.Keys.OrderBy(key => key);
-        List<object> sliderContents = new List<object>();
-        foreach (ItemCategory itemCategory in sortedKeys)
+        // 슬라이더에 데이터 삽입
+        List<SliderContent> sliderContents = _categorySlider.GetSliderContents();
+        for (int i = 0; i < sliderContents.Count; i++)
         {
-            sliderContents.Add(itemCategory);
-        }
-        _categorySlider.CreateSlideContents(sliderContents);
-
-        // 카테고리 슬라이더에 이름넣기
-        for (int i = 0; i < _categorySlider.SliderContents.Count; i++)
-        {
-            TextMeshProUGUI tmp = _categorySlider.SliderContents[i].GetComponentInChildren<TextMeshProUGUI>();
-
-            tmp.text = _categorySlider.SliderContents[i].ContentData.ToString();
+            sliderContents[i].ContentData = (ItemCategory)i;
         }
 
-        if (_items[0].Count > 0)
+        if (_items[(ItemCategory)_categorySlider.GetSelectedContentIdx()].Count > 0)
         {
             // 아이템 리스트 나열
             List<object> datas = new List<object>();
-            foreach (Item item in _items[0])
+            foreach (Item item in _items[(ItemCategory)_categorySlider.GetSelectedContentIdx()])
             {
                 datas.Add(item);
             }

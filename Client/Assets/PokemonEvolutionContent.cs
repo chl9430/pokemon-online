@@ -75,7 +75,7 @@ public class PokemonEvolutionContent : ObjectContents
 
             if (evolvePokemonIdx != -1)
             {
-                ContentManager.Instance.OpenPokemonEvolution(Managers.Object.MyPlayerController.MyPokemons[evolvePokemonIdx], evolvePokemonName);
+                GameContentManager.Instance.OpenPokemonEvolution(Managers.Object.MyPlayerController.MyPokemons[evolvePokemonIdx], evolvePokemonName);
             }
             else
             {
@@ -290,7 +290,7 @@ public class PokemonEvolutionContent : ObjectContents
 
                             if (selectBox.GetSelectedBtnData() as string == "Yes")
                             {
-                                ContentManager.Instance.OpenMoveSelection(_evolutionPokemon, _newMove);
+                                GameContentManager.Instance.OpenMoveSelection(_evolutionPokemon, _newMove);
 
                                 State = PokemonEvolutionContentState.Inactiving;
                             }

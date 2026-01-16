@@ -38,6 +38,9 @@ public class SceneManagerEx
 
     public void AsyncLoadScene(Define.Scene type, Action action, LoadSceneMode loadSceneMode = LoadSceneMode.Single)
     {
+        if (loadSceneMode == LoadSceneMode.Single)
+            Managers.Clear();
+
         AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(GetSceneName(type), loadSceneMode);
 
         if (asyncLoad == null) return;

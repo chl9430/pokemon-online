@@ -20,14 +20,14 @@ public class CategorySlider : MonoBehaviour
     SliderState _sliderState = SliderState.NONE;
     int _curIdx;
 
-    [SerializeField] SliderContent _sliderContent;
     [SerializeField] List<SliderContent> _sliderContents;
+    [SerializeField] SliderContent _sliderContent;
 
     public int CurIdx { get { return _curIdx; } }
 
     public List<SliderContent> SliderContents { get { return _sliderContents; } }
 
-    public SliderState SliderState 
+    public SliderState SliderState
     { 
         get 
         { 
@@ -188,6 +188,14 @@ public class CategorySlider : MonoBehaviour
 
     public void CreateSlideContents(List<object> contents)
     {
+        for (int i = 0; i < _sliderContents.Count; i++)
+        {
+            Destroy(_sliderContents[i].gameObject);
+        }
+        _sliderContents.Clear();
+
+        _curIdx = 0;
+
         for (int i = 0; i < contents.Count; i++)
         {
             _sliderContents.Add(Instantiate(_sliderContent, gameObject.transform));
@@ -204,5 +212,15 @@ public class CategorySlider : MonoBehaviour
     public object GetSelectedContentData()
     {
         return _sliderContents[_curIdx].ContentData;
+    }
+
+    public int GetSelectedContentIdx()
+    {
+        return _curIdx;
+    }
+
+    public List<SliderContent> GetSliderContents()
+    {
+        return _sliderContents;
     }
 }

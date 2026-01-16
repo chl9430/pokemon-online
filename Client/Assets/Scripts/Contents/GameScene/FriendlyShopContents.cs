@@ -22,6 +22,7 @@ public enum FriendlyShopContentsState
     FAILED_BUY_SCRIPTING = 10,
     Inactiving = 11,
     AskingActionAgain = 12,
+    Fading = 13,
 }
 
 public class FriendlyShopContents : ObjectContents
@@ -182,6 +183,10 @@ public class FriendlyShopContents : ObjectContents
 
                 _countingBox.State = CountingBoxState.NONE;
                 _countingBox.gameObject.SetActive(false);
+            }
+            else if (_state == FriendlyShopContentsState.Fading)
+            {
+                ContentManager.Instance.ScriptBox.ScriptSelectBox.UIState = GridLayoutSelectBoxState.NONE;
             }
             else if (_state == FriendlyShopContentsState.NONE)
             {
@@ -345,9 +350,9 @@ public class FriendlyShopContents : ObjectContents
                             }
                             else if (selectBox.GetSelectedBtnData() as string == "Sell")
                             {
-                                State = FriendlyShopContentsState.Inactiving;
+                                ContentManager.Instance.PlayScreenEffecter("FadeOut");
 
-                                ContentManager.Instance.OpenBag(Managers.Object.MyPlayerController.Items);
+                                State = FriendlyShopContentsState.Fading;
                             }
                             else if (selectBox.GetSelectedBtnData() as string == "Quit")
                             {
@@ -588,6 +593,13 @@ public class FriendlyShopContents : ObjectContents
                     ContentManager.Instance.BeginScriptTyping(scripts);
 
                     State = FriendlyShopContentsState.AskingActionAgain;
+                }
+                break;
+            case FriendlyShopContentsState.Fading:
+                {
+                    State = FriendlyShopContentsState.Inactiving;
+
+                    GameContentManager.Instance.OpenBag(Managers.Object.MyPlayerController.Items);
                 }
                 break;
             case FriendlyShopContentsState.AskingActionAgain:

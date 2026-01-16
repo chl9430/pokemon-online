@@ -128,7 +128,16 @@ namespace Server
             playerInfo.Money = _money;
 
             if (_talkingNpc != null)
-                playerInfo.NpcInfo = ((NPC)_talkingNpc).MakeNPCInfo();
+            {
+                if (_talkingNpc is NPC)
+                {
+                    playerInfo.NpcInfo = ((NPC)_talkingNpc).MakeNPCInfo();
+                }
+                else if (_talkingNpc is Player)
+                {
+                    playerInfo.PlayerInfo_ = ((Player)_talkingNpc).MakePlayerInfo();
+                }
+            }
 
             // 인벤토리 딕셔너리를 모두 가져옴
             foreach (var pair in _items)

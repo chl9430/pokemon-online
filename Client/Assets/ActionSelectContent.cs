@@ -91,6 +91,10 @@ public class ActionSelectContent : ObjectContents
             {
                 _actionSelectBox.UIState = GridLayoutSelectBoxState.NONE;
             }
+            else if (_state == ActionSelectContentState.MovingScene)
+            {
+                _actionSelectBox.UIState = GridLayoutSelectBoxState.NONE;
+            }
             else if (_state == ActionSelectContentState.Inactiving)
             {
                 _actionSelectBox.gameObject.SetActive(false);
@@ -152,19 +156,13 @@ public class ActionSelectContent : ObjectContents
                             }
                             else if (selectedAction == "Pokemon")
                             {
-                                List<string> actionBtnNames = new List<string>()
-                                {
-                                    "Send Out",
-                                    "Summary",
-                                    "Cancel"
-                                };
-                                ContentManager.Instance.OpenPokemonList(((BattleScene)Managers.Scene.CurrentScene).Pokemons, actionBtnNames);
+                                ContentManager.Instance.PlayScreenEffecter("FadeOut");
 
-                                State = ActionSelectContentState.Inactiving;
+                                State = ActionSelectContentState.MovingScene;
                             }
                             else if (selectedAction == "Bag")
                             {
-                                ContentManager.Instance.OpenBag(Managers.Object.MyPlayerController.Items);
+                                GameContentManager.Instance.OpenBag(Managers.Object.MyPlayerController.Items);
 
                                 State = ActionSelectContentState.Inactiving;
                             }
@@ -305,6 +303,19 @@ public class ActionSelectContent : ObjectContents
                             State = ActionSelectContentState.Selecting_Action;
                         }
                     }
+                }
+                break;
+            case ActionSelectContentState.MovingScene:
+                {
+                    List<string> actionBtnNames = new List<string>()
+                    {
+                        "Send Out",
+                        "Summary",
+                        "Cancel"
+                    };
+                    GameContentManager.Instance.OpenPokemonList(((BattleScene)Managers.Scene.CurrentScene).Pokemons, actionBtnNames);
+
+                    State = ActionSelectContentState.Inactiving;
                 }
                 break;
             case ActionSelectContentState.Inactiving:

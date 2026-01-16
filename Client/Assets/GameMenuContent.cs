@@ -207,13 +207,13 @@ public class GameMenuContent : ObjectContents
                             "Switch",
                             "Cancel"
                         };
-                        ContentManager.Instance.OpenPokemonList(Managers.Object.MyPlayerController.MyPokemons, actionBtnNames);
+                        GameContentManager.Instance.OpenPokemonList(Managers.Object.MyPlayerController.MyPokemons, actionBtnNames);
 
                         State = GameMenuContentState.Inactiving;
                     }
                     else if (_selectBox.GetSelectedBtnData() as string == "Bag")
                     {
-                        ContentManager.Instance.OpenBag(Managers.Object.MyPlayerController.Items);
+                        GameContentManager.Instance.OpenBag(Managers.Object.MyPlayerController.Items);
 
                         State = GameMenuContentState.Inactiving;
                     }

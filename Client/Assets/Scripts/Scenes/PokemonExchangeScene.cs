@@ -114,7 +114,7 @@ public class PokemonExchangeScene : BaseScene
             _myPlayerInfo = playerInfo;
             _otherPlayerInfo = otherPlayerInfo;
 
-            ContentManager.Instance.PlayScreenEffecter("BlackFadeIn");
+            ContentManager.Instance.PlayScreenEffecter("FadeIn_NonBroading");
 
             // 나와 상대방 이름 렌더링
             _playerName.text = playerInfo.PlayerName;
@@ -159,6 +159,8 @@ public class PokemonExchangeScene : BaseScene
             _actionSelectBox.CreateButtons(btnNames, 1, 400, 100);
 
             _data = enterExchangeScenePacket;
+
+            DoNextAction();
         }
         else if (packet is S_MoveExchangeCursor)
         {

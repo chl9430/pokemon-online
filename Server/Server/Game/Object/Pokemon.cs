@@ -194,6 +194,8 @@ namespace Server
                 _pokemonMoves.Add(move);
             }
             _noPPMove = new PokemonMove(pokemonSum.NoPPMove);
+
+            DataManager.PokemonSummaryDict.TryGetValue(_pokemonInfo.PokemonName, out _summaryDictData);
         }
 
         int FindLastLearnableMoveIndex(LearnableMoveData[] moveDatas, int pokemonLevel)

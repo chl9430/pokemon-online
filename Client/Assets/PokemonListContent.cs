@@ -222,7 +222,7 @@ public class PokemonListContent : ObjectContents
 
                             if (selectedAction == "Summary")
                             {
-                                ContentManager.Instance.OpenPokemonSum(_pokemonSelectArea.GetSelectedBtnData() as Pokemon);
+                                GameContentManager.Instance.OpenPokemonSum(_pokemonSelectArea.GetSelectedBtnData() as Pokemon);
 
                                 State = PokemonListContentState.Inactiving;
                             }
@@ -266,8 +266,8 @@ public class PokemonListContent : ObjectContents
                                         C_UseItemInListScene useItemPacket = new C_UseItemInListScene();
                                         useItemPacket.PlayerId = Managers.Object.MyPlayerController.Id;
                                         useItemPacket.TargetPokemonOrder = _pokemonSelectArea.GetSelectedIndex();
-                                        useItemPacket.UsedItemCategory = ContentManager.Instance.BagContent.GetSelectedItemCategory();
-                                        useItemPacket.UsedItemOrder = ContentManager.Instance.BagContent.GetSelectedItemOrder();
+                                        useItemPacket.UsedItemCategory = GameContentManager.Instance.BagContent.GetSelectedItemCategory();
+                                        useItemPacket.UsedItemOrder = GameContentManager.Instance.BagContent.GetSelectedItemOrder();
 
                                         Managers.Network.Send(useItemPacket);
                                     }
@@ -338,7 +338,7 @@ public class PokemonListContent : ObjectContents
                         int usedItemOrder = ((S_UseItemInListScene)_packet).UsedItemOrder;
 
                         // 아이템도 사용처리
-                        Item usedItem = ContentManager.Instance.BagContent.GetSelectedItem();
+                        Item usedItem = GameContentManager.Instance.BagContent.GetSelectedItem();
                         usedItem.UpdateItemSummary(usedItemSum);
 
                         if (usedItem.ItemCnt == 0)

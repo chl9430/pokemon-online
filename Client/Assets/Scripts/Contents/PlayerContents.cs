@@ -428,7 +428,10 @@ public class PlayerContents : ObjectContents
             case PlayerContentState.MOVING_TO_THE_EXCHANGE_SCENE:
                 {
                     // ¾À º¯°æ
-                    Managers.Scene.LoadScene(Define.Scene.PokemonExchange);
+                    Managers.Scene.AsyncLoadScene(Define.Scene.PokemonExchange, () => {
+                        ContentManager.Instance.ScriptBox.gameObject.SetActive(false);
+                        Managers.Scene.CurrentScene = GameObject.FindFirstObjectByType<PokemonExchangeScene>();
+                    }, LoadSceneMode.Additive);
                 }
                 break;
         }

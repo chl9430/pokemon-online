@@ -225,19 +225,7 @@
           "moveName": "Scratch"
         },
         {
-          "learnLevel": "1",
-          "moveName": "Scratch"
-        },
-        {
-          "learnLevel": "1",
-          "moveName": "Scratch"
-        },
-        {
           "learnLevel": "3",
-          "moveName": "Ember"
-        },
-        {
-          "learnLevel": "6",
           "moveName": "Ember"
         },
         {
@@ -245,8 +233,12 @@
           "moveName": "Fire Fang"
         },
         {
+          "learnLevel": "13",
+          "moveName": "Tackle"
+        },
+        {
           "learnLevel": "16",
-          "moveName": "Fire Fang"
+          "moveName": "Slam"
         }
       ],
       "evolutionChain": {

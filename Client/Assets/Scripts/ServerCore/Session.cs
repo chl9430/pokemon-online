@@ -73,6 +73,7 @@ namespace ServerCore
 
         public void Start(Socket socket)
         {
+            // 서버 소켓을 저장
             _socket = socket;
 
             _recvArgs.Completed += new EventHandler<SocketAsyncEventArgs>(OnRecvCompleted);
