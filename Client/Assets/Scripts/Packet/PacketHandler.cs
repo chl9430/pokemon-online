@@ -159,15 +159,6 @@ public class PacketHandler
         Managers.Scene.CurrentScene.UpdateData(meetPokemonPacket);
     }
 
-    public static void S_GetDoorDestDirHandler(PacketSession session, IMessage packet)
-    {
-        S_GetDoorDestDir doorDestDirPacket = packet as S_GetDoorDestDir;
-
-        Debug.Log($"S_GetDoorDestDir : {doorDestDirPacket}");
-
-        Managers.Scene.CurrentScene.UpdateData(doorDestDirPacket);
-    }
-
     public static void S_GetNpcTalkHandler(PacketSession session, IMessage packet)
     {
         S_GetNpcTalk npcTalkPacket = packet as S_GetNpcTalk;

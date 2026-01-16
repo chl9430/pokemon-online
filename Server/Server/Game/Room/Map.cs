@@ -159,21 +159,6 @@ namespace Server
             return doorPos;
         }
 
-        public Vector2Int GetTilePos(int x, int y)
-        {
-            Vector2Int pos = new Vector2Int();
-
-            pos.x = x + MinX;
-            pos.y = MaxY - y;
-
-            return pos;
-        }
-
-        public void SetObj(int x, int y, GameObject obj)
-        {
-            _objects[x, y] = obj;
-        }
-
         public void ApplyMove(GameObject gameObject, Vector2Int dest)
         {
             ApplyLeave(gameObject);
@@ -234,6 +219,7 @@ namespace Server
 
             int xCount = MaxX - MinX + 1;
             int yCount = MaxY - MinY + 1;
+
             _collision = new TileType[yCount, xCount];
             _bushTileGrid = new int[yCount, xCount];
             _doorTileGrid = new int[yCount, xCount];
@@ -248,10 +234,6 @@ namespace Server
                     if (line[x] == '1')
                     {
                         _collision[y, x] = TileType.COLLISION;
-                    }
-                    else if (line[x] == '2')
-                    {
-                        _collision[y, x] = TileType.DOOR;
                     }
                     else if (line[x] == '0')
                     {
@@ -270,9 +252,6 @@ namespace Server
             MaxX = int.Parse(reader.ReadLine());
             MinY = int.Parse(reader.ReadLine());
             MaxY = int.Parse(reader.ReadLine());
-
-            xCount = MaxX - MinX + 1;
-            yCount = MaxY - MinY + 1;
 
             for (int y = 0; y < yCount; y++)
             {
@@ -296,9 +275,6 @@ namespace Server
             MaxX = int.Parse(reader.ReadLine());
             MinY = int.Parse(reader.ReadLine());
             MaxY = int.Parse(reader.ReadLine());
-
-            xCount = MaxX - MinX + 1;
-            yCount = MaxY - MinY + 1;
 
             for (int y = 0; y < yCount; y++)
             {

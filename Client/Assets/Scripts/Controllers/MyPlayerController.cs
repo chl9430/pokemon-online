@@ -13,15 +13,12 @@ public class MyPlayerController : PlayerController
     List<Pokemon> _myPokemons = new List<Pokemon>();
     Dictionary<ItemCategory, List<Item>> _items = new Dictionary<ItemCategory, List<Item>>();
     CreatureController _npc;
-    IMessage _packet;
 
     public bool IsLoading { set { _isLoading = value; } }
     public int Money { get { return _money; } }
     public List<Pokemon> MyPokemons { set { _myPokemons = value; } get { return _myPokemons; } }
     public Dictionary<ItemCategory, List<Item>> Items { set { _items = value; } get { return _items; } }
     public CreatureController NPC { get  { return _npc; } set { _npc = value; } }
-
-    public IMessage Packet { set  { _packet = value; } }
 
     public void SetMyPlayerInfo(PlayerInfo playerInfo)
     {
@@ -151,68 +148,23 @@ public class MyPlayerController : PlayerController
         CheckUpdatedFlag();
     }
 
-    void CheckDoor(MoveDir moveDir)
+    void CheckDir(MoveDir moveDir)
     {
         if (Dir == moveDir)
         {
-            // 문 검사
-            if (Managers.Map.IsDoor(CellPos) && _packet is S_GetDoorDestDir)
-            {
-                MoveDir destDir = ((S_GetDoorDestDir)_packet).DestDir;
-
-                if (destDir == moveDir)
-                {
-                    State = CreatureState.NoneState;
-
-                    ((GameScene)Managers.Scene.CurrentScene).SaveEnterScenePacket();
-                }
-                else
-                {
-                    State = CreatureState.Walk;
-                    SetToNextPos();
-                }
-            }
-            else
-            {
-                State = CreatureState.Walk;
-                SetToNextPos();
-            }
+            State = CreatureState.Walk;
+            SetToNextPos();
         }
         else
         {
             Dir = moveDir;
 
-            // 현재 포탈 타일에 있다면
-            if (Managers.Map.IsDoor(CellPos) && _packet is S_GetDoorDestDir)
+            if (State == CreatureState.Idle)
+                return;
+            else if (State == CreatureState.Walk)
             {
-                MoveDir destDir = ((S_GetDoorDestDir)_packet).DestDir;
-
-                if (destDir == moveDir)
-                {
-                    State = CreatureState.NoneState;
-
-                    ((GameScene)Managers.Scene.CurrentScene).SaveEnterScenePacket();
-                }
-                else
-                {
-                    if (State == CreatureState.Idle)
-                        return;
-                    else if (State == CreatureState.Walk)
-                    {
-                        State = CreatureState.Walk;
-                        SetToNextPos();
-                    }
-                }
-            }
-            else
-            {
-                if (State == CreatureState.Idle)
-                    return;
-                else if (State == CreatureState.Walk)
-                {
-                    State = CreatureState.Walk;
-                    SetToNextPos();
-                }
+                State = CreatureState.Walk;
+                SetToNextPos();
             }
         }
     }
@@ -221,19 +173,19 @@ public class MyPlayerController : PlayerController
     {
         if (Input.GetKeyDown(KeyCode.UpArrow))
         {
-            CheckDoor(MoveDir.Up);
+            CheckDir(MoveDir.Up);
         }
         else if (Input.GetKeyDown(KeyCode.DownArrow))
         {
-            CheckDoor(MoveDir.Down);
+            CheckDir(MoveDir.Down);
         }
         else if (Input.GetKeyDown(KeyCode.LeftArrow))
         {
-            CheckDoor(MoveDir.Left);
+            CheckDir(MoveDir.Left);
         }
         else if (Input.GetKeyDown(KeyCode.RightArrow))
         {
-            CheckDoor(MoveDir.Right);
+            CheckDir(MoveDir.Right);
         }
     }
 
@@ -377,19 +329,19 @@ public class MyPlayerController : PlayerController
             {
                 if (Input.GetKey(KeyCode.UpArrow))
                 {
-                    CheckDoor(MoveDir.Up);
+                    CheckDir(MoveDir.Up);
                 }
                 else if (Input.GetKey(KeyCode.DownArrow))
                 {
-                    CheckDoor(MoveDir.Down);
+                    CheckDir(MoveDir.Down);
                 }
                 else if (Input.GetKey(KeyCode.LeftArrow))
                 {
-                    CheckDoor(MoveDir.Left);
+                    CheckDir(MoveDir.Left);
                 }
                 else if (Input.GetKey(KeyCode.RightArrow))
                 {
-                    CheckDoor(MoveDir.Right);
+                    CheckDir(MoveDir.Right);
                 }
                 else
                 {
@@ -420,12 +372,16 @@ public class MyPlayerController : PlayerController
         }
 
         // 장애물 검사
-        if (Managers.Map.CanGo(destPos))
+        if (Managers.Map.CanGo(destPos) && Managers.Object.FindCreature(destPos) == null)
         {
-            if (Managers.Object.FindCreature(destPos) == null)
+            if (Managers.Map.IsDoor(destPos))
             {
-                CellPos = destPos;
+                State = CreatureState.NoneState;
+
+                ((GameScene)Managers.Scene.CurrentScene).SaveEnterScenePacket();
             }
+            else
+                CellPos = destPos;
         }
     }
 

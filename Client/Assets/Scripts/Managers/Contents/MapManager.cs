@@ -124,7 +124,7 @@ public class MapManager : MonoBehaviour
             string line = reader.ReadLine();
             for (int x = 0; x < xCount; x++)
             {
-                if (line[x] == '1' || line[x] == '3')
+                if (line[x] == '1')
                 {
                     _collision[y, x] = true;
                 }

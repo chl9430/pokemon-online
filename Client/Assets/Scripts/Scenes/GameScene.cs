@@ -129,10 +129,6 @@ public class GameScene : BaseScene
             {
                 _packet = packet as S_MeetWildPokemon;
             }
-            else if (packet is S_GetDoorDestDir)
-            {
-                Managers.Object.MyPlayerController.Packet = packet;
-            }
             else if (packet is S_SendTalk)
             {
                 S_SendTalk sendTalkPacket = packet as S_SendTalk;

@@ -31,6 +31,11 @@ public class MapEditor
             Tilemap tmBase = Util.FindChild<Tilemap>(go, "Tilemap_Base", true);
             Tilemap tmCol = Util.FindChild<Tilemap>(go, "Tilemap_Collision", true);
 
+            int xMin = tmBase.cellBounds.xMin;
+            int xMax = tmBase.cellBounds.xMax - 1;
+            int yMin = tmBase.cellBounds.yMin;
+            int yMax = tmBase.cellBounds.yMax - 1;
+
             // NPC 정보를 담는 파일 생성
             using (var writer = File.CreateText($"{pathPrefix}/{go.name}_NPCMap.txt"))
             {
@@ -74,14 +79,14 @@ public class MapEditor
             // 콜리전 텍스트파일 맵 생성
             using (var writer = File.CreateText($"{pathPrefix}/{go.name}.txt"))
             {
-                writer.WriteLine(tmBase.cellBounds.xMin);
-                writer.WriteLine(tmBase.cellBounds.xMax - 1);
-                writer.WriteLine(tmBase.cellBounds.yMin);
-                writer.WriteLine(tmBase.cellBounds.yMax - 1);
+                writer.WriteLine(xMin);
+                writer.WriteLine(xMax);
+                writer.WriteLine(yMin);
+                writer.WriteLine(yMax);
 
-                for (int y = tmBase.cellBounds.yMax - 1; y >= tmBase.cellBounds.yMin; y--)
+                for (int y = yMax; y >= yMin; y--)
                 {
-                    for (int x = tmBase.cellBounds.xMin; x <= tmBase.cellBounds.xMax - 1; x++)
+                    for (int x = xMin; x <= xMax; x++)
                     {
                         
                         TileBase tile = tmCol.GetTile(new Vector3Int(x, y, 0));
@@ -97,10 +102,10 @@ public class MapEditor
             // 부쉬 타일의 정보를 담는 파일을 생성
             using (var writer = File.CreateText($"{pathPrefix}/{go.name}_BushMap.txt"))
             {
-                writer.WriteLine(tmBase.cellBounds.xMin);
-                writer.WriteLine(tmBase.cellBounds.xMax - 1);
-                writer.WriteLine(tmBase.cellBounds.yMin);
-                writer.WriteLine(tmBase.cellBounds.yMax - 1);
+                writer.WriteLine(xMin);
+                writer.WriteLine(xMax);
+                writer.WriteLine(yMin);
+                writer.WriteLine(yMax);
 
                 // 부쉬 타일 맵 오브젝트들을 모두 가져온다.
                 List<Tilemap> bushMaps = new List<Tilemap>();
@@ -120,9 +125,9 @@ public class MapEditor
                 }
 
                 // 타일 맵을 순회
-                for (int y = tmBase.cellBounds.yMax - 1; y >= tmBase.cellBounds.yMin; y--)
+                for (int y = yMax; y >= yMin; y--)
                 {
-                    for (int x = tmBase.cellBounds.xMin; x <= tmBase.cellBounds.xMax - 1; x++)
+                    for (int x = xMin; x <= xMax; x++)
                     {
                         bool isThereBush = false;
 
@@ -152,10 +157,10 @@ public class MapEditor
             // 문 타일의 정보를 담는 파일을 생성
             using (var writer = File.CreateText($"{pathPrefix}/{go.name}_DoorMap.txt"))
             {
-                writer.WriteLine(tmBase.cellBounds.xMin);
-                writer.WriteLine(tmBase.cellBounds.xMax - 1);
-                writer.WriteLine(tmBase.cellBounds.yMin);
-                writer.WriteLine(tmBase.cellBounds.yMax - 1);
+                writer.WriteLine(xMin);
+                writer.WriteLine(xMax);
+                writer.WriteLine(yMin);
+                writer.WriteLine(yMax);
 
                 List<Tilemap> doorMaps = new List<Tilemap>();
 
@@ -173,9 +178,9 @@ public class MapEditor
                         break;
                 }
 
-                for (int y = tmBase.cellBounds.yMax - 1; y >= tmBase.cellBounds.yMin; y--)
+                for (int y = yMax; y >= yMin; y--)
                 {
-                    for (int x = tmBase.cellBounds.xMin; x <= tmBase.cellBounds.xMax - 1; x++)
+                    for (int x = xMin; x <= xMax; x++)
                     {
                         bool isThereDoor = false;
 

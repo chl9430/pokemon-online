@@ -96,7 +96,6 @@ public struct DoorDestInfo
     public int doorId;
     public RoomType destRoomType;
     public int destRoomId;
-    public MoveDir destDir;
 }
 
 public struct RoomInfo

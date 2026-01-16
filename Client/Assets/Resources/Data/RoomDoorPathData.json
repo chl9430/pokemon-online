@@ -9,26 +9,22 @@
             {
               "doorId": "1",
               "destRoomType": "PokemonCenter",
-              "destRoomId": "1",
-              "destDir": "Up"
+              "destRoomId": "1"
             },
             {
               "doorId": "2",
               "destRoomType": "Map",
-              "destRoomId": "2",
-              "destDir": "Up"
+              "destRoomId": "2"
             },
             {
               "doorId": "3",
               "destRoomType": "Map",
-              "destRoomId": "3",
-              "destDir": "Right"
+              "destRoomId": "3"
             },
             {
               "doorId": "4",
               "destRoomType": "FriendlyShop",
-              "destRoomId": "1",
-              "destDir": "Up"
+              "destRoomId": "1"
             }
           ]
         }
@@ -43,8 +39,7 @@
             {
               "doorId": "1",
               "destRoomType": "Map",
-              "destRoomId": "1",
-              "destDir": "Down"
+              "destRoomId": "1"
             }
           ]
         }
@@ -59,8 +54,7 @@
             {
               "doorId": "1",
               "destRoomType": "Map",
-              "destRoomId": "1",
-              "destDir": "Down"
+              "destRoomId": "1"
             }
           ]
         }

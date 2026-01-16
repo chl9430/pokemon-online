@@ -23,7 +23,6 @@ enum MsgId {
   C_ENTER_POKEMON_BATTLE_SCENE = 42;
   S_ENTER_POKEMON_BATTLE_SCENE = 43;
   S_MEET_WILD_POKEMON = 150;
-  S_GET_DOOR_DEST_DIR = 160;
   S_GET_NPC_TALK = 170;
   S_GET_TRAINER_TALK = 171;
   C_SHOP_ITEM_LIST = 180;
@@ -315,11 +314,6 @@ message S_MeetWildPokemon
 {
     int32 roomId = 1;
     int32 bushNum = 2;
-}
-
-message S_GetDoorDestDir
-{
-    MoveDir destDir = 1;
 }
 
 message C_SaveGameData

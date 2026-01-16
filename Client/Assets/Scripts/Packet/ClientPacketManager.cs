@@ -47,9 +47,6 @@ class PacketManager
         _onRecv.Add((ushort)MsgId.SMeetWildPokemon, MakePacket<S_MeetWildPokemon>);
         _handler.Add((ushort)MsgId.SMeetWildPokemon, PacketHandler.S_MeetWildPokemonHandler);
 
-        _onRecv.Add((ushort)MsgId.SGetDoorDestDir, MakePacket<S_GetDoorDestDir>);
-        _handler.Add((ushort)MsgId.SGetDoorDestDir, PacketHandler.S_GetDoorDestDirHandler);
-
         _onRecv.Add((ushort)MsgId.SGetNpcTalk, MakePacket<S_GetNpcTalk>);
         _handler.Add((ushort)MsgId.SGetNpcTalk, PacketHandler.S_GetNpcTalkHandler);
 
