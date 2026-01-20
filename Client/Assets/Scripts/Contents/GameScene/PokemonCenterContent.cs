@@ -39,17 +39,14 @@ public class PokemonCenterContent : ObjectContents
             else if (_state == PokemonCenterContentState.GOOD_BYE_SCRIPTING)
             {
                 ContentManager.Instance.ScriptBox.gameObject.SetActive(true);
-                ContentManager.Instance.ScriptBox.HideSelectBox();
             }
             else if (_state == PokemonCenterContentState.TAKING_POKEMON_SCRIPTING)
             {
                 ContentManager.Instance.ScriptBox.gameObject.SetActive(true);
-                ContentManager.Instance.ScriptBox.HideSelectBox();
             }
             else if (_state == PokemonCenterContentState.NONE)
             {
                 ContentManager.Instance.ScriptBox.gameObject.SetActive(false);
-                ContentManager.Instance.ScriptBox.HideSelectBox();
             }
         }
     }
@@ -224,7 +221,7 @@ public class PokemonCenterContent : ObjectContents
     {
         State = PokemonCenterContentState.NONE;
 
-        Managers.Scene.CurrentScene.FinishContents();
+        Managers.Scene.CurrentScene.FinishContents(true);
 
         Managers.Object.MyPlayerController.State = CreatureState.Idle;
     }

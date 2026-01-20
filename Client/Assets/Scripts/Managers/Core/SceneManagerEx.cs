@@ -49,6 +49,8 @@ public class SceneManagerEx
 
         onCompletedHandler += (operation) =>
         {
+            ContentManager.Instance.ScriptBox.gameObject.SetActive(false);
+
             action.Invoke();
 
             operation.completed -= onCompletedHandler;
@@ -67,6 +69,8 @@ public class SceneManagerEx
 
             onCompletedHandler = (operation) =>
             {
+                ContentManager.Instance.ScriptBox.gameObject.SetActive(false);
+
                 action.Invoke();
 
                 operation.completed -= onCompletedHandler;

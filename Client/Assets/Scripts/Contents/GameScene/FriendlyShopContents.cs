@@ -22,7 +22,6 @@ public enum FriendlyShopContentsState
     FAILED_BUY_SCRIPTING = 10,
     Inactiving = 11,
     AskingActionAgain = 12,
-    Fading = 13,
 }
 
 public class FriendlyShopContents : ObjectContents
@@ -69,7 +68,6 @@ public class FriendlyShopContents : ObjectContents
             else if (_state == FriendlyShopContentsState.GOOD_BYE_SCRIPTING)
             {
                 ContentManager.Instance.ScriptBox.gameObject.SetActive(true);
-                ContentManager.Instance.ScriptBox.HideSelectBox();
 
                 _shopListBox.State = SlideAndScrollBoxState.NONE;
                 _shopUIZone.gameObject.SetActive(false);
@@ -82,7 +80,6 @@ public class FriendlyShopContents : ObjectContents
             else if (_state == FriendlyShopContentsState.SELECTING_ITEM_TO_BUY)
             {
                 ContentManager.Instance.ScriptBox.gameObject.SetActive(false);
-                ContentManager.Instance.ScriptBox.HideSelectBox();
 
                 _shopListBox.State = SlideAndScrollBoxState.SELECTING;
                 _shopUIZone.gameObject.SetActive(true);
@@ -109,7 +106,6 @@ public class FriendlyShopContents : ObjectContents
             else if (_state == FriendlyShopContentsState.SELECTING_QUANTITY)
             {
                 ContentManager.Instance.ScriptBox.gameObject.SetActive(true);
-                ContentManager.Instance.ScriptBox.HideSelectBox();
 
                 _shopListBox.State = SlideAndScrollBoxState.NONE;
                 _shopUIZone.gameObject.SetActive(true);
@@ -148,7 +144,6 @@ public class FriendlyShopContents : ObjectContents
             else if (_state == FriendlyShopContentsState.SUCCESS_BUY_SCRIPTING)
             {
                 ContentManager.Instance.ScriptBox.gameObject.SetActive(true);
-                ContentManager.Instance.ScriptBox.HideSelectBox();
 
                 _shopListBox.State = SlideAndScrollBoxState.NONE;
                 _shopUIZone.gameObject.SetActive(true);
@@ -161,7 +156,6 @@ public class FriendlyShopContents : ObjectContents
             else if (_state == FriendlyShopContentsState.FAILED_BUY_SCRIPTING)
             {
                 ContentManager.Instance.ScriptBox.gameObject.SetActive(true);
-                ContentManager.Instance.ScriptBox.HideSelectBox();
 
                 _shopListBox.State = SlideAndScrollBoxState.NONE;
                 _shopUIZone.gameObject.SetActive(true);
@@ -184,14 +178,9 @@ public class FriendlyShopContents : ObjectContents
                 _countingBox.State = CountingBoxState.NONE;
                 _countingBox.gameObject.SetActive(false);
             }
-            else if (_state == FriendlyShopContentsState.Fading)
-            {
-                ContentManager.Instance.ScriptBox.ScriptSelectBox.UIState = GridLayoutSelectBoxState.NONE;
-            }
             else if (_state == FriendlyShopContentsState.NONE)
             {
                 ContentManager.Instance.ScriptBox.gameObject.SetActive(false);
-                ContentManager.Instance.ScriptBox.HideSelectBox();
 
                 _shopListBox.State = SlideAndScrollBoxState.NONE;
                 _shopUIZone.gameObject.SetActive(false);
@@ -350,9 +339,9 @@ public class FriendlyShopContents : ObjectContents
                             }
                             else if (selectBox.GetSelectedBtnData() as string == "Sell")
                             {
-                                ContentManager.Instance.PlayScreenEffecter("FadeOut");
+                                GameContentManager.Instance.OpenBag(Managers.Object.MyPlayerController.Items, "FadeOut");
 
-                                State = FriendlyShopContentsState.Fading;
+                                State = FriendlyShopContentsState.Inactiving;
                             }
                             else if (selectBox.GetSelectedBtnData() as string == "Quit")
                             {
@@ -586,6 +575,8 @@ public class FriendlyShopContents : ObjectContents
                 break;
             case FriendlyShopContentsState.Inactiving:
                 {
+                    ContentManager.Instance.FadeInScreenEffect();
+
                     List<string> scripts = new List<string>()
                     {
                         "Do you need anything else?"
@@ -593,13 +584,6 @@ public class FriendlyShopContents : ObjectContents
                     ContentManager.Instance.BeginScriptTyping(scripts);
 
                     State = FriendlyShopContentsState.AskingActionAgain;
-                }
-                break;
-            case FriendlyShopContentsState.Fading:
-                {
-                    State = FriendlyShopContentsState.Inactiving;
-
-                    GameContentManager.Instance.OpenBag(Managers.Object.MyPlayerController.Items);
                 }
                 break;
             case FriendlyShopContentsState.AskingActionAgain:
@@ -622,7 +606,7 @@ public class FriendlyShopContents : ObjectContents
     {
         State = FriendlyShopContentsState.NONE;
 
-        Managers.Scene.CurrentScene.FinishContents();
+        Managers.Scene.CurrentScene.FinishContents(true);
 
         Managers.Object.MyPlayerController.State = CreatureState.Idle;
     }

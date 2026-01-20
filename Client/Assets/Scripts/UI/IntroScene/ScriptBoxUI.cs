@@ -68,12 +68,6 @@ public class ScriptBoxUI : MonoBehaviour
         _selectBox.UIState = GridLayoutSelectBoxState.SELECTING;
     }
 
-    public void HideSelectBox()
-    {
-        _selectBox.gameObject.SetActive(false);
-        _selectBox.UIState = GridLayoutSelectBoxState.NONE;
-    }
-
     public void SetScriptWihtoutTyping(string script)
     {
         if (gameObject.activeSelf == false)
@@ -99,7 +93,6 @@ public class ScriptBoxUI : MonoBehaviour
         _sentence = _scripts[_curScriptIdx];
         _tmp.text = ""; // 이전 텍스트 초기화
 
-        HideSelectBox();
         StopAllCoroutines();
         StartCoroutine(TypeText());
     }

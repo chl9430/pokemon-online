@@ -53,10 +53,8 @@ public enum BattleSceneState
     OPPONENT_TRAINER_APPEARING = 94,
     AFTER_BATTLE_NPC_SCRIPTING = 95,
     GOT_REWARD_SCRIPTING = 96,
-    MOVING_SCENE = 1000,
     ESCAPE_SCRIPTING = 100,
     OnlineBattleSurrenderScripting = 997,
-    MovingScene = 998,
     Inactiving = 999
 }
 
@@ -97,6 +95,11 @@ public class BattleScene : BaseScene
         {
             _sceneState = value;
 
+            if (_sceneState == BattleSceneState.NONE)
+            {
+                _statusBox.gameObject.SetActive(false);
+            }
+
             if (_sceneState == BattleSceneState.SHOWING_POKEMON)
             {
                 _myPokemonArea.FillPokemonInfo(_myPokemon, true);
@@ -104,23 +107,10 @@ public class BattleScene : BaseScene
             }
 
             // 액션 선택 박스
-            if (_sceneState == BattleSceneState.MOVING_SCENE)
-            {
-                ContentManager.Instance.PlayScreenEffecter("FadeOut");
-            }
-            else if (_sceneState == BattleSceneState.ESCAPE_SCRIPTING)
-            {
-                ContentManager.Instance.ScriptBox.HideSelectBox();
-            }
-            else if (_sceneState == BattleSceneState.SHOWING_LEVEL_UP_STATUS_BOX)
+            if (_sceneState == BattleSceneState.SHOWING_LEVEL_UP_STATUS_BOX)
             {
                 _statusBox.gameObject.SetActive(true);
                 _statusBox.State = StatusBoxState.SHOWING_RATE;
-            }
-            else if (_sceneState == BattleSceneState.MOVING_SCENE)
-            {
-                _statusBox.gameObject.SetActive(false);
-                ContentManager.Instance.PlayScreenEffecter("FadeOut");
             }
             else
             {
@@ -138,10 +128,6 @@ public class BattleScene : BaseScene
                 };
                 ContentManager.Instance.ScriptBox.CreateSelectBox(btnNames, 1, 400, 100);
             }
-            else if (_sceneState == BattleSceneState.NEW_MOVE_NOT_LEARN_SCRIPTING)
-            {
-                ContentManager.Instance.ScriptBox.HideSelectBox();
-            }
         }
     }
 
@@ -158,19 +144,6 @@ public class BattleScene : BaseScene
 
         _playableDirector = GetComponent<PlayableDirector>();
         _moveInfoTMPs = _moveInfoBox.GetComponentsInChildren<TextMeshProUGUI>();
-
-        // 테스트 시 사용.
-        if (Managers.Network.Packet == null)
-        {
-            C_EnterPokemonBattleScene enterBattlePacket = new C_EnterPokemonBattleScene();
-            enterBattlePacket.PlayerId = -1;
-            enterBattlePacket.LocationNum = 0;
-            enterBattlePacket.BushNum = 0;
-
-            Managers.Network.Send(enterBattlePacket);
-        }
-        else
-            Managers.Network.SendSavedPacket();
     }
 
     public override void UpdateData(IMessage packet)
@@ -203,7 +176,7 @@ public class BattleScene : BaseScene
         {
             if (packet is S_EnterPokemonBattleScene)
             {
-                ContentManager.Instance.PlayScreenEffecter("PokemonAppear_FadeIn");
+                ContentManager.Instance.FadeInScreenEffect();
 
                 Managers.Object.MyPlayerController.State = CreatureState.Fight;
 
@@ -321,7 +294,7 @@ public class BattleScene : BaseScene
                             "Summary",
                             "Cancel"
                         };
-                        GameContentManager.Instance.OpenPokemonList(_myPokemons, actionBtnNames);
+                        GameContentManager.Instance.OpenPokemonList(_myPokemons, actionBtnNames, "FadeOut");
                     }
                     else
                     {
@@ -394,7 +367,7 @@ public class BattleScene : BaseScene
                             }
                             else
                             {
-                                SceneState = BattleSceneState.MOVING_SCENE;
+                                SendRequestDataPacket(RequestType.CheckPokemonEvolution);
                             }
                         }
                         else
@@ -435,7 +408,7 @@ public class BattleScene : BaseScene
             }
             else if (packet is S_SwitchBattlePokemon)
             {
-                ContentManager.Instance.PlayScreenEffecter("FadeIn_NonBroading");
+                ContentManager.Instance.FadeInScreenEffect();
 
                 S_SwitchBattlePokemon switchPokemonPacket = packet as S_SwitchBattlePokemon;
 
@@ -493,15 +466,8 @@ public class BattleScene : BaseScene
                 int reward = getRewardPacket.Money;
                 IList scripts = getRewardPacket.AfterBattleScripts;
 
-                if (reward > 0)
-                {
-                    RefillScriptBox(new string[] { $"Player defeated {_npcInfo.NpcType} {_npcInfo.NpcName}!" });
-                    SceneState = BattleSceneState.TRAINER_DEATED_SCRIPTING;
-                }
-                else
-                {
-                    SceneState = BattleSceneState.MOVING_SCENE;
-                }
+                RefillScriptBox(new string[] { $"Player defeated {_npcInfo.NpcType} {_npcInfo.NpcName}!" });
+                SceneState = BattleSceneState.TRAINER_DEATED_SCRIPTING;
             }
             else if (packet is S_CheckPokemonEvolution)
             {
@@ -511,19 +477,14 @@ public class BattleScene : BaseScene
 
                 if (evolvePokemonIdx != -1)
                 {
-                    GameContentManager.Instance.OpenPokemonEvolution(Managers.Object.MyPlayerController.MyPokemons[evolvePokemonIdx], evolutionPokemonName);
+                    GameContentManager.Instance.OpenPokemonEvolution(Managers.Object.MyPlayerController.MyPokemons[evolvePokemonIdx], evolutionPokemonName, "FadeOut");
                 }
                 else
                 {
                     C_ReturnGame returnGamePacket = new C_ReturnGame();
                     returnGamePacket.PlayerId = Managers.Object.MyPlayerController.Id;
 
-                    Managers.Scene.AsyncUnLoadScene(Define.Scene.Battle, () =>
-                    {
-                        ContentManager.Instance.ScriptBox.gameObject.SetActive(false);
-                        Managers.Scene.CurrentScene = GameObject.FindFirstObjectByType<GameScene>();
-                        Managers.Network.Send(returnGamePacket);
-                    });
+                    ContentManager.Instance.FadeOutCurSceneToUnload(Define.Scene.Battle, "FadeOut", returnGamePacket);
                 }
             }
             else if (packet is S_UseItemInListScene)
@@ -894,7 +855,7 @@ public class BattleScene : BaseScene
                                 }
                                 else
                                 {
-                                    SceneState = BattleSceneState.MOVING_SCENE;
+                                    SendRequestDataPacket(RequestType.CheckPokemonEvolution);
                                 }
                             }
                             else
@@ -964,7 +925,7 @@ public class BattleScene : BaseScene
 
                             if (selectBox.GetSelectedBtnData() as string == "Yes")
                             {
-                                GameContentManager.Instance.OpenMoveSelection(_expPokemon, _newMove);
+                                GameContentManager.Instance.OpenMoveSelection(_expPokemon, _newMove, "FadeOut");
                             }
                             else if (selectBox.GetSelectedBtnData() as string == "No")
                             {
@@ -996,9 +957,7 @@ public class BattleScene : BaseScene
                                     "Summary",
                                     "Cancel"
                                 };
-                                GameContentManager.Instance.OpenPokemonList(_myPokemons, actionBtnNames);
-
-                                ContentManager.Instance.ScriptBox.HideSelectBox();
+                                GameContentManager.Instance.OpenPokemonList(_myPokemons, actionBtnNames, "FadeOut");
                             }
                             else if (selectBox.GetSelectedBtnData() as string == "No")
                             {
@@ -1120,7 +1079,10 @@ public class BattleScene : BaseScene
 
                                     if (didCatch)
                                     {
-                                        SceneState = BattleSceneState.MOVING_SCENE;
+                                        C_ReturnGame returnGamePacket = new C_ReturnGame();
+                                        returnGamePacket.PlayerId = Managers.Object.MyPlayerController.Id;
+
+                                        ContentManager.Instance.FadeOutCurSceneToUnload(Define.Scene.Battle, "FadeOut", returnGamePacket);
                                     }
                                     else
                                     {
@@ -1190,7 +1152,7 @@ public class BattleScene : BaseScene
                 break;
             case BattleSceneState.GOT_REWARD_SCRIPTING:
                 {
-                    SceneState = BattleSceneState.MOVING_SCENE;
+                    SendRequestDataPacket(RequestType.CheckPokemonEvolution);
                 }
                 break;
             case BattleSceneState.ESCAPE_SCRIPTING:
@@ -1202,7 +1164,10 @@ public class BattleScene : BaseScene
 
                         if (canEscape)
                         {
-                            SceneState = BattleSceneState.MOVING_SCENE;
+                            C_ReturnGame returnGamePacket = new C_ReturnGame();
+                            returnGamePacket.PlayerId = Managers.Object.MyPlayerController.Id;
+
+                            ContentManager.Instance.FadeOutCurSceneToUnload(Define.Scene.Battle, "FadeOut", returnGamePacket);
                         }
                         else
                         {
@@ -1214,7 +1179,7 @@ public class BattleScene : BaseScene
                                     "Summary",
                                     "Cancel"
                                 };
-                                GameContentManager.Instance.OpenPokemonList(_myPokemons, actionBtnNames);
+                                GameContentManager.Instance.OpenPokemonList(_myPokemons, actionBtnNames, "FadeOut");
                             }
                             else
                             {
@@ -1222,24 +1187,6 @@ public class BattleScene : BaseScene
                             }
                         }
                     }
-                }
-                break;
-            case BattleSceneState.MOVING_SCENE:
-                {
-                    SendRequestDataPacket(RequestType.CheckPokemonEvolution);
-                }
-                break;
-            case BattleSceneState.MovingScene:
-                {
-                    C_ReturnGame returnGamePacket = new C_ReturnGame();
-                    returnGamePacket.PlayerId = Managers.Object.MyPlayerController.Id;
-
-                    Managers.Scene.AsyncUnLoadScene(Define.Scene.Battle, () =>
-                    {
-                        ContentManager.Instance.ScriptBox.gameObject.SetActive(false);
-                        Managers.Scene.CurrentScene = GameObject.FindFirstObjectByType<GameScene>();
-                        Managers.Network.Send(returnGamePacket);
-                    });
                 }
                 break;
         }
@@ -1255,9 +1202,10 @@ public class BattleScene : BaseScene
                 {
                     PopAllContents();
 
-                    ContentManager.Instance.PlayScreenEffecter("FadeOut");
+                    C_ReturnGame returnGamePacket = new C_ReturnGame();
+                    returnGamePacket.PlayerId = Managers.Object.MyPlayerController.Id;
 
-                    SceneState = BattleSceneState.MovingScene;
+                    ContentManager.Instance.FadeOutCurSceneToUnload(Define.Scene.Battle, "FadeOut", returnGamePacket);
                 }
                 break;
         }

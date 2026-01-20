@@ -50,14 +50,9 @@ public class PokemonExchangeScene : BaseScene
             }
             else if (_state == PokemonExchangeSceneState.MOVING_TO_SUMMARY_SCENE)
             {
-                ContentManager.Instance.PlayScreenEffecter("BlackFadeOut");
                 _pokemonSelectArea.State = CancelSelectAreaState.NONE;
                 _actionSelectBox.UIState = GridLayoutSelectBoxState.NONE;
                 ContentManager.Instance.ScriptBox.ScriptSelectBox.UIState = GridLayoutSelectBoxState.NONE;
-            }
-            else if (_state == PokemonExchangeSceneState.FINISH_EXCHANGE_SCRIPTING)
-            {
-                ContentManager.Instance.ScriptBox.HideSelectBox();
             }
             else if (_state == PokemonExchangeSceneState.EXIT_EXCHANGE_SCRIPTING)
             {
@@ -114,7 +109,7 @@ public class PokemonExchangeScene : BaseScene
             _myPlayerInfo = playerInfo;
             _otherPlayerInfo = otherPlayerInfo;
 
-            ContentManager.Instance.PlayScreenEffecter("FadeIn_NonBroading");
+            //ContentManager.Instance.PlayScreenEffecter("FadeIn_NonBroading");
 
             // 나와 상대방 이름 렌더링
             _playerName.text = playerInfo.PlayerName;
@@ -390,7 +385,6 @@ public class PokemonExchangeScene : BaseScene
                                 ContentManager.Instance.ScriptBox.BeginScriptTyping(scripts, true);
 
                                 _state = PokemonExchangeSceneState.WAITING_FINAL_ANSWER;
-                                ContentManager.Instance.ScriptBox.HideSelectBox();
                             }
                             else if (selectBox.GetSelectedBtnData() as string == "Summary")
                             {
@@ -438,7 +432,7 @@ public class PokemonExchangeScene : BaseScene
                 break;
             case PokemonExchangeSceneState.EXIT_EXCHANGE_SCRIPTING:
                 {
-                    ContentManager.Instance.PlayScreenEffecter("BlackFadeOut");
+                    //ContentManager.Instance.PlayScreenEffecter("BlackFadeOut");
 
                     _state = PokemonExchangeSceneState.MOVING_TO_GAME_SCENE;
                 }

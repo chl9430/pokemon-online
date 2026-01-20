@@ -1,24 +1,36 @@
 using UnityEngine;
 using UnityEngine.Playables;
 
+public enum MoveSceneType
+{
+    None = 0,
+    MovingNewScene = 1,
+    OpenUI = 2,
+    UnloadCurScene = 3,
+    CloseUI = 4,
+}
+
 public class ScreenEffecter : MonoBehaviour
 {
-    string _curAnimName;
     Animator _anim;
+
+    MoveSceneType _moveSceneType;
 
     void Start()
     {
         _anim = GetComponent<Animator>();
     }
 
-    public void DestroyEffecter()
-    {
-        Destroy(gameObject);
-    }
-
     public void BroadcastToScene()
     {
-        Managers.Scene.CurrentScene.DoNextAction();
+        if (_moveSceneType == MoveSceneType.MovingNewScene)
+            ContentManager.Instance.MoveToAnotherScene();
+        else if (_moveSceneType == MoveSceneType.UnloadCurScene)
+            ContentManager.Instance.UnloadCurScene();
+        else if (_moveSceneType == MoveSceneType.OpenUI)
+            GameContentManager.Instance.OpenNextUI();
+        else if (_moveSceneType == MoveSceneType.CloseUI)
+            GameContentManager.Instance.PopCurUI();
     }
 
     public void PlayEffect(string animName)
@@ -26,7 +38,16 @@ public class ScreenEffecter : MonoBehaviour
         if (_anim == null)
             _anim = GetComponent<Animator>();
 
-        _curAnimName = animName;
         _anim.Play(animName);
+    }
+
+    public void SetFadeIn()
+    {
+        _anim.SetTrigger("fadeIn");
+    }
+
+    public void SetMoveSceneType(MoveSceneType moveSceneType)
+    {
+        _moveSceneType = moveSceneType;
     }
 }

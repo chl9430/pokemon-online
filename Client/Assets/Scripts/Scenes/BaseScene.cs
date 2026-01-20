@@ -92,8 +92,9 @@ public abstract class BaseScene : MonoBehaviour
         }
     }
 
-    public virtual void FinishContents()
+    public virtual void FinishContents(bool isActive)
     {
+        _contentStack.Peek().gameObject.SetActive(isActive);
         _contentStack.Pop();
 
         if (_contentStack.Count > 0)

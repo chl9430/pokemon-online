@@ -13,8 +13,6 @@ public enum GameSceneState
     NONE = 0,
     MOVING_PLAYER = 1,
     WATCHING_MENU = 2,
-    WILD_POKEMON_APPEARING_EFFECT = 3,
-    MOVING_ANOTHER_ROOM = 4,
 }
 
 public class GameScene : BaseScene
@@ -33,21 +31,6 @@ public class GameScene : BaseScene
     protected override void Start()
     {
         base.Start();
-
-        // 테스트 시 사용.
-        if (Managers.Network.Packet == null)
-        {
-            //C_EnterRoom enterRoomPacket = new C_EnterRoom();
-            //enterRoomPacket.PlayerId = -1;
-
-            //SceneType = Define.Scene.Game;
-
-            //Managers.Network.Send(enterRoomPacket);
-        }
-        else
-        {
-            // Managers.Network.SendSavedPacket();
-        }
     }
 
     public override void UpdateData(IMessage packet)
@@ -58,7 +41,7 @@ public class GameScene : BaseScene
         {
             if (packet is S_EnterRoom)
             {
-                ContentManager.Instance.PlayScreenEffecter("FadeIn_NonBroading");
+                ContentManager.Instance.FadeInScreenEffect();
 
                 S_EnterRoom s_enterRoomPacket = packet as S_EnterRoom;
                 PlayerInfo playerInfo = s_enterRoomPacket.PlayerInfo;
@@ -106,7 +89,7 @@ public class GameScene : BaseScene
             }
             else if (packet is S_ReturnGame)
             {
-                ContentManager.Instance.PlayScreenEffecter("FadeIn_NonBroading");
+                ContentManager.Instance.FadeInScreenEffect();
 
                 Managers.Object.MyPlayerController.State = CreatureState.Idle;
 
@@ -183,49 +166,6 @@ public class GameScene : BaseScene
                     {
                         GameContentManager.Instance.OpenGameMenu();
                     }
-                    else if (state == CreatureState.Fight)
-                    {
-                        _sceneState = GameSceneState.WILD_POKEMON_APPEARING_EFFECT;
-                    }
-                }
-                break;
-            case GameSceneState.WATCHING_MENU:
-                {
-                    
-                }
-                break;
-            case GameSceneState.WILD_POKEMON_APPEARING_EFFECT:
-                {
-                    if (Managers.Network.Packet is C_EnterPokemonBattleScene)
-                        Managers.Scene.AsyncLoadScene(Define.Scene.Battle, () => {
-                            ContentManager.Instance.ScriptBox.gameObject.SetActive(false);
-                            Managers.Scene.CurrentScene = GameObject.FindFirstObjectByType<BattleScene>();
-                        }, LoadSceneMode.Additive);
-
-                    _sceneState = GameSceneState.NONE;
-                }
-                break;
-            case GameSceneState.MOVING_ANOTHER_ROOM:
-                {
-                    string mapName = Managers.Map.CurrentGrid.transform.parent.name;
-
-                    Managers.Scene.AsyncLoadScene(Define.Scene.Game, () => {
-                        ContentManager.Instance.ScriptBox.gameObject.SetActive(false);
-                        Managers.Scene.CurrentScene = GameObject.FindFirstObjectByType<GameScene>();
-
-                        C_EnterRoom enterRoomPacket = new C_EnterRoom();
-                        enterRoomPacket.PlayerId = Managers.Object.MyPlayerController.Id;
-                        
-                        int roomId = int.Parse(mapName.Substring(mapName.Length - 1));
-                        RoomType roomType = (RoomType)Enum.Parse(typeof(RoomType), mapName.Substring(0, mapName.Length - 2));
-
-                        enterRoomPacket.PrevRoomId = roomId;
-                        enterRoomPacket.PrevRoomType = roomType;
-
-                        Managers.Network.Send(enterRoomPacket);
-                    });
-
-                    _sceneState = GameSceneState.NONE;
                 }
                 break;
         }
@@ -239,20 +179,14 @@ public class GameScene : BaseScene
             int roomId = meetPokemonPacket.RoomId;
             int bushNum = meetPokemonPacket.BushNum;
 
-            _packet = null;
-
             C_EnterPokemonBattleScene enterPokemonBattleScene = new C_EnterPokemonBattleScene();
             enterPokemonBattleScene.PlayerId = Managers.Object.MyPlayerController.Id;
             enterPokemonBattleScene.LocationNum = roomId;
             enterPokemonBattleScene.BushNum = bushNum;
 
-            Managers.Network.SavePacket(enterPokemonBattleScene);
+            ContentManager.Instance.FadeOutSceneToMove(Define.Scene.Battle, "BattleEffect_FadeOut", enterPokemonBattleScene);
 
-            Managers.Object.MyPlayerController.State = CreatureState.Fight;
-
-            ContentManager.Instance.PlayScreenEffecter("PokemonAppear");
-
-            _sceneState = GameSceneState.WILD_POKEMON_APPEARING_EFFECT;
+            _sceneState = GameSceneState.NONE;
 
             return true;
         }
@@ -262,9 +196,18 @@ public class GameScene : BaseScene
 
     public void SaveEnterScenePacket()
     {
-        ContentManager.Instance.PlayScreenEffecter("FadeOut");
+        string mapName = Managers.Map.CurrentGrid.transform.parent.name;
 
-        _sceneState = GameSceneState.MOVING_ANOTHER_ROOM;
+        C_EnterRoom enterRoomPacket = new C_EnterRoom();
+        enterRoomPacket.PlayerId = Managers.Object.MyPlayerController.Id;
+
+        int roomId = int.Parse(mapName.Substring(mapName.Length - 1));
+        RoomType roomType = (RoomType)Enum.Parse(typeof(RoomType), mapName.Substring(0, mapName.Length - 2));
+
+        enterRoomPacket.PrevRoomId = roomId;
+        enterRoomPacket.PrevRoomType = roomType;
+
+        ContentManager.Instance.FadeOutSceneToMove(Define.Scene.Game, "FadeOut", enterRoomPacket);
     }
 
     public override void Clear()

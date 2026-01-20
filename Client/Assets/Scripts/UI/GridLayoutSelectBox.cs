@@ -115,10 +115,16 @@ public class GridLayoutSelectBox : MonoBehaviour
         }
         else if (Input.GetKeyDown(KeyCode.D))
         {
+            UIState = GridLayoutSelectBoxState.NONE;
+            gameObject.SetActive(false);
+
             Managers.Scene.CurrentScene.DoNextAction(Define.InputSelectBoxEvent.SELECT);
         }
         else if (Input.GetKeyDown(KeyCode.S))
         {
+            UIState = GridLayoutSelectBoxState.NONE;
+            gameObject.SetActive(false);
+
             Managers.Scene.CurrentScene.DoNextAction(Define.InputSelectBoxEvent.BACK);
         }
     }

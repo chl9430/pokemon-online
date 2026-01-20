@@ -348,6 +348,8 @@ public class MyPlayerController : PlayerController
                     State = CreatureState.Idle;
                 }
             }
+            else
+                State = CreatureState.Fight;
         }
     }
 
