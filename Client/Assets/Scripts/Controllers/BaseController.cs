@@ -84,8 +84,7 @@ public class BaseController : MonoBehaviour
     {
         _animator = GetComponent<Animator>();
         _sprite = GetComponent<SpriteRenderer>();
-        //Vector3 pos = Managers.Map.CurrentGrid.CellToWorld(CellPos) + new Vector3(0.5f, 0.5f);
-        //transform.position = pos;
+        SyncPos();
 
         UpdateAnimation();
     }
@@ -99,7 +98,7 @@ public class BaseController : MonoBehaviour
         if (_animator == null || _sprite == null)
             return;
 
-        if (State == CreatureState.Idle || State == CreatureState.NoneState)
+        if (State == CreatureState.Idle || State == CreatureState.NoneState || State == CreatureState.Fight)
         {
             switch (Dir)
             {
@@ -139,31 +138,16 @@ public class BaseController : MonoBehaviour
                     break;
             }
         }
-        else
+        else if (State == CreatureState.NurseThankYou)
         {
-            switch (Dir)
-            {
-                case MoveDir.Up:
-                    _animator.Play("IDLE_UP");
-                    break;
-                case MoveDir.Down:
-                    _animator.Play("IDLE_DOWN");
-                    break;
-                case MoveDir.Left:
-                    _sprite.flipX = false;
-                    _animator.Play("IDLE_LEFT");
-                    break;
-                case MoveDir.Right:
-                    _sprite.flipX = true;
-                    _animator.Play("IDLE_LEFT");
-                    break;
-            }
+            _animator.Play("Nurse_ThankYou");
         }
     }
 
     protected virtual void SendPosInfoPacket()
     {
         C_Move movePacket = new C_Move();
+        movePacket.ObjectId = Id;
         movePacket.PosInfo = PosInfo;
         Managers.Network.Send(movePacket);
     }

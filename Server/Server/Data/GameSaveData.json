@@ -418,7 +418,7 @@
           "State": 1,
           "MoveDir": 1,
           "PosX": 0,
-          "PosY": 0
+          "PosY": -1
         }
       },
       "PlayerName": "VILLA",

@@ -198,7 +198,8 @@ message S_Despawn {
 }
 
 message C_Move {
-    PositionInfo posInfo = 1;
+    int32 objectId = 1;
+    PositionInfo posInfo = 2;
 }
 
 message S_Move {
@@ -744,6 +745,9 @@ enum CreatureState {
     Exchanging = 8;
     PokemonEvolving = 9;
     Shopping = 10;
+
+    // Nurse
+    NurseThankYou = 11;
 }
 
 enum MoveDir {

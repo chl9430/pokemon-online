@@ -156,8 +156,8 @@ public class PokemonCenterContent : ObjectContents
                 break;
             case PokemonCenterContentState.TAKING_POKEMON_SCRIPTING:
                 {
-                    Animator anim = GetComponent<Animator>();
-                    anim.Play("IDLE_LEFT");
+                    CreatureController controller = GetComponent<CreatureController>();
+                    controller.Dir = MoveDir.Left;
 
                     State = PokemonCenterContentState.NURSE_TURNING_LEFT;
                 }
@@ -183,8 +183,8 @@ public class PokemonCenterContent : ObjectContents
 
                         _recoveryMachine.DestroyMachineBall();
 
-                        Animator anim = GetComponent<Animator>();
-                        anim.Play("IDLE_DOWN");
+                        CreatureController controller = GetComponent<CreatureController>();
+                        controller.Dir = MoveDir.Down;
 
                         List<string> scripts = new List<string>()
                         {
@@ -197,14 +197,17 @@ public class PokemonCenterContent : ObjectContents
                 break;
             case PokemonCenterContentState.THANK_YOU_SCRIPTING:
                 {
-                    Animator anim = GetComponent<Animator>();
-                    anim.Play("Nurse_ThankYou");
+                    CreatureController controller = GetComponent<CreatureController>();
+                    controller.State = CreatureState.NurseThankYou;
 
                     State = PokemonCenterContentState.NURSE_THANK_ANIMATION;
                 }
                 break;
             case PokemonCenterContentState.NURSE_THANK_ANIMATION:
                 {
+                    CreatureController controller = GetComponent<CreatureController>();
+                    controller.State = CreatureState.Idle;
+
                     State = PokemonCenterContentState.GOOD_BYE_SCRIPTING;
 
                     List<string> scrtips = new List<string>()

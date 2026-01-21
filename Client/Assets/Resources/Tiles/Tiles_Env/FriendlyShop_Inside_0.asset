@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 13312, guid: 0000000000000000e000000000000000, type: 0}
   m_Name: FriendlyShop_Inside_0
   m_EditorClassIdentifier: 
-  m_Sprite: {fileID: 4748848125030675730, guid: 23c627c9b7be66344ac4a114fd8ad83b, type: 3}
+  m_Sprite: {fileID: 4748848125030675730, guid: f3eac17583f1ea343b47f2eb805f3d83, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_Transform:
     e00: 1

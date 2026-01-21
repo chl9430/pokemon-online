@@ -8,8 +8,6 @@ public class ObjectContents : MonoBehaviour
     protected bool _isActionStop = false;
     protected IMessage _packet;
 
-    public IMessage Packet { set { _packet = value; } }
-
     public void SetIsActionStop(bool isActionStop)
     {
         _isActionStop = isActionStop;

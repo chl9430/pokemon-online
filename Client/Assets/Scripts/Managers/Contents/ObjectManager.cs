@@ -30,13 +30,11 @@ public class ObjectManager
             }
 
             bc.PosInfo = info.PosInfo;
-            bc.SyncPos();
             bc.Id = info.ObjectId;
         }
         else if (info.ObjectType == GameObjectType.Npc)
         {
             bc.PosInfo = info.PosInfo;
-            bc.SyncPos();
             bc.Id = info.ObjectId;
         }
 
@@ -80,6 +78,5 @@ public class ObjectManager
         foreach (GameObject obj in _objects.Values)
             Managers.Resource.Destroy(obj);
         _objects.Clear();
-        // MyPlayer = null;
     }
 }

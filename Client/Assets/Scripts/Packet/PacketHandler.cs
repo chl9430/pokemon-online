@@ -102,7 +102,7 @@ public class PacketHandler
             return;
 
         //Debug.Log($"{movePacket.ObjectId} : [{movePacket.PosInfo.State}], [{movePacket.PosInfo.PosX}, {movePacket.PosInfo.PosY}]");
-
+        
         Vector3 curPos = new Vector3(bc.PosInfo.PosX, bc.PosInfo.PosY, 0);
         Vector3 nextPos = new Vector3(movePacket.PosInfo.PosX, movePacket.PosInfo.PosY, 0);
 

@@ -228,31 +228,34 @@ namespace Server
             PositionInfo movePosInfo = movePacket.PosInfo;
             ObjectInfo info = player.Info;
 
-            // 방향만 바꾼게 아니라면(실제로 이동하였다면) 
-            if (movePosInfo.PosX != info.PosInfo.PosX || movePosInfo.PosY != info.PosInfo.PosY)
+            if (player.Id == movePacket.ObjectId)
             {
-                TileType nextTile = Map.GetTileType(new Vector2Int(movePosInfo.PosX, movePosInfo.PosY));
-
-                if (nextTile == TileType.COLLISION)
+                // 방향만 바꾼게 아니라면(실제로 이동하였다면)
+                if (movePosInfo.PosX != info.PosInfo.PosX || movePosInfo.PosY != info.PosInfo.PosY)
                 {
-                    return;
-                }
-                else if (nextTile == TileType.BUSH)
-                {
-                    if (_ran == null)
-                        _ran = new Random();
+                    TileType nextTile = Map.GetTileType(new Vector2Int(movePosInfo.PosX, movePosInfo.PosY));
 
-                    int metPokemonRate = _ran.Next(0, 100);
-
-                    if (metPokemonRate < 20)
+                    if (nextTile == TileType.COLLISION)
                     {
-                        int bushNum = Map.GetBushId(new Vector2Int(movePosInfo.PosX, movePosInfo.PosY));
+                        return;
+                    }
+                    else if (nextTile == TileType.BUSH)
+                    {
+                        if (_ran == null)
+                            _ran = new Random();
 
-                        S_MeetWildPokemon meetPokemonPacket = new S_MeetWildPokemon();
-                        meetPokemonPacket.RoomId = RoomId;
-                        meetPokemonPacket.BushNum = bushNum;
+                        int metPokemonRate = _ran.Next(0, 100);
 
-                        player.Session.Send(meetPokemonPacket);
+                        if (metPokemonRate < 20)
+                        {
+                            int bushNum = Map.GetBushId(new Vector2Int(movePosInfo.PosX, movePosInfo.PosY));
+
+                            S_MeetWildPokemon meetPokemonPacket = new S_MeetWildPokemon();
+                            meetPokemonPacket.RoomId = RoomId;
+                            meetPokemonPacket.BushNum = bushNum;
+
+                            player.Session.Send(meetPokemonPacket);
+                        }
                     }
                 }
             }
@@ -263,7 +266,7 @@ namespace Server
 
             // 타인한테 정보 전송
             S_Move resMovePacket = new S_Move();
-            resMovePacket.ObjectId = player.Info.ObjectId;
+            resMovePacket.ObjectId = movePacket.ObjectId;
             resMovePacket.PosInfo = movePacket.PosInfo;
 
             Broadcast(player, resMovePacket);

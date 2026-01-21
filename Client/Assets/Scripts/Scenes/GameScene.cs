@@ -8,17 +8,8 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public enum GameSceneState
-{
-    NONE = 0,
-    MOVING_PLAYER = 1,
-    WATCHING_MENU = 2,
-}
-
 public class GameScene : BaseScene
 {
-    GameSceneState _sceneState = GameSceneState.NONE;
-
     protected override void Init()
     {
         base.Init();
@@ -84,8 +75,6 @@ public class GameScene : BaseScene
                     _contentStack.Push(Managers.Object.FindById(npc.Id).GetComponent<ObjectContents>());
                     _contentStack.Peek().UpdateData(_packet);
                 }
-
-                _sceneState = GameSceneState.MOVING_PLAYER;
             }
             else if (packet is S_ReturnGame)
             {
@@ -105,8 +94,6 @@ public class GameScene : BaseScene
                     bc.Dir = player.PosInfo.MoveDir;
                     bc.State = CreatureState.Idle;
                 }
-
-                _sceneState = GameSceneState.MOVING_PLAYER;
             }
             else if (packet is S_MeetWildPokemon)
             {
@@ -144,30 +131,10 @@ public class GameScene : BaseScene
 
     public override void DoNextAction(object value = null)
     {
-        // 게임 메뉴도 콘텐츠 방식으로 수정 필요
         if (_contentStack.Count > 0)
         {
             _contentStack.Peek().SetNextAction(value);
             return;
-        }
-
-        switch (_sceneState)
-        {
-            case GameSceneState.NONE:
-                {
-                    
-                }
-                break;
-            case GameSceneState.MOVING_PLAYER:
-                {
-                    CreatureState state = (CreatureState)value;
-
-                    if (state == CreatureState.WatchMenu)
-                    {
-                        GameContentManager.Instance.OpenGameMenu();
-                    }
-                }
-                break;
         }
     }
 
@@ -185,8 +152,6 @@ public class GameScene : BaseScene
             enterPokemonBattleScene.BushNum = bushNum;
 
             ContentManager.Instance.FadeOutSceneToMove(Define.Scene.Battle, "BattleEffect_FadeOut", enterPokemonBattleScene);
-
-            _sceneState = GameSceneState.NONE;
 
             return true;
         }

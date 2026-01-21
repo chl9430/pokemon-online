@@ -58,10 +58,6 @@ public class PlayerController : CreatureController
     {
         switch (State)
         {
-            case CreatureState.Idle:
-                SyncPos();
-                // moveTimer = 0;
-                break;
             case CreatureState.Walk:
                 MoveToNextPos();
                 break;
@@ -111,10 +107,5 @@ public class PlayerController : CreatureController
             moveTimer = 0f;
             transform.position = destPos;
         }
-    }
-
-    protected virtual void CheckUpdatedFlag()
-    {
-
     }
 }

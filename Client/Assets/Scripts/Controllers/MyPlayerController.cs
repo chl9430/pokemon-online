@@ -88,23 +88,19 @@ public class MyPlayerController : PlayerController
             if (createNewIdx)
             {
                 categoryItems[foundItemIdx].ItemCnt = foundItemCnt;
-                //ContentManager.Instance.BagContent.UpdateItemInIndex(foundItemIdx);
 
                 newItem.ItemCnt = newItemCnt;
                 categoryItems.Add(newItem);
-                //ContentManager.Instance.BagContent.AddNewItem(newItem);
             }
             else
             {
                 categoryItems[foundItemIdx].ItemCnt = foundItemCnt;
-                //ContentManager.Instance.BagContent.UpdateItemInIndex(foundItemIdx);
             }
         }
         else
         {
             newItem.ItemCnt = newItemCnt;
             categoryItems.Add(newItem);
-            //ContentManager.Instance.BagContent.AddNewItem(newItem);
         }
     }
 
@@ -121,12 +117,12 @@ public class MyPlayerController : PlayerController
 
     void LateUpdate()
     {
-        // Camera.main.transform.position = new Vector3(transform.position.x, transform.position.y, -10);
+        Camera.main.transform.position = new Vector3(transform.position.x, transform.position.y, -10);
     }
 
     protected override void UpdateController()
     {
-        // base.UpdateController();
+        base.UpdateController();
 
         switch (State)
         {
@@ -136,16 +132,29 @@ public class MyPlayerController : PlayerController
                 ToggleMenu();
                 BeginTalk();
                 break;
-            case CreatureState.Walk:
-                MoveToNextPos();
-                break;
-            case CreatureState.Fight:
-                break;
-            case CreatureState.Talk:
-                break;
         }
 
         CheckUpdatedFlag();
+    }
+
+    void ChangeDir()
+    {
+        if (Input.GetKeyDown(KeyCode.UpArrow))
+        {
+            CheckDir(MoveDir.Up);
+        }
+        else if (Input.GetKeyDown(KeyCode.DownArrow))
+        {
+            CheckDir(MoveDir.Down);
+        }
+        else if (Input.GetKeyDown(KeyCode.LeftArrow))
+        {
+            CheckDir(MoveDir.Left);
+        }
+        else if (Input.GetKeyDown(KeyCode.RightArrow))
+        {
+            CheckDir(MoveDir.Right);
+        }
     }
 
     void CheckDir(MoveDir moveDir)
@@ -169,72 +178,63 @@ public class MyPlayerController : PlayerController
         }
     }
 
-    void ChangeDir()
-    {
-        if (Input.GetKeyDown(KeyCode.UpArrow))
-        {
-            CheckDir(MoveDir.Up);
-        }
-        else if (Input.GetKeyDown(KeyCode.DownArrow))
-        {
-            CheckDir(MoveDir.Down);
-        }
-        else if (Input.GetKeyDown(KeyCode.LeftArrow))
-        {
-            CheckDir(MoveDir.Left);
-        }
-        else if (Input.GetKeyDown(KeyCode.RightArrow))
-        {
-            CheckDir(MoveDir.Right);
-        }
-    }
-
     void ChangeToWalk()
     {
         if (State == CreatureState.Walk)
             return;
 
+        Vector3Int destPos = CellPos;
+
+        switch (Dir)
+        {
+            case MoveDir.Up:
+                destPos += Vector3Int.up;
+                break;
+            case MoveDir.Down:
+                destPos += Vector3Int.down;
+                break;
+            case MoveDir.Left:
+                destPos += Vector3Int.left;
+                break;
+            case MoveDir.Right:
+                destPos += Vector3Int.right;
+                break;
+        }
+
         if (Input.GetKey(KeyCode.UpArrow))
         {
             Dir = MoveDir.Up;
             moveTimer += Time.deltaTime;
-
-            if (moveTimer > moveTimerLimit)
-            {
-                moveTimer = 0;
-                State = CreatureState.Walk;
-                SetToNextPos();
-            }
         }
         else if (Input.GetKey(KeyCode.DownArrow))
         {
             Dir = MoveDir.Down;
             moveTimer += Time.deltaTime;
-
-            if (moveTimer > moveTimerLimit)
-            {
-                moveTimer = 0;
-                State = CreatureState.Walk;
-                SetToNextPos();
-            }
         }
         else if (Input.GetKey(KeyCode.LeftArrow))
         {
             Dir = MoveDir.Left;
             moveTimer += Time.deltaTime;
-
-            if (moveTimer > moveTimerLimit)
-            {
-                moveTimer = 0;
-                State = CreatureState.Walk;
-                SetToNextPos();
-            }
         }
         else if (Input.GetKey(KeyCode.RightArrow))
         {
             Dir = MoveDir.Right;
             moveTimer += Time.deltaTime;
+        }
+        else
+        {
+            moveTimer = 0;
+            return;
+        }
 
+        if (Managers.Map.IsDoor(destPos))
+        {
+            State = CreatureState.NoneState;
+
+            ((GameScene)Managers.Scene.CurrentScene).SaveEnterScenePacket();
+        }
+        else
+        {
             if (moveTimer > moveTimerLimit)
             {
                 moveTimer = 0;
@@ -242,9 +242,39 @@ public class MyPlayerController : PlayerController
                 SetToNextPos();
             }
         }
-        else
+    }
+
+    void SetToNextPos()
+    {
+        Vector3Int destPos = CellPos;
+
+        switch (Dir)
         {
-            moveTimer = 0;
+            case MoveDir.Up:
+                destPos += Vector3Int.up;
+                break;
+            case MoveDir.Down:
+                destPos += Vector3Int.down;
+                break;
+            case MoveDir.Left:
+                destPos += Vector3Int.left;
+                break;
+            case MoveDir.Right:
+                destPos += Vector3Int.right;
+                break;
+        }
+
+        // 장애물 검사
+        if (Managers.Map.CanGo(destPos) && Managers.Object.FindCreature(destPos) == null)
+        {
+            if (Managers.Map.IsDoor(destPos))
+            {
+                State = CreatureState.NoneState;
+
+                ((GameScene)Managers.Scene.CurrentScene).SaveEnterScenePacket();
+            }
+            else
+                CellPos = destPos;
         }
     }
 
@@ -254,7 +284,7 @@ public class MyPlayerController : PlayerController
         {
             State = CreatureState.WatchMenu;
 
-            Managers.Scene.CurrentScene.DoNextAction(State);
+            GameContentManager.Instance.OpenGameMenu();
         }
     }
 
@@ -353,47 +383,9 @@ public class MyPlayerController : PlayerController
         }
     }
 
-    void SetToNextPos()
-    {
-        Vector3Int destPos = CellPos;
-
-        switch (Dir)
-        {
-            case MoveDir.Up:
-                destPos += Vector3Int.up;
-                break;
-            case MoveDir.Down:
-                destPos += Vector3Int.down;
-                break;
-            case MoveDir.Left:
-                destPos += Vector3Int.left;
-                break;
-            case MoveDir.Right:
-                destPos += Vector3Int.right;
-                break;
-        }
-
-        // 장애물 검사
-        if (Managers.Map.CanGo(destPos) && Managers.Object.FindCreature(destPos) == null)
-        {
-            if (Managers.Map.IsDoor(destPos))
-            {
-                State = CreatureState.NoneState;
-
-                ((GameScene)Managers.Scene.CurrentScene).SaveEnterScenePacket();
-            }
-            else
-                CellPos = destPos;
-        }
-    }
-
     protected override void CheckUpdatedFlag()
     {
-        if (_updated)
-        {
-            SendPosInfoPacket();
-            _updated = false;
-        }
+        base.CheckUpdatedFlag();
     }
 
     bool OnApplicationWantsToQuit()
