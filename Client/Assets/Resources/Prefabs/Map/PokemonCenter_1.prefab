@@ -1971,7 +1971,7 @@ GameObject:
   - component: {fileID: 9186320844326623156}
   - component: {fileID: 8689034306300629382}
   m_Layer: 0
-  m_Name: Tilemap_Door_1
+  m_Name: Tilemap_Door1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

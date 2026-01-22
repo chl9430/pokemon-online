@@ -68,6 +68,12 @@ namespace Server
         DOOR = 4,
     }
 
+    public struct TileInfo
+    {
+        public TileType tileType;
+        public int id;
+    }
+
     public class Map
     {
         public int MinX { get; set; }
@@ -78,25 +84,23 @@ namespace Server
         public int SizeX { get { return MaxX - MinX + 1; } }
         public int SizeY { get { return MaxY - MinY + 1; } }
 
-        TileType[,] _collision;
-        int[,] _bushTileGrid;
-        int[,] _doorTileGrid;
+        TileInfo[,] _tiles;
         GameObject[,] _objects;
         GameRoom _gameRoom;
 
         public GameRoom GameRoom { set { _gameRoom = value; } }
 
-        public TileType GetTileType(Vector2Int cellPos)
+        public TileInfo? GetTileInfo(Vector2Int cellPos)
         {
             if (cellPos.x < MinX || cellPos.x > MaxX)
-                return TileType.COLLISION;
+                return null;
             if (cellPos.y < MinY || cellPos.y > MaxY)
-                return TileType.COLLISION;
+                return null;
 
             int x = cellPos.x - MinX;
             int y = MaxY - cellPos.y;
 
-            return _collision[y, x];
+            return _tiles[y, x];
         }
 
         public GameObject Find(Vector2Int cellPos)
@@ -122,7 +126,12 @@ namespace Server
             int x = cellPos.x - MinX;
             int y = MaxY - cellPos.y;
 
-            return _bushTileGrid[y, x];
+            if (_tiles[y, x].tileType == TileType.BUSH)
+            {
+                return _tiles[y, x].id;
+            }
+            else
+                return 0;
         }
 
         public int GetDoorId(Vector2Int cellPos)
@@ -135,23 +144,31 @@ namespace Server
             int x = cellPos.x - MinX;
             int y = MaxY - cellPos.y;
 
-            return _doorTileGrid[y, x];
+            if (_tiles[y, x].tileType == TileType.DOOR)
+            {
+                return _tiles[y, x].id;
+            }
+            else
+                return 0;
         }
 
         public Vector2Int GetDoorPos(int doorId)
         {
             Vector2Int doorPos = new Vector2Int();
 
-            for (int i = 0; i < _doorTileGrid.GetLength(0); i++)
+            for (int i = 0; i < _tiles.GetLength(0); i++)
             {
-                for (int j = 0; j < _doorTileGrid.GetLength(1); j++)
+                for (int j = 0; j < _tiles.GetLength(1); j++)
                 {
-                    if (_doorTileGrid[i, j] == doorId)
+                    if (_tiles[i, j].tileType == TileType.DOOR)
                     {
-                        doorPos.x = j + MinX;
-                        doorPos.y = MaxY - i;
+                        if (_tiles[i, j].id == doorId)
+                        {
+                            doorPos.x = j + MinX;
+                            doorPos.y = MaxY - i;
 
-                        return doorPos;
+                            return doorPos;
+                        }
                     }
                 }
             }
@@ -169,10 +186,12 @@ namespace Server
                 return;
 
             PositionInfo posInfo = gameObject.PosInfo;
-            TileType tile = GetTileType(dest);
-            if (tile == TileType.COLLISION)
+            TileInfo? tile = GetTileInfo(dest);
+
+            if (tile != null)
             {
-                return;
+                if (tile.Value.tileType == TileType.COLLISION)
+                    return;
             }
 
             int x = dest.x - MinX;
@@ -209,90 +228,68 @@ namespace Server
         {
             string mapName = $"{roomType.ToString()}_" + mapId.ToString();
 
-            string text = File.ReadAllText($"{pathPrefix}/{mapName}.txt");
-            StringReader reader = new StringReader(text);
+            string[] lines = File.ReadAllLines($"{pathPrefix}/{mapName}.txt");
 
-            MinX = int.Parse(reader.ReadLine());
-            MaxX = int.Parse(reader.ReadLine());
-            MinY = int.Parse(reader.ReadLine());
-            MaxY = int.Parse(reader.ReadLine());
+            MinX = int.Parse(lines[0].Trim());
+            MaxX = int.Parse(lines[1].Trim());
+            MinY = int.Parse(lines[2].Trim());
+            MaxY = int.Parse(lines[3].Trim());
 
             int xCount = MaxX - MinX + 1;
             int yCount = MaxY - MinY + 1;
-
-            _collision = new TileType[yCount, xCount];
-            _bushTileGrid = new int[yCount, xCount];
-            _doorTileGrid = new int[yCount, xCount];
+            _tiles = new TileInfo[yCount, xCount];
             _objects = new GameObject[yCount, xCount];
 
             // 타일맵의 정보를 불러온다.
-            for (int y = 0; y < yCount; y++)
+            for (int i = 4; i < lines.Length; i++)
             {
-                string line = reader.ReadLine();
-                for (int x = 0; x < xCount; x++)
+                // 한 줄을 콤마로 분리하고 공백 제거
+                string[] cells = lines[i].Split(',');
+
+                int y = i - 4;
+
+                for (int x = 0; x < cells.Length; x++)
                 {
-                    if (line[x] == '1')
+                    if (x < xCount && y >= 0)
                     {
-                        _collision[y, x] = TileType.COLLISION;
+                        string tileType = cells[x].Trim();
+                        if (tileType == "0")
+                            _tiles[y, x] = new TileInfo()
+                            {
+                                tileType = TileType.PATH
+                            };
+                        else if (tileType == "1")
+                            _tiles[y, x] = new TileInfo()
+                            {
+                                tileType = TileType.COLLISION
+                            };
+                        else if (tileType.Contains("Bush"))
+                        {
+                            string numberPart = tileType.Replace("Bush", "");
+                            _tiles[y, x] = new TileInfo()
+                            {
+                                tileType = TileType.BUSH,
+                                id = int.Parse(numberPart),
+                            };
+                        }
+                        else if (tileType.Contains("Door"))
+                        {
+                            string numberPart = tileType.Replace("Door", "");
+                            _tiles[y, x] = new TileInfo()
+                            {
+                                tileType = TileType.DOOR,
+                                id = int.Parse(numberPart),
+                            };
+                        }
                     }
-                    else if (line[x] == '0')
-                    {
-                        _collision[y, x] = TileType.PATH;
-                    }
-                }
-            }
-
-            // 문 타일맵의 정보를 불러온다.
-            string doorMapName = mapName + "_DoorMap";
-
-            text = File.ReadAllText($"{pathPrefix}/{doorMapName}.txt");
-            reader = new StringReader(text);
-
-            MinX = int.Parse(reader.ReadLine());
-            MaxX = int.Parse(reader.ReadLine());
-            MinY = int.Parse(reader.ReadLine());
-            MaxY = int.Parse(reader.ReadLine());
-
-            for (int y = 0; y < yCount; y++)
-            {
-                string line = reader.ReadLine();
-                for (int x = 0; x < xCount; x++)
-                {
-                    _doorTileGrid[y, x] = line[x] - '0';
-
-                    if (line[x] != '0')
-                        _collision[y, x] = TileType.DOOR;
-                }
-            }
-
-            // 부쉬 타일맵의 정보를 불러온다.
-            string bushMapName = mapName + "_BushMap";
-
-            text = File.ReadAllText($"{pathPrefix}/{bushMapName}.txt");
-            reader = new StringReader(text);
-
-            MinX = int.Parse(reader.ReadLine());
-            MaxX = int.Parse(reader.ReadLine());
-            MinY = int.Parse(reader.ReadLine());
-            MaxY = int.Parse(reader.ReadLine());
-
-            for (int y = 0; y < yCount; y++)
-            {
-                string line = reader.ReadLine();
-                for (int x = 0; x < xCount; x++)
-                {
-                    _bushTileGrid[y, x] = line[x] - '0';
-
-                    if (line[x] != '0')
-                        _collision[y, x] = TileType.BUSH;
                 }
             }
 
             // NPC 타일맵의 정보를 불러온다.
             string npcMapName = mapName + "_NPCMap";
 
-            text = File.ReadAllText($"{pathPrefix}/{npcMapName}.txt");
-            reader = new StringReader(text);
+            string text = File.ReadAllText($"{pathPrefix}/{npcMapName}.txt");
+            StringReader reader = new StringReader(text);
 
             int npcCount = int.Parse(reader.ReadLine());
 
@@ -350,11 +347,6 @@ namespace Server
                 }
 
                 npc.NPCType = (NPCType)Enum.Parse(typeof(NPCType), npcType);
-
-                //if (npc.Name == "Staff")
-                //    posX += 1;
-                //else if (npc.Name == "Nurse")
-                //    posY -= 1;
 
                 _objects[posY, posX] = npc;
 
@@ -430,10 +422,13 @@ namespace Server
                     // 벽으로 막혀서 갈 수 없으면 스킵
                     if (next.Y != dest.Y || next.X != dest.X)
                     {
-                        TileType tile = GetTileType(Pos2Cell(next));
+                        TileInfo? tile = GetTileInfo(Pos2Cell(next));
 
-                        if (tile == TileType.COLLISION)
-                            continue;
+                        if (tile != null)
+                        {
+                            if (tile.Value.tileType == TileType.COLLISION)
+                                continue;
+                        }
                     }
 
                     // 이미 방문한 곳이면 스킵

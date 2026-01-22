@@ -27,6 +27,21 @@ public struct PQNode : IComparable<PQNode>
     }
 }
 
+public enum TileType
+{
+    NONE = 0,
+    PATH = 1,
+    COLLISION = 2,
+    BUSH = 3,
+    DOOR = 4,
+}
+
+public struct TileInfo
+{
+    public TileType tileType;
+    public int id;
+}
+
 public class MapManager : MonoBehaviour
 {
     public Grid CurrentGrid { get; private set; }
@@ -39,8 +54,7 @@ public class MapManager : MonoBehaviour
     public int SizeX { get { return MaxX - MinX + 1; } }
     public int SizeY { get { return MaxY - MinY + 1; } }
 
-    bool[,] _collision;
-    int[,] _doorMap;
+    TileInfo[,] _tiles;
 
     GameObject _gameMap;
 
@@ -55,7 +69,11 @@ public class MapManager : MonoBehaviour
 
         int x = cellPos.x - MinX;
         int y = MaxY - cellPos.y;
-        return !_collision[y, x];
+
+        if (_tiles[y, x].tileType == TileType.COLLISION)
+            return false;
+        else
+            return true;
     }
 
     public bool IsDoor(Vector3Int cellPos)
@@ -68,7 +86,7 @@ public class MapManager : MonoBehaviour
         int x = cellPos.x - MinX;
         int y = MaxY - cellPos.y;
 
-        if (_doorMap[y, x] > 0)
+        if (_tiles[y, x].tileType == TileType.DOOR)
             return true;
         else
             return false;
@@ -93,8 +111,7 @@ public class MapManager : MonoBehaviour
         int doorId = 1;
         while (true)
         {
-            Tilemap tileMap = Util.FindChild<Tilemap>(_gameMap, $"Tilemap_Door_{doorId}", true);
-
+            Tilemap tileMap = Util.FindChild<Tilemap>(_gameMap, $"Tilemap_Door{doorId}", true);
             if (tileMap != null)
             {
                 tileMap.gameObject.SetActive(false);
@@ -108,49 +125,60 @@ public class MapManager : MonoBehaviour
 
         // Collision 관련 파일
         TextAsset txt = Managers.Resource.Load<TextAsset>($"Map/{mapName}");
-        StringReader reader = new StringReader(txt.text);
+        string[] lines = txt.text.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries);
 
-        MinX = int.Parse(reader.ReadLine());
-        MaxX = int.Parse(reader.ReadLine());
-        MinY = int.Parse(reader.ReadLine());
-        MaxY = int.Parse(reader.ReadLine());
+        MinX = int.Parse(lines[0].Trim());
+        MaxX = int.Parse(lines[1].Trim());
+        MinY = int.Parse(lines[2].Trim());
+        MaxY = int.Parse(lines[3].Trim());
 
         int xCount = MaxX - MinX + 1;
         int yCount = MaxY - MinY + 1;
-        _collision = new bool[yCount, xCount];
+        _tiles = new TileInfo[yCount, xCount];
 
-        for (int y = 0; y < yCount; y++)
+        // 타일맵의 정보를 불러온다.
+        for (int i = 4; i < lines.Length; i++)
         {
-            string line = reader.ReadLine();
-            for (int x = 0; x < xCount; x++)
+            // 한 줄을 콤마로 분리하고 공백 제거
+            string[] cells = lines[i].Split(',');
+
+            int y = i - 4;
+
+            for (int x = 0; x < cells.Length; x++)
             {
-                if (line[x] == '1')
+                if (x < xCount && y >= 0)
                 {
-                    _collision[y, x] = true;
+                    string tileType = cells[x].Trim();
+
+                    if (tileType == "0")
+                        _tiles[y, x] = new TileInfo()
+                        {
+                            tileType = TileType.PATH
+                        };
+                    else if (tileType == "1")
+                        _tiles[y, x] = new TileInfo()
+                        {
+                            tileType = TileType.COLLISION
+                        };
+                    else if (tileType.Contains("Bush"))
+                    {
+                        string numberPart = tileType.Replace("Bush", "");
+                        _tiles[y, x] = new TileInfo()
+                        {
+                            tileType = TileType.BUSH,
+                            id = int.Parse(numberPart),
+                        };
+                    }
+                    else if (tileType.Contains("Door"))
+                    {
+                        string numberPart = tileType.Replace("Door", "");
+                        _tiles[y, x] = new TileInfo()
+                        {
+                            tileType = TileType.DOOR,
+                            id = int.Parse(numberPart),
+                        };
+                    }
                 }
-                else
-                    _collision[y, x] = false;
-            }
-        }
-
-        txt = Managers.Resource.Load<TextAsset>($"Map/{mapName}_DoorMap");
-        reader = new StringReader(txt.text);
-
-        MinX = int.Parse(reader.ReadLine());
-        MaxX = int.Parse(reader.ReadLine());
-        MinY = int.Parse(reader.ReadLine());
-        MaxY = int.Parse(reader.ReadLine());
-
-        xCount = MaxX - MinX + 1;
-        yCount = MaxY - MinY + 1;
-        _doorMap = new int[yCount, xCount];
-
-        for (int y = 0; y < yCount; y++)
-        {
-            string line = reader.ReadLine();
-            for (int x = 0; x < xCount; x++)
-            {
-                _doorMap[y, x] = line[x] - '0';
             }
         }
     }
